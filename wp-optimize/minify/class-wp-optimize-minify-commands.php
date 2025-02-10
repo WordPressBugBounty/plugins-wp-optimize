@@ -88,7 +88,7 @@ class WP_Optimize_Minify_Commands {
 		
 		$notice = WP_Optimize_Minify_Functions::apply_strip_tags_for_messages_array($notice, '');
 
-		$notice = json_encode($notice); // encode
+		$notice = wp_json_encode($notice); // encode
 
 		return array(
 			'result' => 'caches cleared',
@@ -285,7 +285,7 @@ class WP_Optimize_Minify_Commands {
 		);
 
 		// loop through wpo-minify cache directory and get the meta.json files, combine into a single json file
-		if (is_dir(WPO_CACHE_MIN_FILES_DIR) && is_writable(dirname(WPO_CACHE_MIN_FILES_DIR))) {
+		if (is_dir(WPO_CACHE_MIN_FILES_DIR) && wp_is_writable(dirname(WPO_CACHE_MIN_FILES_DIR))) {
 			if ($handle = opendir(WPO_CACHE_MIN_FILES_DIR)) {
 				while (false !== ($d = readdir($handle))) {
 					if (0 === strcmp($d, '.') || 0 === strcmp($d, '..') || !is_numeric($d)) {
@@ -299,7 +299,7 @@ class WP_Optimize_Minify_Commands {
 							}
 							$maybe_file_path = $cache_min_folder . '/' . $maybe_file;
 							if (is_file($maybe_file_path) && 'meta.json' === basename($maybe_file_path)) {
-								$combined_metas['meta_logs'][$d] = json_decode(file_get_contents($maybe_file_path));
+								$combined_metas['meta_logs'][$d] = json_decode(WPO_File_System_Helper::get_file_contents($maybe_file_path));
 							}
 						}
 						closedir($cache_min_folder_handle);
@@ -336,7 +336,7 @@ class WP_Optimize_Minify_Commands {
 		$file = $cache_dir.'/'.$filename;
 
 		if (file_exists($file.'.json')) {
-			$log = json_decode(file_get_contents($file.'.json'));
+			$log = json_decode(WPO_File_System_Helper::get_file_contents($file.'.json'));
 			$data['filename'] = $filename;
 			$data['log'] = $log;
 		}
@@ -351,7 +351,7 @@ class WP_Optimize_Minify_Commands {
 	 */
 	private function check_and_delete($file) {
 		if (file_exists($file)) {
-			unlink($file);
+			wp_delete_file($file);
 		}
 	}
 
