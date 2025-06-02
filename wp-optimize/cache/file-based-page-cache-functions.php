@@ -1685,3 +1685,39 @@ if (!function_exists('wpo_wp_cli_locate_wp_config')) :
 		return $config_path;
 	}
 endif;
+
+
+/**
+ * Retrieves and sanitizes a value from a superglobal array in a way similar to WordPress's sanitize_text_field(),
+ * for use before WordPress is fully loaded
+ *
+ * @param string $key
+ * @param string $global_type
+ * @return string sanitized string.
+ */
+if (!function_exists('wpo_early_sanitize_superglobal_text')) :
+function wpo_early_sanitize_superglobal_text(string $key, string $global_type = 'server'): string {
+
+	$str = '';
+
+	// phpcs:disable
+	// Sanitized later in the code, without using WordPress functions as they are not available at this stage
+	if ('server' === $global_type) {
+		$str = $_SERVER[$key] ?? '';
+	}
+	// phpcs:enable
+
+	if ('' === $str || !is_scalar($str)) {
+		return '';
+	}
+
+	// Remove backslashes (simulate wp_unslash()).
+	$str = stripslashes((string) $str);
+
+	// Remove ASCII control characters (0x00–0x1F and 0x7F).
+	$str = preg_replace('/[\x00-\x1F\x7F]/u', '', $str);
+
+	// Trim whitespace and encode special HTML characters.
+	return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
+}
+endif;

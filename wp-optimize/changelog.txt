@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 4.2.2 - 02/June/2025 =
+
+* FIX: Cache - Resolved unwanted output in WP-CLI and fatal error related to WooCommerce's country-specific files, introduced in v4.2.0
+* TWEAK: Premium - Cache - Compatibility with WordPress 6.8
+
 = 4.2.1 - 05/May/2025 =
 
 * FIX: Cache - Compatibility issue with other plugins due to late start of output buffering
