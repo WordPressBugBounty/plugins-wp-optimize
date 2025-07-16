@@ -122,21 +122,10 @@ if (!function_exists('wpo_cache')) :
 			
 			$url_path = wpo_get_url_path();
 			
-			$dirs = explode('/', $url_path);
+			$path = WPO_CACHE_FILES_DIR . '/' .$url_path;
 			
-			$path = WPO_CACHE_FILES_DIR;
-			
-			foreach ($dirs as $dir) {
-				if (!empty($dir)) {
-					$path .= '/' . $dir;
-					
-					if (!file_exists($path)) {
-						if (!mkdir($path)) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- wp_mkdir_p not available this early
-							$no_cache_because[] = __('Attempt to create subfolder within cache directory failed', 'wp-optimize')." ($path)";
-							break;
-						}
-					}
-				}
+			if (!wp_mkdir_p($path)) {
+				$no_cache_because[] = __('Attempt to create subfolder within cache directory failed', 'wp-optimize').' ('.$url_path.')';
 			}
 		}
 		
@@ -155,7 +144,7 @@ if (!function_exists('wpo_cache')) :
 					$not_cached_details = "because: ".htmlspecialchars($message) . " ";
 				}
 				
-				$buffer .= sprintf("\n<!-- WP Optimize page cache - https://getwpo.com - page NOT cached %s-->\n", $not_cached_details);
+				$buffer .= sprintf("\n<!-- WP Optimize page cache - https://teamupdraft.com/wp-optimize/ - page NOT cached %s-->\n", $not_cached_details);
 			}
 			
 			return $buffer;
@@ -201,9 +190,9 @@ if (!function_exists('wpo_cache')) :
 				}
 				
 				if (!empty($GLOBALS['wpo_cache_config']['enable_mobile_caching']) && wpo_is_mobile()) {
-					$add_to_footer .= "\n<!-- Cached by WP-Optimize - for mobile devices - https://getwpo.com - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . "  -->\n";
+					$add_to_footer .= "\n<!-- Cached by WP-Optimize - for mobile devices - https://teamupdraft.com/wp-optimize/ - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . "  -->\n";
 				} else {
-					$add_to_footer .= "\n<!-- Cached by WP-Optimize - https://getwpo.com - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . " -->\n";
+					$add_to_footer .= "\n<!-- Cached by WP-Optimize - for mobile devices - https://teamupdraft.com/wp-optimize/ - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . "  -->\n";
 				}
 			}
 			
@@ -303,7 +292,7 @@ if (!function_exists('wpo_restricted_cache_page_type')) {
 		global $post;
 		
 		// Don't cache search or password protected.
-		if ((function_exists('is_search') && is_search()) || (function_exists('is_404') && is_404()) || !empty($post->post_password)) {
+		if ((function_exists('is_search') && is_search()) || (function_exists('bbp_is_search') && bbp_is_search()) || (function_exists('is_404') && is_404()) || !empty($post->post_password)) {
 			$restricted = __('Page type is not cacheable (search, 404 or password-protected)', 'wp-optimize');
 		}
 		
@@ -1387,7 +1376,7 @@ if (!function_exists('wpo_cache_add_footer_output')) :
 		} elseif ('shutdown' == current_filter()) {
 			// Only add the line if it was a page, not something else (e.g. REST response)
 			if (did_action('wp_footer') && !preg_match('/\/wp\-json\//', $_SERVER['REQUEST_URI']) && apply_filters('wpo_cache_show_cached_by_comment', true)) {
-				echo "\n<!-- WP Optimize page cache - https://getwpo.com - ".esc_html($buffered)." -->\n";
+				echo "\n<!-- WP Optimize page cache - https://teamupdraft.com/wp-optimize/ - ".esc_html($buffered)." -->\n";
 			} elseif (defined('WPO_CACHE_DEBUG') && WPO_CACHE_DEBUG && (!defined('REST_REQUEST') || !REST_REQUEST)) {
 				error_log('[CACHE DEBUG] '.wpo_current_url() . ' - ' . $buffered);
 			}
