@@ -359,7 +359,7 @@ class WP_Optimize_Admin {
 			'cache_size' => $wpo_cache->get_cache_size(),
 			'display' => $display,
 			'can_purge_the_cache' => $wpo_cache->can_purge_cache(),
-			'auto_preload_purged_contents' => $wpo_cache->should_auto_preload_purged_contents(),
+			'auto_preload_purged_contents' => $wpo_cache_options['auto_preload_purged_contents'],
 			'does_server_handles_cache' => WP_Optimize()->does_server_handles_cache(),
 			'error' => $error,
 		));
@@ -398,6 +398,7 @@ class WP_Optimize_Admin {
 		
 		$cache_exception_conditional_tags = is_array($wpo_cache_options['cache_exception_conditional_tags']) ? join("\n", $wpo_cache_options['cache_exception_conditional_tags']) : '';
 		$cache_exception_urls = is_array($wpo_cache_options['cache_exception_urls']) ? join("\n", $wpo_cache_options['cache_exception_urls']) : '';
+		$cache_ignore_query_variables = is_array($wpo_cache_options['cache_ignore_query_variables']) ? join("\n", $wpo_cache_options['cache_ignore_query_variables']) : '';
 		$cache_exception_cookies = is_array($wpo_cache_options['cache_exception_cookies']) ? join("\n", $wpo_cache_options['cache_exception_cookies']) : '';
 		$cache_exception_browser_agents = is_array($wpo_cache_options['cache_exception_browser_agents']) ? join("\n", $wpo_cache_options['cache_exception_browser_agents']) : '';
 		
@@ -405,6 +406,7 @@ class WP_Optimize_Admin {
 			'wpo_cache' => $wpo_cache,
 			'wpo_cache_options' => $wpo_cache_options,
 			'cache_exception_urls' => $cache_exception_urls,
+			'cache_ignore_query_variables' => $cache_ignore_query_variables,
 			'cache_exception_conditional_tags' => $cache_exception_conditional_tags,
 			'cache_exception_cookies' => $cache_exception_cookies,
 			'cache_exception_browser_agents' => $cache_exception_browser_agents,

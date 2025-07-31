@@ -1,5 +1,23 @@
 == Changelog ==
 
+= 4.2.4 - 30/Jul/2025 =
+
+* FIX: Potential PHP fatal error when no site is selected during database optimization in multisite
+* FIX: Issue where the database optimization spinner remained indefinitely active
+* FIX: PHP 8.4 compatibility warnings
+* FIX: Minify default exclusions fatal error
+* FIX: Premium - Potential PHP fatal error - type hinting error in the database table usage feature
+* FIX: Premium - Page cache and lazy load meta boxes no longer display on post edit screen when their respective options are disabled
+* FIX: Only purge relevant files when a published post is saved; also purge the author archive cache upon post save
+* FIX: Premium - Fixed compatibility of Table usage with WordPress versions earlier than 5.3
+* REFACTOR: Premium - Database - Table Usage - added missed translation functions
+* TWEAK: Purged content will preload only when cache is enabled, and the user-agent has been updated to a modern browser and OS version
+* TWEAK: Update seasonal advert banner logos, texts and links
+* TWEAK: Update plugin readme text and links
+* TWEAK: Premium - Cache - Add UI element to ignore query variables
+* TWEAK: Premium - Database - Table Usage - replaced loading state with native modal
+* TWEAK: Removed seasonal discount ads except Black Friday
+
 = 4.2.3 - 15/Jul/2025 =
 
 * FIX: Cache - Resolved PHP warning caused by excessively long cache file names

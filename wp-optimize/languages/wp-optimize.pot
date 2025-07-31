@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: Team Updraft <mail@example.com>\n"
 "Last-Translator: John Doe <mail@example.com>\n"
-"POT-Creation-Date: 2025-07-16 14:29+0000\n"
+"POT-Creation-Date: 2025-07-31 13:00+0000\n"
 "Report-Msgid-Bugs-To: http://example.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -256,7 +256,7 @@ msgstr ""
 msgid "Not available"
 msgstr ""
 
-#: src/wp-optimize.php:979, src/wp-optimize.php:982, src/includes/class-wp-optimize-admin.php:673, src/includes/class-wp-optimize-admin.php:676, src/templates/cache/page-cache.php:56
+#: src/wp-optimize.php:979, src/wp-optimize.php:982, src/includes/class-wp-optimize-admin.php:675, src/includes/class-wp-optimize-admin.php:678, src/templates/cache/page-cache.php:56
 msgid "Purge cache"
 msgstr ""
 
@@ -264,7 +264,7 @@ msgstr ""
 msgid "Premium"
 msgstr ""
 
-#: src/wp-optimize.php:1008, src/includes/class-wp-optimize-admin.php:43, src/includes/class-wp-optimize-admin.php:65, src/includes/class-wp-optimize-admin.php:74, src/includes/class-wp-optimize-admin.php:775, src/includes/class-wp-optimize-admin.php:776, src/templates/minify/status-tab.php:122, src/templates/minify/status-tab.php:144
+#: src/wp-optimize.php:1008, src/includes/class-wp-optimize-admin.php:43, src/includes/class-wp-optimize-admin.php:65, src/includes/class-wp-optimize-admin.php:74, src/includes/class-wp-optimize-admin.php:777, src/includes/class-wp-optimize-admin.php:778, src/templates/minify/status-tab.php:122, src/templates/minify/status-tab.php:144
 msgid "Settings"
 msgstr ""
 
@@ -326,53 +326,53 @@ msgstr ""
 msgid "Page caching was disabled, but with some warnings:"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:142
+#: src/cache/class-wp-optimize-cache-commands.php:161
 msgid "Caching is enabled"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:142
+#: src/cache/class-wp-optimize-cache-commands.php:161
 msgid "Caching is disabled"
 msgstr ""
 
 #. translators: %s: The current cache size
-#: src/cache/class-wp-optimize-cache-commands.php:146
+#: src/cache/class-wp-optimize-cache-commands.php:165
 msgid "Current cache size: %s"
 msgstr ""
 
 #. translators: %s: The number of files in the cache
-#: src/cache/class-wp-optimize-cache-commands.php:148
+#: src/cache/class-wp-optimize-cache-commands.php:167
 msgid "Number of files: %s"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:187
+#: src/cache/class-wp-optimize-cache-commands.php:206
 msgid "Cache is not enabled."
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:194, src/minify/class-wp-optimize-minify-commands.php:70, src/minify/class-wp-optimize-minify-commands.php:110
+#: src/cache/class-wp-optimize-cache-commands.php:213, src/minify/class-wp-optimize-minify-commands.php:70, src/minify/class-wp-optimize-minify-commands.php:110
 msgid "You do not have permission to purge the cache"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:223
+#: src/cache/class-wp-optimize-cache-commands.php:242
 msgid "Page cache purged successfully"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:247
+#: src/cache/class-wp-optimize-cache-commands.php:266
 msgid "Preloading is currently running in another process."
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:254
+#: src/cache/class-wp-optimize-cache-commands.php:273
 msgid "All URLs were preloaded into cache successfully"
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:257
+#: src/cache/class-wp-optimize-cache-commands.php:276
 msgid "Preloading URLs into cache..."
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:317
+#: src/cache/class-wp-optimize-cache-commands.php:336
 msgid "Page cache settings updated successfully."
 msgstr ""
 
-#: src/cache/class-wp-optimize-cache-commands.php:343
+#: src/cache/class-wp-optimize-cache-commands.php:362
 msgid "Auto preload settings have been updated successfully"
 msgstr ""
 
@@ -407,132 +407,132 @@ msgid "Last preload finished at %s"
 msgstr ""
 
 #. translators: %s is the path to the cache config file
-#: src/cache/class-wpo-cache-config.php:186
+#: src/cache/class-wpo-cache-config.php:193
 msgid "The cache configuration file could not be saved to the disk; please check the file/folder permissions of %s ."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:254, src/includes/class-wp-optimize-admin.php:53
+#: src/cache/class-wpo-page-cache.php:261, src/includes/class-wp-optimize-admin.php:53
 msgid "Page cache"
 msgstr ""
 
 #. translators: %d is the number of files in the cache
-#: src/cache/class-wpo-page-cache.php:256, src/minify/class-wp-optimize-minify.php:106
+#: src/cache/class-wpo-page-cache.php:263, src/minify/class-wp-optimize-minify.php:106
 msgid "Cache size:"
 msgstr ""
 
 #. translators: %d represents the number of files.
-#: src/cache/class-wpo-page-cache.php:256, src/includes/class-wp-optimize-system-status-report.php:218
+#: src/cache/class-wpo-page-cache.php:263, src/includes/class-wp-optimize-system-status-report.php:218
 msgid "(%d files)"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:269, src/cache/class-wpo-page-cache.php:272
+#: src/cache/class-wpo-page-cache.php:276, src/cache/class-wpo-page-cache.php:279
 msgid "Purge cache for all pages"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:280, src/cache/class-wpo-page-cache.php:283
+#: src/cache/class-wpo-page-cache.php:287, src/cache/class-wpo-page-cache.php:290
 msgid "Purge cache for this page"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:369, src/cache/class-wpo-page-cache.php:383
+#: src/cache/class-wpo-page-cache.php:376, src/cache/class-wpo-page-cache.php:390
 msgid "The page cache was successfully purged."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:376, src/cache/class-wpo-page-cache.php:390
+#: src/cache/class-wpo-page-cache.php:383, src/cache/class-wpo-page-cache.php:397
 msgid "The page cache was not purged."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:471, src/cache/class-wpo-page-cache.php:1574
+#: src/cache/class-wpo-page-cache.php:478, src/cache/class-wpo-page-cache.php:1590
 msgid "Please check file and directory permissions on the file paths up to this point, and your PHP error log."
 msgstr ""
 
 #. translators: %s is the path to advanced-cache.php folder
-#: src/cache/class-wpo-page-cache.php:475
+#: src/cache/class-wpo-page-cache.php:482
 msgid "Please navigate, via FTP, to the folder - %s"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:476
+#: src/cache/class-wpo-page-cache.php:483
 msgid "Edit or create a file with the name advanced-cache.php"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:477
+#: src/cache/class-wpo-page-cache.php:484
 msgid "Copy and paste the following lines into the file:"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:523
+#: src/cache/class-wpo-page-cache.php:530
 msgid "Could not turn off the WP_CACHE constant in wp-config.php"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:533
+#: src/cache/class-wpo-page-cache.php:540
 msgid "The request to the filesystem to remove or empty advanced-cache.php failed"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:539
+#: src/cache/class-wpo-page-cache.php:546
 msgid "The page caching could not be disabled: the WP_CACHE constant could not be removed from wp-config.php and the request to the filesystem to remove or empty advanced-cache.php failed."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:702
+#: src/cache/class-wpo-page-cache.php:709
 msgid "Please check your file permissions."
 msgstr ""
 
 #. translators: %s is a directory name
-#: src/cache/class-wpo-page-cache.php:706, src/cache/class-wpo-page-cache.php:711, src/cache/class-wpo-page-cache.php:717
+#: src/cache/class-wpo-page-cache.php:713, src/cache/class-wpo-page-cache.php:718, src/cache/class-wpo-page-cache.php:724
 msgid "The request to the filesystem failed: unable to create directory %s."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:917
+#: src/cache/class-wpo-page-cache.php:924
 msgid "The file advanced-cache.php needs to be updated, but the automatic process failed."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:918
+#: src/cache/class-wpo-page-cache.php:925
 msgid "Please try to disable and then re-enable the WP-Optimize cache manually."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1016
+#: src/cache/class-wpo-page-cache.php:1023
 msgid "Unable to write to or find wp-config.php; please check file/folder permissions."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1024
+#: src/cache/class-wpo-page-cache.php:1031
 msgid "Unable to write the file advanced-cache.php inside the wp-content folder; please check file/folder permissions"
 msgstr ""
 
 #. translators: %s is cache folder path
-#: src/cache/class-wpo-page-cache.php:1032
+#: src/cache/class-wpo-page-cache.php:1039
 msgid "Unable to write inside the cache files folder (%s); please check file/folder permissions (no cache files will be able to be created otherwise)"
 msgstr ""
 
 #. translators: %s is cache config folder path
-#: src/cache/class-wpo-page-cache.php:1046
+#: src/cache/class-wpo-page-cache.php:1053
 msgid "Unable to write inside the cache configuration folder (%s); please check file/folder permissions"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1544, src/cache/class-wpo-page-cache.php:1565
+#: src/cache/class-wpo-page-cache.php:1560, src/cache/class-wpo-page-cache.php:1581
 msgid "WP-Optimize:"
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1544
+#: src/cache/class-wpo-page-cache.php:1560
 msgid "Please disable the feature \"Gzip compression\" in PageSpeed Ninja to prevent conflicts."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1565
+#: src/cache/class-wpo-page-cache.php:1581
 msgid "Please disable the feature \"Gzip compression\" in Far Future Expiration to prevent conflicts."
 msgstr ""
 
 #. translators: %s is advanced-cache.php file path
-#: src/cache/class-wpo-page-cache.php:1573
+#: src/cache/class-wpo-page-cache.php:1589
 msgid "The request to write the file %s failed."
 msgstr ""
 
-#: src/cache/class-wpo-page-cache.php:1593
+#: src/cache/class-wpo-page-cache.php:1609
 msgid "Every time after the cache has expired"
 msgstr ""
 
 #. translators: %d is the number of minutes
-#: src/cache/class-wpo-page-cache.php:1599
+#: src/cache/class-wpo-page-cache.php:1615
 msgid "%d minutes"
 msgstr ""
 
 #. translators: %s is the cache lifespan
-#: src/cache/class-wpo-page-cache.php:1605
+#: src/cache/class-wpo-page-cache.php:1621
 msgid "Same as cache lifespan: %s"
 msgstr ""
 
@@ -1128,60 +1128,60 @@ msgstr ""
 msgid "Monthly (approx. - every 30 days)"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:494
+#: src/includes/class-wp-optimize-admin.php:496
 msgid "Your server takes care of database optimization"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:513
+#: src/includes/class-wp-optimize-admin.php:515
 msgid "Your server takes care of table optimization"
 msgstr ""
 
 #. translators: %1$s is plugin name, %2$s is 5 star rating, %3$s is link to Trustpilot, %4$s is link to G2.
-#: src/includes/class-wp-optimize-admin.php:589
+#: src/includes/class-wp-optimize-admin.php:591
 msgid "Enjoyed %1$s? Please leave us a %2$s rating on %3$s or %4$s."
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:589
+#: src/includes/class-wp-optimize-admin.php:591
 msgid "We really appreciate your support!"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:725, src/includes/class-wp-optimize-admin.php:726
+#: src/includes/class-wp-optimize-admin.php:727, src/includes/class-wp-optimize-admin.php:728
 msgid "Database"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:734, src/includes/class-wp-optimize-admin.php:735, src/templates/images/lazyload.php:29
+#: src/includes/class-wp-optimize-admin.php:736, src/includes/class-wp-optimize-admin.php:737, src/templates/images/lazyload.php:29
 msgid "Images"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:743, src/includes/class-wp-optimize-admin.php:744
+#: src/includes/class-wp-optimize-admin.php:745, src/includes/class-wp-optimize-admin.php:746
 msgid "Cache"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:752, src/includes/class-wp-optimize-admin.php:753
+#: src/includes/class-wp-optimize-admin.php:754, src/includes/class-wp-optimize-admin.php:755
 msgid "Minify"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:761, src/includes/class-wp-optimize-admin.php:762, src/includes/class-wp-optimize-performance.php:77, src/includes/class-wp-optimize-performance.php:127
+#: src/includes/class-wp-optimize-admin.php:763, src/includes/class-wp-optimize-admin.php:764, src/includes/class-wp-optimize-performance.php:77, src/includes/class-wp-optimize-performance.php:127
 msgid "Performance"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:784
+#: src/includes/class-wp-optimize-admin.php:786
 msgid "Support & FAQs"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:785
+#: src/includes/class-wp-optimize-admin.php:787
 msgid "Help"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:793, src/includes/class-wp-optimize-admin.php:794
+#: src/includes/class-wp-optimize-admin.php:795, src/includes/class-wp-optimize-admin.php:796
 msgid "Premium Upgrade"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:825
+#: src/includes/class-wp-optimize-admin.php:827
 msgid "You have no permissions to run optimizations."
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:834
+#: src/includes/class-wp-optimize-admin.php:836
 msgid "You have no permissions to manage WP-Optimize settings."
 msgstr ""
 
@@ -1214,32 +1214,32 @@ msgstr ""
 msgid "Save settings"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:671, src/includes/class-wp-optimize-commands.php:719, src/includes/class-wp-optimize-commands.php:761
+#: src/includes/class-wp-optimize-commands.php:675, src/includes/class-wp-optimize-commands.php:723, src/includes/class-wp-optimize-commands.php:765
 msgid "No optimization was indicated."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:899
+#: src/includes/class-wp-optimize-commands.php:903
 msgid "We could not determine if Gzip compression is enabled."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:911, src/includes/class-wp-optimize-commands.php:918
+#: src/includes/class-wp-optimize-commands.php:915, src/includes/class-wp-optimize-commands.php:922
 msgid "Please upload a valid settings file."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:967
+#: src/includes/class-wp-optimize-commands.php:971
 msgid "The settings were imported successfully."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1029
+#: src/includes/class-wp-optimize-commands.php:1033
 msgid "No such command found"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1035
+#: src/includes/class-wp-optimize-commands.php:1039
 msgid "No tweak provided"
 msgstr ""
 
 #. translators: %s is an action/command
-#: src/includes/class-wp-optimize-commands.php:1055
+#: src/includes/class-wp-optimize-commands.php:1059
 msgid "The command %s failed"
 msgstr ""
 
@@ -1692,163 +1692,118 @@ msgstr ""
 msgid "HTTP Code"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:37
-msgid "Make your site even faster with Premium."
-msgstr ""
-
+#. translators: %1$s are bold html tags to make some of the text bold, %2$s are closing tags
 #: src/includes/class-wp-optimize-notices.php:38
-msgid "Identify orphaned images, load webpages faster and get premium support."
+msgid "Make your site even %1$s faster with Premium %2$s."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:39
+#. translators: %1$s are bold html tags to make some of the text bold, %2$s are closing tags
+#: src/includes/class-wp-optimize-notices.php:40
+msgid "Identify orphaned images, load pages faster and get %1$s premium support %2$s."
+msgstr ""
+
+#: src/includes/class-wp-optimize-notices.php:41
 msgid "Get advanced options, like the ability to optimize your site using WP-CLI."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:40
-msgid "Premium is compatible with WordPress multisite, WooCommerce and other add-ons, including multilingual and multi-currency WordPress plugins."
-msgstr ""
-
+#. translators: %1$s are bold html tags to make some of the text bold, %2$s are closing tags
 #: src/includes/class-wp-optimize-notices.php:43
-msgid "checkout"
+msgid "Premium is %1$s compatible with WordPress multisite, WooCommerce and other add-ons %2$s, including multilingual and multi-currency WordPress plugins."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:48
+#: src/includes/class-wp-optimize-notices.php:46
+msgid "Save 20% with code blackfridaysale2025"
+msgstr ""
+
+#: src/includes/class-wp-optimize-notices.php:51
 msgid "Make sure you backup before you optimize your database"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:49
+#: src/includes/class-wp-optimize-notices.php:52
 msgid "UpdraftPlus is the world's most trusted backup plugin, from the owners of WP-Optimize."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:59
+#: src/includes/class-wp-optimize-notices.php:62
 msgid "Save time and money."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:59
+#: src/includes/class-wp-optimize-notices.php:62
 msgid "Manage multiple sites from one location."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:60
+#: src/includes/class-wp-optimize-notices.php:63
 msgid "Back up, update and manage multiple WordPress websites centrally."
 msgstr ""
 
 #. translators: %1$s is an anchor tag to WP-Optimize support forum, %2$s is closing tags
-#: src/includes/class-wp-optimize-notices.php:70
+#: src/includes/class-wp-optimize-notices.php:73
 msgid "We noticed WP-Optimize has kept your site running fast for a while."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:70
+#: src/includes/class-wp-optimize-notices.php:73
 msgid "If you like us, please consider leaving us a positive review."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:70
+#: src/includes/class-wp-optimize-notices.php:73
 msgid "If you have any issues or questions please contact %1$s support. %2$s"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:70
+#: src/includes/class-wp-optimize-notices.php:73
 msgid "Thank you so much!"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:81
+#: src/includes/class-wp-optimize-notices.php:84
 msgid "Want to improve WP-Optimize for speakers of your language? Go here for instructions"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:91
+#: src/includes/class-wp-optimize-notices.php:94
 msgid "Perform optimizations while your visitors sleep"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:92
+#: src/includes/class-wp-optimize-notices.php:95
 msgid "Schedule optimizations for set times e.g. overnight when server resources are high."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:102
+#: src/includes/class-wp-optimize-notices.php:105
 msgid "Manage a multisite installation?"
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:103
+#: src/includes/class-wp-optimize-notices.php:106
 msgid "Optimize any site (or combination of sites) on the multisite network."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:103
+#: src/includes/class-wp-optimize-notices.php:106
 msgid "Give the right permissions to the right users."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:113
+#: src/includes/class-wp-optimize-notices.php:116
 msgid "Remove unwanted images for better site performance."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:114
+#: src/includes/class-wp-optimize-notices.php:117
 msgid "WP-Optimize Premium comes with a feature to easily remove orphaned images, or images that exceed a certain size from your website."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:124
+#: src/includes/class-wp-optimize-notices.php:127
 msgid "Secure your site"
 msgstr ""
 
 #. translators: %1$s is the name of plugin and %2$s is the name of the team
-#: src/includes/class-wp-optimize-notices.php:126
+#: src/includes/class-wp-optimize-notices.php:129
 msgid "The %1$s plugin from %2$s."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:137
+#: src/includes/class-wp-optimize-notices.php:140
 msgid "20% off - Black Friday Sale"
 msgstr ""
 
-#. translators: %1$s is a link to Black Friday sale page, %2$s is Black Friday sale discount code
-#: src/includes/class-wp-optimize-notices.php:139
-msgid "Save 20%% with code %s"
+#. translators: %s is a link to pricing/check out page
+#: src/includes/class-wp-optimize-notices.php:142
+msgid "%s at checkout."
 msgstr ""
 
-#: src/includes/class-wp-optimize-notices.php:139
-msgid "Hurry, offer ends on 2 December."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:152
-msgid "20% off - New Year Sale"
-msgstr ""
-
-#. translators: %1$s is New Year sale discount code, %2$s is a link to check out page
-#: src/includes/class-wp-optimize-notices.php:154
-msgid "Save 20%% with code %1$s at %2$s."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:154
-msgid "Hurry, offer ends 28 January."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:167
-msgid "20% off - Spring Sale"
-msgstr ""
-
-#. translators: %1$s is Spring sale discount code, %2$s is a link to check out page
-#. translators: %1$s is Summer sale discount code, %2$s is a link to check out page
-#: src/includes/class-wp-optimize-notices.php:169, src/includes/class-wp-optimize-notices.php:184
-msgid "Save 20%% off with code %1$s at %2$s."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:169
-msgid "Hurry, offer ends 31 May."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:182
-msgid "20% off - Summer Sale"
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:184
-msgid "Hurry, offer ends 31 July."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:197
-msgid "The UpdraftPlus Plugin Collection Sale"
-msgstr ""
-
-#. translators: %s is a discount code
-#: src/includes/class-wp-optimize-notices.php:199
-msgid "Visit any of our websites and use code %s at the checkout to get 20%% off all our plugins."
-msgstr ""
-
-#: src/includes/class-wp-optimize-notices.php:199
-msgid "Be quick, offer ends 30 September."
+#: src/includes/class-wp-optimize-notices.php:142
+msgid "Hurry, offer ends 2 December."
 msgstr ""
 
 #: src/includes/class-wp-optimize-options.php:158
@@ -3027,7 +2982,7 @@ msgstr ""
 msgid "Host gravatars locally to reduce http requests and enhanced privacy."
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:20
+#: src/templates/cache/page-cache-advanced.php:20, src/templates/cache/page-cache-advanced.php:61
 msgid "Upgrade to WP-Optimize Premium to unlock this feature."
 msgstr ""
 
@@ -3067,36 +3022,44 @@ msgid "*sample-path*"
 msgstr ""
 
 #: src/templates/cache/page-cache-advanced.php:51
+msgid "Ignore these query variables when caching"
+msgstr ""
+
+#: src/templates/cache/page-cache-advanced.php:57
+msgid "List query variables that should be ignored while caching (one per line)"
+msgstr ""
+
+#: src/templates/cache/page-cache-advanced.php:69
 msgid "Cookies which, if present, will prevent caching (one per line)"
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:56
+#: src/templates/cache/page-cache-advanced.php:74
 msgid "List of cookies that will prevent caching when set."
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:61
+#: src/templates/cache/page-cache-advanced.php:79
 msgid "Conditional tags to exclude from caching"
 msgstr ""
 
 #. translators: %s is an example conditional tag
-#: src/templates/cache/page-cache-advanced.php:69
+#: src/templates/cache/page-cache-advanced.php:87
 msgid "List conditional tags (e.g. %s) that should not be cached (one per line)."
 msgstr ""
 
 #. translators: %1$s and %2$s are anchor tags
-#: src/templates/cache/page-cache-advanced.php:72
+#: src/templates/cache/page-cache-advanced.php:90
 msgid "You can find more details about conditional tags from %1$shere%2$s"
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:82
+#: src/templates/cache/page-cache-advanced.php:100
 msgid "List of browser agent strings which, if detected, will prevent caching"
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:87
+#: src/templates/cache/page-cache-advanced.php:105
 msgid "List of browser agents strings or substrings that should not be served cached files (one per line)"
 msgstr ""
 
-#: src/templates/cache/page-cache-advanced.php:91
+#: src/templates/cache/page-cache-advanced.php:109
 msgid "If any of the above strings is found in the User-Agent HTTP header, then the requested page will not be cached."
 msgstr ""
 

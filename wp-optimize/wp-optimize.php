@@ -3,12 +3,12 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.2.3
+Version: 4.2.4
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
 Author: TeamUpdraft, DavidAnderson
-Author URI: https://teamupdraft.com
+Author URI: https://teamupdraft.com/wp-optimize?utm_source=wpo-wp-dir&utm_medium=referral&utm_campaign=plugin-dir&utm_content=teamupdraft&utm_creative_format=author
 Text Domain: wp-optimize
 Domain Path: /languages
 License: GPLv2 or later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.2.3');
+define('WPO_VERSION', '4.2.4');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));

@@ -192,7 +192,7 @@ if (!function_exists('wpo_cache')) :
 				if (!empty($GLOBALS['wpo_cache_config']['enable_mobile_caching']) && wpo_is_mobile()) {
 					$add_to_footer .= "\n<!-- Cached by WP-Optimize - for mobile devices - https://teamupdraft.com/wp-optimize/ - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . "  -->\n";
 				} else {
-					$add_to_footer .= "\n<!-- Cached by WP-Optimize - for mobile devices - https://teamupdraft.com/wp-optimize/ - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . "  -->\n";
+					$add_to_footer .= "\n<!-- Cached by WP-Optimize - https://teamupdraft.com/wp-optimize/ - Last modified: " . gmdate($date_time_format, $modified_time) . " " . $timezone_postfix . " -->\n";
 				}
 			}
 			
@@ -1417,7 +1417,14 @@ if (!function_exists('wpo_cache_maybe_ignore_query_variables')) :
 			'sitemap',            // YOAST SEO sitemap
 			'sitemap_n',
 		);
-		$exclude_variables = function_exists('apply_filters') ? apply_filters('wpo_cache_ignore_query_variables', $exclude_variables) : $exclude_variables;
+		
+		// Analytics extension - only works in premium version
+		if (file_exists(WPO_CACHE_EXT_DIR . '/analytics.php')) {
+			$analytics_variables = include(WPO_CACHE_EXT_DIR . '/analytics.php');
+			$user_defined_variables = wpo_cache_config_get('cache_ignore_query_variables');
+			$user_defined_variables = is_array($user_defined_variables) ? $user_defined_variables : array();
+			$exclude_variables = array_merge($exclude_variables, $analytics_variables, $user_defined_variables);
+		}
 		
 		if (empty($exclude_variables)) return $variables;
 		
