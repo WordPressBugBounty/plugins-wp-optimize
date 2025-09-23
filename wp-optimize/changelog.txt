@@ -1,5 +1,24 @@
 == Changelog ==
 
+= 4.3.0 - 22/Sep/2025 =
+
+* FEATURE: Premium - Cache - Cache REST API requests
+* FEATURE: Premium - Further reduce CSS files sizes by removing unused CSS rules
+* FIX: Added backward compatibility for timezone and datetime functions and improved status report support for older WordPress versions like 4.9.
+* FIX: PHP Warning file_exists(): open_basedir restriction in effect
+* FIX: Prevented buffer initialization during wp-cron when HTML DOM is unavailable.
+* REFACTOR: Database - Table Usage - Refactored execute_query_analysis() function
+* TWEAK: Added new UpdraftCentral endpoints
+* TWEAK: Enhanced multisite support: added performance widget to Network Dashboard and fixed sub-site widgets to show only site-specific 404 request counts.
+* TWEAK: Fix external loading of Gtag analytics script
+* TWEAK: Moved the tooltip tag outside the <label> tag
+* TWEAK: Performance - 404 Detector (Not Found Requests) added a button to clear all logs.
+* TWEAK: Publishing a post or custom post type (CPT) no longer clears the cache of all posts of the same type.
+* TWEAK: Removed return statements from constructors and added checks at the point of class instantiation.
+* TWEAK: Smush - Enhanced compatibility and performance with EWWW Image Optimizer installed
+* TWEAK: Premium - Added cache support for Nelio A/B Testing plugin
+* TWEAK: Added a hook to trigger custom code when a page is not cached
+
 = 4.2.4 - 30/Jul/2025 =
 
 * FIX: Potential PHP fatal error when no site is selected during database optimization in multisite
@@ -58,7 +77,7 @@
 * FIX: Smush - Fixed issue where the Smush popup would freeze
 * FIX: WebP images not served after WP-Optimize reactivation
 * REFACTOR: Smush option removed from media upload modal
-* SECURITY: On multisite installs (only), a site administrator could use an unsanitised parameter to inject unwanted content into SQL queries. Thanks to Marc Montpas for the responsible disclosure.
+* SECURITY: On multisite installs (only), a logged-in site administrator could use an unsanitised parameter to inject unwanted content into SQL queries. Thanks to Marc Montpas for the responsible disclosure.
 * TWEAK:  Update advert banner logos, texts and links
 * TWEAK: Add missing separator between compression items in media library
 * TWEAK: Avoid PHP warning thrown by Page Speed Ninja plugin

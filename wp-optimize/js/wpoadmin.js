@@ -1115,6 +1115,22 @@ var WP_Optimize = function () {
 		});
 	});
 
+	$('#wpo-404-detector-form').on('click', '#wpo-404-clear-logs', function (e) {
+		e.preventDefault();
+		block_ui(wpoptimize.please_wait);
+		send_command('truncate_404_logs', {}, function (resp) {
+			if (resp && resp.hasOwnProperty('success') && resp.success) {
+				$('#wpo_404_detector_results').html('');
+			}
+			if (resp && resp.hasOwnProperty('message') && resp.message) {
+				block_ui(resp.message, {}, 3000);
+			}
+		}).fail(function() {
+			block_ui(wpoptimize.something_wrong_try_again, {}, 3000);
+		});
+	});
+
+
 	$('#database_settings_form, #settings_form, #wpo-404-detector-form').on('click', '.wpo-save-settings', function (e) {
 		e.preventDefault();
 		var form = $(this).closest('form');

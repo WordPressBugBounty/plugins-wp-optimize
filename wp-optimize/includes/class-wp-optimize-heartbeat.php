@@ -61,7 +61,7 @@ class WP_Optimize_Heartbeat {
 	 * @param array $response Heartbeat response data to pass back to front end.
 	 * @param array $data     Data received from the front end (unslashed).
 	 *
-	 * @return array
+	 * @return array|void
 	 */
 	public function receive_heartbeat($response, $data) {
 		$commands = new Updraft_Smush_Manager_Commands(Updraft_Smush_Manager::instance());

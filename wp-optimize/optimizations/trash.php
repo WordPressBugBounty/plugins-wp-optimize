@@ -210,7 +210,7 @@ class WP_Optimization_trash extends WP_Optimization {
 	/**
 	 * Return settings label
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function settings_label() {
 
@@ -225,7 +225,7 @@ class WP_Optimization_trash extends WP_Optimization {
 	/**
 	 * Return description
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function get_auto_option_description() {
 		return __('Remove trashed posts', 'wp-optimize');

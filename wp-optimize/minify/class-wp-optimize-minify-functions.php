@@ -2,7 +2,7 @@
 
 if (!defined('ABSPATH')) die('No direct access allowed');
 
-// handle better utf-8 and unicode encoding
+// handle better utf-8 and Unicode encoding
 if (function_exists('mb_internal_encoding')) {
 	mb_internal_encoding('UTF-8');
 }
@@ -212,7 +212,7 @@ class WP_Optimize_Minify_Functions {
 	}
 
 	/**
-	 * Check if selected url is point to already minifiled css/js file
+	 * Check if selected url is point to already minified css/js file
 	 *
 	 * @param string $url
 	 * @return bool
@@ -318,7 +318,8 @@ class WP_Optimize_Minify_Functions {
 		 * @param string  $url                    - The imported url
 		 * @param boolean $enable_js_minification - Whether to minify or not
 		 */
-		return apply_filters('wpo_minify_get_js', $js . "\n", $url, $enable_js_minification);
+		$filtered_js = apply_filters('wpo_minify_get_js', $js . "\n", $url, $enable_js_minification);
+		return is_string($filtered_js) ? $filtered_js : $js;
 	}
 
 	/**
@@ -389,7 +390,7 @@ class WP_Optimize_Minify_Functions {
 	 * @return void
 	 */
 	public static function html_compression_start() {
-		if (self::exclude_contents() == true) {
+		if (self::exclude_contents()) {
 			return;
 		}
 		ob_start(array(__CLASS__, 'html_compression_finish'));
@@ -468,7 +469,8 @@ class WP_Optimize_Minify_Functions {
 		 * @param string  $url                     - The imported url
 		 * @param boolean $enable_css_minification - Whether to minify or not
 		 */
-		return apply_filters('wpo_minify_get_css', $css, $url, $enable_css_minification);
+		$filtered_css = apply_filters('wpo_minify_get_css', $css, $url, $enable_css_minification);
+		return is_string($filtered_css) ? $filtered_css : $css;
 	}
 
 	/**
@@ -487,7 +489,7 @@ class WP_Optimize_Minify_Functions {
 				$css = str_replace($a, $b, $css);
 			}
 		}
-		return preg_replace("/url\(\s*['\"]?(?!data:)(?!http)(?![\/'\"])(.+?)['\"]?\s*\)/ui", "url(".dirname($url)."/$1)", $css);
+		return (string) preg_replace("/url\(\s*['\"]?(?!data:)(?!http)(?![\/'\"])(.+?)['\"]?\s*\)/ui", "url(".dirname($url)."/$1)", $css);
 	}
 
 	/**
@@ -550,16 +552,18 @@ class WP_Optimize_Minify_Functions {
 	/**
 	 * Download and cache css and js files
 	 *
-	 * @param string  $hurl
-	 * @param string  $inline
+	 * @param ?string $hurl
+	 * @param ?string $inline
 	 * @param boolean $enable_minification
 	 * @param string  $type
-	 * @param string  $handle
+	 * @param ?string $handle
+	 * @param mixed   $version
+	 *
 	 * @return boolean|string
 	 */
 	public static function download_and_minify($hurl, $inline, $enable_minification, $type, $handle, $version = '') {
 		// must have
-		if (is_null($hurl) || empty($hurl)) {
+		if (empty($hurl)) {
 			return false;
 		}
 		if (!in_array($type, array('js', 'css'))) {
@@ -579,11 +583,11 @@ class WP_Optimize_Minify_Functions {
 		if (false != $enable_minification) {
 			$enable_minification = true;
 		}
-		if (is_null($inline) || empty($inline)) {
+		if (empty($inline)) {
 			$inline = '';
 		}
 		$print_handle = '';
-		if (is_null($handle) || empty($handle)) {
+		if (empty($handle)) {
 			$handle = '';
 		} else {
 			$print_handle = "[$handle]";
@@ -642,7 +646,7 @@ class WP_Optimize_Minify_Functions {
 		if (false !== stripos($url, $wp_domain)) {
 			// default
 			$f = str_ireplace(rtrim($wp_home, '/'), rtrim(ABSPATH, '/'), $url);
-			// failover when home_url != site_url
+			// fail over when home_url != site_url
 			if (!file_exists($f)) {
 				$nhurl = str_ireplace(site_url(), home_url(), $url);
 				$f = str_ireplace(rtrim($wp_home, '/'), rtrim(ABSPATH, '/'), $nhurl);
@@ -881,7 +885,7 @@ class WP_Optimize_Minify_Functions {
 		/**
 		 * Whether to exclude the content or not from the minifying process.
 		 */
-		return apply_filters('wpo_minify_exclude_contents', false);
+		return (bool) apply_filters('wpo_minify_exclude_contents', false);
 	}
 
 	/**
@@ -890,13 +894,7 @@ class WP_Optimize_Minify_Functions {
 	 * @return array
 	 */
 	public static function get_default_ignore() {
-		/**
-		 * Filters the default exclusions
-		 *
-		 * @param array The exclusions
-		 * @return array
-		 */
-		return apply_filters('wp-optimize-minify-default-exclusions', array(
+		$default_exclusions = array(
 			'/genericons.css',
 			'/Avada/assets/js/main.min.js',
 			'/woocommerce-product-search/js/product-search.js',
@@ -912,7 +910,15 @@ class WP_Optimize_Minify_Functions {
 			'pdfjs-dist',
 			'wordpress-popular-posts',
 			'uploads/bb-plugin/cache', // Beaver builder page specific pages
-		));
+		);
+		/**
+		 * Filters the default exclusions
+		 *
+		 * @param array The exclusions
+		 * @return array
+		 */
+		$filtered_exclusions = apply_filters('wp-optimize-minify-default-exclusions', $default_exclusions);
+		return is_array($filtered_exclusions) ? $filtered_exclusions : $default_exclusions;
 	}
 
 	/**
@@ -939,13 +945,7 @@ class WP_Optimize_Minify_Functions {
 	 * @return array
 	 */
 	public static function get_default_ie_blacklist() {
-		/**
-		 * Filters the default IE specific / blacklisted items
-		 *
-		 * @param array The blacklist
-		 * @return array
-		 */
-		return apply_filters('wp-optimize-minify-blacklist', array(
+		$default_ie_blacklist = array(
 			'/html5shiv.js',
 			'/html5shiv-printshiv.min.js',
 			'/excanvas.js',
@@ -967,7 +967,15 @@ class WP_Optimize_Minify_Functions {
 			'/pixelyoursite/js/public.js',
 			'/assets/js/wcdrip-drip.js',
 			'/instantpage.js',
-		));
+		);
+		/**
+		 * Filters the default IE specific / blacklisted items
+		 *
+		 * @param array The blacklist
+		 * @return array
+		 */
+		$filtered_ie_blacklist = apply_filters('wp-optimize-minify-blacklist', $default_ie_blacklist);
+		return is_array($filtered_ie_blacklist) ? $filtered_ie_blacklist : $default_ie_blacklist;
 	}
 
 	/**
@@ -996,7 +1004,7 @@ class WP_Optimize_Minify_Functions {
 		
 		// is the url on our list and return
 		$res = self::in_arrayi($url, $blacklist);
-		if (true == $res) {
+		if ($res) {
 			return true;
 		} else {
 			return false;
@@ -1007,17 +1015,17 @@ class WP_Optimize_Minify_Functions {
 	 * Download function with fallback
 	 *
 	 * @param string $url
-	 * @return boolean
+	 * @return boolean|string
 	 */
 	public static function download_remote($url) {
 		
 		$args = array(
-			// info (needed for google fonts woff files + hinted fonts) as well as to bypass some security filters
+			// info (needed for Google fonts woff files + hinted fonts) as well as to bypass some security filters
 			'user-agent' => WP_Optimize_Utils::get_user_agent(),
 			'timeout' => 7
 		);
 
-		// fetch via wordpress functions
+		// fetch via WordPress functions
 		$response = wp_remote_get(
 			$url,
 			/**
@@ -1057,7 +1065,7 @@ class WP_Optimize_Minify_Functions {
 	}
 
 	/**
-	 * Checks if an URL is a font-awesome resource (checks if it contains font-awesome or fontawesome)
+	 * Checks if URL is a font-awesome resource (checks if it contains font-awesome or fontawesome)
 	 *
 	 * @param string $href
 	 * @return boolean
@@ -1067,7 +1075,7 @@ class WP_Optimize_Minify_Functions {
 	}
 
 	/**
-	 * Checks if an URL is a google font resource
+	 * Checks if URL is a Google font resource
 	 *
 	 * @param string $href
 	 * @return boolean
@@ -1130,12 +1138,12 @@ class WP_Optimize_Minify_Functions {
 	 */
 	public static function get_remote_file_size($url) {
 		$args = array(
-			// info (needed for google fonts woff files + hinted fonts) as well as to bypass some security filters
+			// info (needed for Google fonts woff files + hinted fonts) as well as to bypass some security filters
 			'user-agent' => WP_Optimize_Utils::get_user_agent(),
 			'timeout' => 7
 		);
 
-		// fetch via wordpress functions
+		// fetch via WordPress functions
 		$response = wp_remote_get($url, $args);
 
 		if (is_wp_error($response)) return false;
@@ -1192,10 +1200,10 @@ class WP_Optimize_Minify_Functions {
 			// Remove beginning '+'
 			$font = str_replace(',+', ',', $font_variant[0]);
 
-			// Replace '-' with '+
+			// Replace '-' with '+'
 			$font = str_replace(array('-', ' '), '+', $font);
 
-			// Remove '"' or '%22'
+			// Remove `"` or '%22'
 			$font = str_replace(array('%22', '"'), '', $font);
 			$font_arr = explode(',', $font);
 			$font_arr = array_diff($font_arr, $system_fonts);
@@ -1227,7 +1235,7 @@ class WP_Optimize_Minify_Functions {
 
 		$modification_time = strval(@filemtime($abs_file_path)); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Suppress E-Warning on failure
 		$filtered_modification_time = apply_filters('wpo_minify_file_modification_time', $modification_time, $abs_file_path);
-		
+
 		return is_string($filtered_modification_time) ? $filtered_modification_time : $modification_time;
 	}
 

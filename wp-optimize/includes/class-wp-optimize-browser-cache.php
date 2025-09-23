@@ -2,8 +2,6 @@
 
 if (!defined('WPO_VERSION')) die('No direct access allowed');
 
-require_once 'class-wp-optimize-htaccess.php';
-
 /**
  * Class WP_Optimize_Browser_Cache
  */
@@ -11,14 +9,14 @@ class WP_Optimize_Browser_Cache {
 
 	use WP_Optimize_HTTP_Error_Codes_Trait;
 
-	private $_htaccess = null;
+	private $_htaccess;
 
-	private $_options = null;
+	private $_options;
 
-	private $_wp_optimize = null;
+	private $_wp_optimize;
 
 	/**
-	 * Browser cache section in htaccess will wrapped with this comment
+	 * Browser cache section in htaccess will be wrapped with this comment
 	 *
 	 * @var string
 	 */
@@ -99,18 +97,20 @@ class WP_Optimize_Browser_Cache {
 	 * Check if browser cache option is set to true then add section with gzip settings into .htaccess (used when plugin being activated).
 	 */
 	public function restore() {
-		$expire_days = $this->_options->get_option('browser_cache_expire_days', '');
-		$expire_hours = $this->_options->get_option('browser_cache_expire_hours', '');
+		$expire_days = absint($this->_options->get_option('browser_cache_expire_days', 0));
+		$expire_hours = absint($this->_options->get_option('browser_cache_expire_hours', 0));
 
 		$expiry_time = $this->prepare_interval($expire_days, $expire_hours);
 
-		$enabled = ('' == $expiry_time) ? false : true;
+		$enabled = '' !== $expiry_time;
 
 		if ($enabled && $this->_htaccess->is_writable()) $this->enable($expiry_time);
 	}
 
 	/**
 	 * Check if section with browser cache settings already exists.
+	 *
+	 * @return bool
 	 */
 	public function is_browser_cache_section_exists() {
 		return $this->_htaccess->is_commented_section_exists($this->_htaccess_section_comment);
@@ -123,23 +123,27 @@ class WP_Optimize_Browser_Cache {
 	 * @return array
 	 */
 	public function enable_browser_cache_command_handler($params) {
-		$expire_days = isset($params['browser_cache_expire_days']) ? $params['browser_cache_expire_days'] : '';
-		$expire_hours = isset($params['browser_cache_expire_hours']) ? $params['browser_cache_expire_hours'] : '';
+		$expire_days = (int) $params['browser_cache_expire_days'];
+		$expire_hours = (int) $params['browser_cache_expire_hours'];
 
-		$current_expire_days = $this->_options->get_option('browser_cache_expire_days', '');
-		$current_expire_hours = $this->_options->get_option('browser_cache_expire_hours', '');
+		$current_expire_days = absint($this->_options->get_option('browser_cache_expire_days', 0));
+		$current_expire_hours = absint($this->_options->get_option('browser_cache_expire_hours', 0));
 
 		$section_updated = false;
 
 		$expiry_time = $this->prepare_interval($expire_days, $expire_hours);
 
-		$enable = ('' == $expiry_time) ? false : true;
+		$enable = '' !== $expiry_time;
 
 		/**
 		 * If we don't need to do anything in .htaccess then return message.
 		 */
-		if ($enable == $this->_htaccess->is_commented_section_exists() && $expire_days == $current_expire_days && $expire_hours == $current_expire_hours) {
-			$message = __('Browser static caching settings already exists in the .htaccess file', 'wp-optimize');
+		if ($enable === $this->_htaccess->is_commented_section_exists() && $expire_days === $current_expire_days && $expire_hours === $current_expire_hours) {
+			if ($enable) {
+				$message = __('Browser static caching settings already exists in the .htaccess file', 'wp-optimize');
+			} else {
+				$message = '';
+			}
 
 			return array(
 				'success' => true,
@@ -220,10 +224,7 @@ class WP_Optimize_Browser_Cache {
 	 */
 	private function prepare_interval($days, $hours) {
 
-		$days = is_numeric($days) ? floor($days) : 0;
-		$hours = is_numeric($hours) ? floor($hours) : 0;
-
-		if (0 == $days && 0 == $hours) {
+		if (0 === $days && 0 === $hours) {
 			return '';
 		}
 

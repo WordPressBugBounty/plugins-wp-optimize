@@ -121,6 +121,7 @@
                 "issues": "https://github.com/MarcusSchwarz/lesserphp/issues",
                 "source": "https://github.com/MarcusSchwarz/lesserphp/tree/v0.5.5"
             },
+            "abandoned": true,
             "install-path": "../marcusschwarz/lesserphp"
         },
         {

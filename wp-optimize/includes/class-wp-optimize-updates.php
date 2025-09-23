@@ -69,7 +69,7 @@ class WP_Optimize_Updates {
 	public static function delete_old_locks() {
 		global $wpdb;
 		
-		$query = "DELETE FROM {$wpdb->options}".
+		$query = "DELETE FROM `{$wpdb->options}`".
 			" WHERE (option_name LIKE ('updraft_semaphore_%')".
 			" OR option_name LIKE ('updraft_last_lock_time_%')".
 			" OR option_name LIKE ('updraft_locked_%')".
@@ -137,7 +137,7 @@ class WP_Optimize_Updates {
 		$current_blacklist = wp_optimize_minify_config()->get('blacklist');
 		$current_ignorelist = wp_optimize_minify_config()->get('ignore_list');
 
-		// Only proceed if the the upgrade hasn't been done yet, i.e. the values aren't arrays
+		// Only proceed if the upgrade hasn't been done yet, i.e. the values aren't arrays
 		if (is_array($current_blacklist) && is_array($current_ignorelist)) return;
 
 		$current_blacklist = array_map('trim', explode("\n", $current_blacklist));

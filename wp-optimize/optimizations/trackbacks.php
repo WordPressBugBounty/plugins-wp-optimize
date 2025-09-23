@@ -135,7 +135,12 @@ class WP_Optimization_trackbacks extends WP_Optimization {
 		$comments = $this->wpdb->get_var($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Safe, no user input used
 		$this->found_count += $comments;
 	}
-
+	
+	/**
+	 * Do actions after get_info() function.
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Remove trackbacks', 'wp-optimize');
 	}

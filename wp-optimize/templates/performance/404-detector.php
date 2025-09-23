@@ -18,6 +18,11 @@
 					<?php esc_html_e('Enable 404 Detector', 'wp-optimize');?>
 				</label>
 			</div>
+			<div id="wpo-404-clear-logs">
+				<a href="#" class="button button-primary button-large">
+					<?php esc_html_e('Clear All Logs', 'wp-optimize');?>
+				</a>
+			</div>
 		</div>
 	</form>
 </div>

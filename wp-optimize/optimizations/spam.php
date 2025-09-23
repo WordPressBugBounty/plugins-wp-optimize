@@ -147,7 +147,7 @@ class WP_Optimization_spam extends WP_Optimization {
 	 * Delete comments by $type along with comments meta from database.
 	 *
 	 * @param string $type comment type.
-	 * @return array
+	 * @return mixed
 	 */
 	public function delete_comments_by_type($type) {
 		$clean = "DELETE c, cm FROM `" . $this->wpdb->comments . "` c LEFT JOIN `" . $this->wpdb->commentmeta . "` cm ON c.comment_ID = cm.comment_id WHERE c.comment_approved = '{$type}'";
@@ -253,6 +253,8 @@ class WP_Optimization_spam extends WP_Optimization {
 
 	/**
 	 * Do actions after get_info() function.
+	 *
+	 * @return string
 	 */
 	public function settings_label() {
 	
@@ -263,7 +265,12 @@ class WP_Optimization_spam extends WP_Optimization {
 			return __('Remove spam and trashed comments', 'wp-optimize');
 		}
 	}
-
+	
+	/**
+	 * Returns description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Remove spam and trashed comments', 'wp-optimize');
 	}

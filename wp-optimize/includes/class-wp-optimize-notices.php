@@ -28,7 +28,7 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	/**
 	 * This method gets any parent notices and adds its own notices to the notice array
 	 *
-	 * @return Array returns an array of notices
+	 * @return array returns an array of notices
 	 */
 	protected function populate_notices_content() {
 		
@@ -156,7 +156,7 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	}
 	
 	/**
-	 * Call this method to setup the notices
+	 * Call this method to set up the notices
 	 */
 	public function notices_init() {
 		if ($this->initialized) return;
@@ -187,7 +187,7 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	}
 
 	/**
-	 * This method will call the is premium function in the WPO object to check if this install is premium and if it is we won't display the notice
+	 * This method will call the is premium function in the WPO object to check if this installation is premium and if it is we won't display the notice
 	 *
 	 * @return boolean a bool to indicate if we should display the notice or not
 	 */
@@ -202,11 +202,11 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	/**
 	 * This method will check to see if a number of different backup plugins are installed and if they are we won't display the notice
 	 *
-	 * @param  string|null  $product             the plugin slug
+	 * @param  ?string      $product             the plugin slug
 	 * @param  boolean      $also_require_active a bool to indicate if the plugin should be active or not
 	 * @return boolean                           a bool to indicate if the notice should be displayed or not
 	 */
-	public function is_backup_plugin_installed(?string $product = null, bool $also_require_active = false): bool {
+	public function is_backup_plugin_installed($product = null, $also_require_active = false) {
 		$backup_plugins = array('updraftplus' => 'UpdraftPlus', 'backwpup' => 'BackWPup', 'backupwordpress' => 'BackupWordPress', 'vaultpress' => 'VaultPress', 'wp-db-backup' => 'WP-DB-Backup', 'backupbuddy' => 'BackupBuddy');
 
 		foreach ($backup_plugins as $slug => $title) {
@@ -239,9 +239,9 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	/**
 	 * This method calls the parent version and will work out if the user is using a non english language and if so returns true so that they can see the translation advert.
 	 *
-	 * @param  String $plugin_base_dir the plugin base directory
-	 * @param  String $product_name    the name of the plugin
-	 * @return Boolean                 returns true if the user is using a non english language and could translate otherwise false
+	 * @param  ?string $plugin_base_dir the plugin base directory
+	 * @param  ?string $product_name    the name of the plugin
+	 * @return boolean                 returns true if the user is using a non english language and could translate otherwise false
 	 */
 	protected function translation_needed($plugin_base_dir = null, $product_name = null) {// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- using this because of parent class method signature
 		return parent::translation_needed(WPO_PLUGIN_MAIN_PATH, 'wp-optimize');
@@ -250,21 +250,21 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	/**
 	 * This method is used to generate the correct URL output for the start of the URL
 	 *
-	 * @param  Boolean $html_allowed a boolean value to indicate if HTML can be used or not
-	 * @param  String  $url          the url to use
-	 * @param  Boolean $https        a boolean value to indicate if https should be used or not
-	 * @param  String  $website_home a string to be displayed
-	 * @return String                returns a string of the completed url
+	 * @param  boolean $html_allowed a boolean value to indicate if HTML can be used or not
+	 * @param  string  $url          the url to use
+	 * @param  boolean $https        a boolean value to indicate if https should be used or not
+	 * @param  string  $website_home a string to be displayed
+	 * @return string                returns a string of the completed url
 	 */
-	protected function url_start($html_allowed, $url, $https = false, $website_home = 'getwpo.com') {
+	protected function url_start($html_allowed, $url, $https = false, $website_home = 'teamupdraft.com/wp-optimize/') {
 		return parent::url_start($html_allowed, $url, $https, $website_home);
 	}
 
 	/**
 	 * This method checks to see if the notices dismiss_time parameter has been dismissed
 	 *
-	 * @param  String $dismiss_time a string containing the dimiss time ID
-	 * @return Boolean returns true if the notice has been dismissed and shouldn't be shown otherwise display it
+	 * @param  string $dismiss_time a string containing the dismiss time ID
+	 * @return boolean returns true if the notice has been dismissed and shouldn't be shown otherwise display it
 	 */
 	protected function check_notice_dismissed($dismiss_time) {
 
@@ -302,10 +302,10 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 	/**
 	 * This method will create the chosen notice and the template to use and depending on the parameters either echo it to the page or return it
 	 *
-	 * @param  Array   $advert_information     an array with the notice information in
-	 * @param  Boolean $return_instead_of_echo a bool value to indicate if the notice should be printed to page or returned
-	 * @param  String  $position               a string to indicate what template should be used
-	 * @return String                          a notice to display
+	 * @param  array   $advert_information     an array with the notice information in
+	 * @param  boolean $return_instead_of_echo a bool value to indicate if the notice should be printed to page or returned
+	 * @param  string  $position               a string to indicate what template should be used
+	 * @return ?string                         a notice to display
 	 */
 	protected function render_specified_notice($advert_information, $return_instead_of_echo = false, $position = 'top') {
 	

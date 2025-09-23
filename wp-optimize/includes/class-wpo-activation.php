@@ -52,7 +52,7 @@ class WPO_Activation {
 	 * @return mixed
 	 */
 	private static function is_reactivated() {
-		return WP_Optimize()->get_options()->get_option('last-optimized', false);
+		return WP_Optimize()->get_options()->get_option('last-optimized');
 	}
 
 	/**

@@ -132,3 +132,22 @@
     transform: scale(0.85);
   }
 }
+#wpo-404-detector-form .wpo-fieldgroup {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+      align-items: center;
+  -ms-flex-pack: justify;
+      justify-content: space-between;
+}
+
+@media (max-width: 420px) {
+  #wpo-404-detector-form .wpo-fieldgroup {
+    display: block;
+  }
+  #wpo-404-clear-logs > a {
+    max-width: 120px;
+    margin: 10px auto;
+    text-align: center;
+  }
+}

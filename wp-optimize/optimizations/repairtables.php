@@ -60,7 +60,7 @@ class WP_Optimization_repairtables extends WP_Optimization {
 			$repaired = $corrupted = 0;
 
 			foreach ($tables as $table) {
-				if (false == $table->is_needing_repair) continue;
+				if (!$table->is_needing_repair) continue;
 
 				if ($this->repair_table($table)) {
 					$repaired++;
@@ -91,7 +91,7 @@ class WP_Optimization_repairtables extends WP_Optimization {
 
 		$success = false;
 
-		if (false == $table_obj->is_needing_repair) return true;
+		if (!$table_obj->is_needing_repair) return true;
 
 		$this->logger->info('REPAIR TABLE `'.$table_obj->Name. '`');
 
@@ -116,6 +116,8 @@ class WP_Optimization_repairtables extends WP_Optimization {
 	/**
 	 * Returns count of corrupted tables and update corrupted-tables-count value in options used to show
 	 * information for user in sidebar about corrupted tables count.
+	 *
+	 * @return int
 	 */
 	public function get_corrupted_tables_count() {
 		$tablesinfo = $this->optimizer->get_tables();

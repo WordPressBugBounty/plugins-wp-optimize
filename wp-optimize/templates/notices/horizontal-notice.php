@@ -56,7 +56,7 @@
 					echo wp_kses_post($text);
 					$button_text = '';
 					if (isset($discount_code)) echo ' <b>' . esc_html($discount_code) . '</b>';
-				
+
 				if (!empty($button_link) && !empty($button_meta) && 'no-button' !== $button_meta) {
 					// Check which Message is going to be used.
 					if ('updraftcentral' == $button_meta) {

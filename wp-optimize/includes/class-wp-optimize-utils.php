@@ -56,8 +56,8 @@ class WP_Optimize_Utils {
 			$timezone = new DateTimeZone($timezone_string);
 			$gmt_offset = $timezone->getOffset(new DateTime());
 		} else {
-			$gmt_offset_option = get_option('gmt_offset');
-			$gmt_offset = (int) (3600 * $gmt_offset_option);
+			$gmt_offset_option = (int) get_option('gmt_offset');
+			$gmt_offset = 3600 * $gmt_offset_option;
 		}
 
 		return $gmt_offset;
@@ -218,7 +218,7 @@ class WP_Optimize_Utils {
 
 		return join(' ', $_attributes);
 	}
-	
+
 	/**
 	 * Get user_agent for desktop or mobile used for different requests via wp_remote_get
 	 *
@@ -226,13 +226,32 @@ class WP_Optimize_Utils {
 	 *
 	 * @return string
 	 */
-	public static function get_user_agent(string $type = 'desktop'): string {
+	public static function get_user_agent($type = 'desktop') {
 		$user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 		if ('mobile' === $type) {
 			$user_agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/21F79 Safari/604.1';
 		}
-		
+
 		return $user_agent;
+	}
+
+	/**
+	 * Builds a one-line summary string from debug backtrace.
+	 *
+	 * Intended for use in error_log() for identifying the caller's context.
+	 * Example output: C:Test_Class|F:test_function()|L:100
+	 *
+	 * @return string
+	 */
+	public static function get_backtrace_summary() {
+		$debug_backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Used for debugging purposes
+		$caller = $debug_backtrace[2] ?? array();
+
+		$class = $caller['class'] ?? 'N/A';
+		$function = $caller['function'] ?? 'N/A';
+		$line   = $debug_backtrace[1]['line'] ?? 'N/A';
+
+		return sprintf('C:%s|F:%s()|L:%s', $class, $function, $line);
 	}
 }
 

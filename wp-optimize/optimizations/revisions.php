@@ -247,7 +247,12 @@ class WP_Optimization_revisions extends WP_Optimization {
 
 		return __('Clean all post revisions', 'wp-optimize');
 	}
-
+	
+	/**
+	 * Return description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Clean all post revisions', 'wp-optimize');
 	}

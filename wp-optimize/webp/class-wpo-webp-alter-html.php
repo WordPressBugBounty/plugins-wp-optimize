@@ -84,7 +84,7 @@ class WPO_WebP_Alter_HTML {
 	/**
 	 * Append image urls with `.webp` extension
 	 *
-	 * @param strinng $url - Image URL
+	 * @param string $url - Image URL
 	 * @return string
 	 */
 	private function replace_url($url) {
@@ -144,6 +144,7 @@ class WPO_WebP_Alter_HTML {
 	/**
 	 * Decides whether given value is a `srcset` or not
 	 *
+	 * @param string $value
 	 * @return bool
 	 */
 	private function looks_like_srcset($value) {
@@ -156,6 +157,7 @@ class WPO_WebP_Alter_HTML {
 	/**
 	 * Handle attribute value based on attribute name, src or srcset
 	 *
+	 * @param string $value
 	 * @return string
 	 */
 	private function handle_attribute($value) {
@@ -168,6 +170,7 @@ class WPO_WebP_Alter_HTML {
 	/**
 	 * Decide whether given attribute name is an image attribute or not
 	 *
+	 * @param string $attr_name
 	 * @return bool
 	 */
 	private function is_image_attribute($attr_name) {
