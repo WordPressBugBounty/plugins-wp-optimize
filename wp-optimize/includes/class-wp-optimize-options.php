@@ -246,14 +246,14 @@ class WP_Optimize_Options {
 		$updated_admin_bar = (isset($settings['enable-admin-bar']) && $settings['enable-admin-bar']) ? 'true' : 'false';
 		
 		// Check if the value is refreshed .
-		if ($saved_admin_bar != $updated_admin_bar) {
+		if ($saved_admin_bar !== $updated_admin_bar) {
 			// Set refresh to true as the values have changed.
 			$output['refresh'] = true;
 		}
 
 		// Save cache toolbar display setting
-		$saved_enable_cache_in_admin_bar = $this->get_option('enable_cache_in_admin_bar', true);
-		if ($saved_enable_cache_in_admin_bar != $settings['enable_cache_in_admin_bar']) {
+		$saved_enable_cache_in_admin_bar = (bool) $this->get_option('enable_cache_in_admin_bar', true);
+		if ($saved_enable_cache_in_admin_bar !== (bool) $settings['enable_cache_in_admin_bar']) {
 			$this->update_option('enable_cache_in_admin_bar', $settings['enable_cache_in_admin_bar']);
 			$output['refresh'] = true;
 		}
@@ -341,9 +341,9 @@ class WP_Optimize_Options {
 		// phpcs:disable
 		// WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Only hardcoded strings are used
 		if (is_multisite()) {
-			$result = $wpdb->query("DELETE FROM `{$wpdb->sitemeta}` WHERE `meta_key` LIKE 'wp-optimize-mu-%' OR `meta_key` IN ($keys)");
+			$result = $wpdb->query("DELETE FROM `{$wpdb->sitemeta}` WHERE `meta_key` LIKE 'wp-optimize-mu%' OR `meta_key` IN ($keys)");
 		} else {
-			$result = $wpdb->query("DELETE FROM `{$wpdb->options}` WHERE `option_name` LIKE 'wp-optimize-%' OR `option_name` IN ($keys)");
+			$result = $wpdb->query("DELETE FROM `{$wpdb->options}` WHERE `option_name` LIKE 'wp-optimize%' OR `option_name` IN ($keys)");
 		}
 		// phpcs:enable
 
@@ -515,7 +515,7 @@ class WP_Optimize_Options {
 		// Save additional auto backup option values.
 		foreach ($settings as $key => $value) {
 			if (preg_match('/enable\-auto\-backup\-/', $key)) {
-				$value = ('true' == $value) ? 'true' : 'false';
+				$value = ('true' === $value) ? 'true' : 'false';
 				$this->update_option($key, $value);
 			}
 		}

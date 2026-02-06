@@ -140,7 +140,10 @@ class WP_Optimize_Utils {
 	 * @return bool
 	 */
 	public static function is_valid_html($html) {
-		if (is_feed()) return false;
+		global $wp_query;
+		
+		// is_feed() works only when $wp_query is set, and it raises a warning otherwise.
+		if (isset($wp_query) && is_feed()) return false;
 
 		// To prevent issue with `simple_html_dom` class
 		// Exit if it doesn't look like HTML
@@ -252,6 +255,43 @@ class WP_Optimize_Utils {
 		$line   = $debug_backtrace[1]['line'] ?? 'N/A';
 
 		return sprintf('C:%s|F:%s()|L:%s', $class, $function, $line);
+	}
+
+	/**
+	 * Add UTM parameters to a URL and return the modified URL.
+	 *
+	 * @param string  $url                 The original URL.
+	 * @param array   $params              Optional UTM parameters.
+	 * @param bool    $override_url_params if true, it will override existing parameters in the url if matched.
+	 *
+	 * @return string Modified URL with UTM parameters added.
+	 */
+	public static function add_utm_params($url, $params = array(), $override_url_params = false): string {
+		$default_params = array(
+			'utm_source'  => 'wpo-plugin',
+			'utm_medium'  => 'referral',
+		);
+
+		$utm_params = wp_parse_args($params, $default_params);
+
+		if ($override_url_params) {
+			return esc_url(add_query_arg($utm_params, $url));
+		}
+
+		$parsed = wp_parse_url($url, PHP_URL_QUERY);
+		$original_url_params = array();
+
+		if (!empty($parsed)) {
+			parse_str($parsed, $original_url_params);
+		}
+
+		foreach ($utm_params as $key => $value) {
+			if (isset($original_url_params[$key])) {
+				unset($utm_params[$key]);
+			}
+		}
+
+		return esc_url(add_query_arg($utm_params, $url));
 	}
 }
 

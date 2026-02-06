@@ -603,6 +603,7 @@ class WP_Optimize_Commands {
 	 * Returns array of translations used by the WPO plugin. Primarily used for UpdraftCentral
 	 * consumption.
 	 *
+	 * @param array $params Optional parameters for the translation request
 	 * @return array The WPO translations
 	 */
 	public function get_js_translation($params = array()) {
@@ -653,7 +654,12 @@ class WP_Optimize_Commands {
 	 * @return bool|int
 	 */
 	public function wipe_settings() {
-		return $this->options->wipe_settings();
+		$result = $this->options->wipe_settings();
+
+		$onboarding = WP_Optimize()->get_onboarding();
+		$onboarding->activate_onboarding_wizard();
+
+		return $result;
 	}
 
 	/**
@@ -1313,7 +1319,6 @@ class WP_Optimize_Commands {
 	 */
 	public function get_table_list_data() {
 		$wp_optimize = WP_Optimize();
-		$wp_optimize->get_db_info()->update_plugin_json();
 
 		$size = $this->optimizer->get_current_db_size();
 

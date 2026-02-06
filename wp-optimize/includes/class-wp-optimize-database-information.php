@@ -527,8 +527,14 @@ class WP_Optimize_Database_Information {
 
 		// add WP-Optimize tables.
 		$wpo = 'wp-optimize';
-		if (!in_array($wpo, $plugin_tables['tm_taskmeta']) && !in_array($wpo, $plugin_tables['tm_tasks'])) {
+		$plugin_tables['tm_taskmeta'] = $plugin_tables['tm_taskmeta'] ?? array();
+		$plugin_tables['tm_tasks']    = $plugin_tables['tm_tasks'] ?? array();
+
+		if (!in_array($wpo, $plugin_tables['tm_taskmeta'], true)) {
 			$plugin_tables['tm_taskmeta'][] = $wpo;
+		}
+
+		if (!in_array($wpo, $plugin_tables['tm_tasks'], true)) {
 			$plugin_tables['tm_tasks'][] = $wpo;
 		}
 
@@ -645,8 +651,31 @@ class WP_Optimize_Database_Information {
 		if (200 !== wp_remote_retrieve_response_code($update_request)) return;
 		$json_content = wp_remote_retrieve_body($update_request);
 		if (json_decode($json_content)) {
-			file_put_contents($this->get_plugin_json_file_path(), $json_content);
+			// phpcs:disable
+			// WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- WP_Filesystem not available this early
+			// Generic.PHP.NoSilencedErrors.Discouraged -- suppress PHP warning in case of failure
+			if (false === @file_put_contents($this->get_plugin_json_file_path(), $json_content)) {
+				error_log("WP-Optimize: wpo-plugins-tables-list.json couldn't be updated");
+				return;
+			}
+			// phpcs:enable
+			$this->change_plugin_json_permissions();
 		}
+	}
+
+	/**
+	 * Set permissions to 640 for plugin.json
+	 *
+	 * @return void
+	 */
+	public function change_plugin_json_permissions() {
+		$plugin_json_file_path = $this->get_plugin_json_file_path();
+		// phpcs:disable
+		// Generic.PHP.NoSilencedErrors.Discouraged -- suppress PHP warning in case of failure
+		if (is_file($plugin_json_file_path)) {
+			@chmod($plugin_json_file_path, 0640);
+		}
+		// phpcs:enable
 	}
 
 	/**

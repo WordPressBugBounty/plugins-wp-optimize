@@ -22,11 +22,6 @@ if (!defined('WPO_CACHE_EXT_DIR')) define('WPO_CACHE_EXT_DIR', dirname(__FILE__)
  */
 if (!defined('WPO_CACHE_CONFIG_DIR')) define('WPO_CACHE_CONFIG_DIR', WPO_CACHE_DIR.'/config');
 
-/**
- * Directory that stores the cache, including gzipped files and mobile specific cache
- */
-if (!defined('WPO_CACHE_FILES_DIR')) define('WPO_CACHE_FILES_DIR', untrailingslashit(WP_CONTENT_DIR).'/cache/wpo-cache');
-
 require_once dirname(__FILE__) . '/file-based-page-cache-functions.php';
 
 wpo_cache_load_extensions();
@@ -151,7 +146,8 @@ class WPO_Page_Cache {
 
 		$this->check_compatibility_issues();
 
-		add_filter('cron_schedules', array($this, 'cron_schedules'));
+		$this->ensure_cron_schedules_filter_registered();
+
 		add_action('wpo_save_images_settings', array($this, 'update_webp_images_option'));
 
 		add_action('wpo_preload_url', array($this, 'maybe_preload_url'));
@@ -162,6 +158,37 @@ class WPO_Page_Cache {
 	}
 
 	/**
+	 * Ensures that the cron-related filter is registered.
+	 *
+	 * If `init` has already run, the filter is registered immediately.
+	 * Otherwise, it schedules the registration to occur during `init`.
+	 *
+	 * @return void
+	 */
+	private function ensure_cron_schedules_filter_registered() {
+		if (did_action('init')) {
+			$this->register_cron_schedules_filter();
+		} else {
+			add_action('init', array($this, 'register_cron_schedules_filter'));
+		}
+	}
+
+	/**
+	 * Registers the custom cron schedule filter for WP-Cron.
+	 *
+	 * This method hooks the class's `cron_schedules()` method into WordPress's
+	 * `cron_schedules` filter, allowing the plugin to define custom cron intervals.
+	 *
+	 * It is recommended to call this method on or after the `init` action to ensure
+	 * that translations and other dependencies are properly loaded before the filter runs.
+	 *
+	 * @return void
+	 */
+	public function register_cron_schedules_filter() {
+		add_filter('cron_schedules', array($this, 'cron_schedules'));
+	}
+
+	/**
 	 * Determines whether the current page should be cached.
 	 *
 	 * This method checks cache rules to identify if caching is possible.
@@ -169,7 +196,7 @@ class WPO_Page_Cache {
 	 *
 	 * @return bool True if the page should be cached, false otherwise.
 	 */
-	public function should_cache_page(): bool {
+	public function should_cache_page() {
 
 		if (!$this->is_enabled()) return false;
 
@@ -1556,7 +1583,7 @@ EOF;
 	 *
 	 * @return bool
 	 */
-	public function is_pagespeedninja_gzip_active(): bool {
+	public function is_pagespeedninja_gzip_active() {
 		if (!class_exists('PagespeedNinja')) return false;
 
 		$options = get_option('pagespeedninja_config');

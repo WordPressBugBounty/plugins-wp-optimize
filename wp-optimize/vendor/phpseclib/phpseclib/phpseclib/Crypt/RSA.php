@@ -1478,17 +1478,26 @@ class Crypt_RSA
                 $this->components = array();
 
                 $xml = xml_parser_create('UTF-8');
-                xml_set_object($xml, $this);
-                xml_set_element_handler($xml, '_start_element_handler', '_stop_element_handler');
-                xml_set_character_data_handler($xml, '_data_handler');
+                if (version_compare(PHP_VERSION, '8.4.0', '>=')) {
+                    xml_set_element_handler($xml, array($this, '_start_element_handler'), array($this, '_stop_element_handler'));
+                    xml_set_character_data_handler($xml, array($this, '_data_handler'));
+                } else {
+                    xml_set_object($xml, $this);
+                    xml_set_element_handler($xml, '_start_element_handler', '_stop_element_handler');
+                    xml_set_character_data_handler($xml, '_data_handler');
+                }
                 // add <xml></xml> to account for "dangling" tags like <BitStrength>...</BitStrength> that are sometimes added
                 if (!xml_parse($xml, '<xml>' . $key . '</xml>')) {
-                    xml_parser_free($xml);
+                    if (is_resource($xml) && function_exists('xml_parser_free')) {
+                        xml_parser_free($xml);
+                    }
                     unset($xml);
                     return false;
                 }
 
-                xml_parser_free($xml);
+                if (is_resource($xml) && function_exists('xml_parser_free')) {
+                    xml_parser_free($xml);
+                }
                 unset($xml);
 
                 return isset($this->components['modulus']) && isset($this->components['publicExponent']) ? $this->components : false;
