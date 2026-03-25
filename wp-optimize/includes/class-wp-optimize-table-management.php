@@ -23,7 +23,7 @@ class WP_Optimize_Table_Management {
 	}
 	
 	/**
-	 * Returns singleton instance of this class
+	 * Returns a singleton instance of this class
 	 *
 	 * @return WP_Optimize_Table_Management Singleton Instance
 	 */
@@ -40,20 +40,33 @@ class WP_Optimize_Table_Management {
 	 *
 	 * @return void
 	 */
-	public function create_plugin_tables() {
+	public function create_plugin_tables(): void {
 		/* @var $util WP_Optimize_Table_Interface */
 		foreach ($this->plugin_utils as $util) {
 			$table_name = $util->get_table_name();
+			$table_description = $util->describe();
 
-			if (!$this->table_exists($table_name)) {
-				$table_description = $util->describe();
-				$create_table = $this->generate_create_statement($table_name, $table_description);
-
-				require_once ABSPATH.'wp-admin/includes/upgrade.php';
-
-				dbDelta($create_table);
-			}
+			$this->create_table($table_name, $table_description);
 		}
+	}
+
+	/**
+	 * Create the table if it does not exist.
+	 *
+	 * @param string $table_name        The name of the table that needs to be checked and if not exists, then create it
+	 * @param array $table_description Table definition provider
+	 *
+	 * @return void
+	 */
+	private function create_table($table_name, $table_description): void {
+		if ($this->table_exists($table_name)) {
+			return;
+		}
+
+		$create_table = $this->generate_create_statement($table_name, $table_description);
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta($create_table);
 	}
 
 	/**

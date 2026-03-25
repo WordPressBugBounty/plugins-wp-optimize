@@ -87,6 +87,7 @@
 			<?php
 				}
 			?></div>
+			<div id="wpo_browser_cache_error_message" class="notice notice-error" style="display: none;"></div>
 			<pre id="wpo_browser_cache_output" style="display: none;"></pre>
 			<?php
 			}

@@ -4,8 +4,8 @@ Donate link: https://david.dw-perspective.org.uk/donate
 Tags: cache, caching, image cache, minify, performance cache, page speed, image optimizer, compress images, optimize database, clean database
 Requires PHP: 7.2
 Requires at least: 4.9
-Tested up to: 6.9
-Stable tag: 4.5.0
+Tested up to: 7.0
+Stable tag: 4.5.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,26 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.5.1 - 23/Mar/2026 =
+
+* FIX: Fixed compatibility issue with WP Remote 
+* FIX: Notice: Function _load_textdomain_just_in_time was called incorrectly 
+* FIX: Resolved weekly cron not running on WordPress < 5.4 by switching to the wpo_weekly schedule
+* FIX: Database table error when upgrading from free to premium version
+* REFACTOR: Improved WebP conversion flow by separating capability checks from configuration changes
+* REFACTOR: Improved auto-optimization handling by correcting static method usage
+* REFACTOR: Introduced `WP_Optimize_Server_Compatibility` class to centralize all server environment checks
+* REFACTOR: Removed separate `get_schedule_types()` method in premium version
+* SECURITY: Enforced capability checks and allowed-command validation for Smush actions triggered via Heartbeat API. Thanks to WordFence for the responsible disclosure
+* TWEAK: Display the `Enable the caching menu in the admin bar` option only when Cache or Minify is enabled
+* TWEAK: Improved detection of LearnDash plugin tables
+* TWEAK: Improved onboarding wizard RTL support and eliminated dependency on the PHP Reflection class
+* TWEAK: Improved robustness of `uploads/wpo` directory removal during plugin uninstallation
+* TWEAK: Minify - Don't remove the version query argument when the source is not processed by Minify
+* TWEAK: Premium - Unused Images - Enhanced detection of edited WordPress images
+* TWEAK: Prevent deprecation notices in PHP 8.5
+* TWEAK: Add a notice when `.htaccess` file is not available or renamed in Apache servers
 
 = 4.5.0 - 11/Feb/2026 =
 
@@ -798,28 +818,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 * TWEAK: Update seasonal notices
 * TWEAK: Prevent deprecation notices in PHP 8.2+
 
-= 3.2.13 - 13/Mar/2023 =
-
-* FEATURE: WebP - Ability to convert to webp format from media library
-* FIX: Prevent PHP warning when minify-log files are missing or corrupted, also added appropriate error message
-* FIX: Delete webp files and uncompressed file when media is deleted
-* FIX: Polylang compatibility - now upon updating any post, caches for all translated languages are cleared
-* FIX: Prevent adding unsupported media types to the smush task list
-* FIX: WebP - Unsupported formats throws a fatal error
-* FIX: Compress image UI for webp images
-* FIX: Premium - WebP Images are marked as unused images
-* FIX: Resolved an issue where Beaver Builder's edit mode was not functioning properly when WebP conversion was enabled
-* FIX: Prevent creating multiple cache directories for URLs that contain non-English characters
-* TWEAK: Preload allowed time difference is set to be the same as max execution time
-* TWEAK: Premium - Unused images feature - Add compatibility with Yoast SEO social images
-* TWEAK: Prevent jQuery deprecation notices
-* SECURITY: Fixed a non-persistent XSS vulnerability that could occur on certain servers when the WebP conversion option was enabled. This vulnerability could allow an attacker to execute arbitrary JavaScript code in the victim's browser by tricking them into clicking on a specially crafted link. Thanks to Paolo Elia for reporting this.
-
-= 3.2.12 - 06/Feb/2023 =
-
-* SECURITY: Today's 3.2.11 release (free version only - there was no 3.2.11 Premium release) checked nonces incorrectly, opening up the possibility of an attacker tricking an admin into clicking links crafted to perform unauthorised actions on the WP Optimize configuration on his site.
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.5.0: Added three premium features, and lot of bug fixes and tweaks - a recommended update for all
+* 4.5.1: A lot of bug fixes and tweaks - a recommended update for all

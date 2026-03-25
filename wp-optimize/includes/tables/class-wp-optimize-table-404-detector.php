@@ -13,11 +13,11 @@ class WP_Optimize_Table_404_Detector implements WP_Optimize_Table_Interface {
 	private $table_name = '404_detector';
 
 	/**
-	 * Complete table name with prefix
+	 * Complete table name with a prefix
 	 *
 	 * @return string
 	 */
-	public function get_table_name() {
+	public function get_table_name(): string {
 		global $wpdb;
 
 		return $wpdb->base_prefix . 'wpo_' . $this->table_name;
@@ -28,7 +28,7 @@ class WP_Optimize_Table_404_Detector implements WP_Optimize_Table_Interface {
 	 *
 	 * @return array
 	 */
-	public function describe() {
+	public function describe(): array {
 		return array(
 			'fields' => array(
 				'url'               => 'TEXT NOT NULL',

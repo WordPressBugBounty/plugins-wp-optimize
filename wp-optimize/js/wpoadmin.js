@@ -2487,4 +2487,10 @@ jQuery(function ($) {
 			$iframe.focus();
 		}
 	});
+
+	// Show/hide Enable the caching menu in the admin bar on cache/minify status change
+	$(document).on('wp-optimize/cache/toggle-status wp-optimize/minify/toggle-status', function() {
+		var minify_or_cache_enabled = $('#wpo_min_enable_minify').prop('checked') || $('#enable_page_caching').prop('checked');
+		$('#enable_cache_in_admin_bar_option').toggleClass('wpo_hidden', !minify_or_cache_enabled);
+	});
 });

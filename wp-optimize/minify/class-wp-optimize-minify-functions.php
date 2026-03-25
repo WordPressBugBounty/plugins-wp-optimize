@@ -734,10 +734,20 @@ class WP_Optimize_Minify_Functions {
 	 * @return string
 	 */
 	public static function remove_cssjs_ver($src) {
-		if (stripos($src, '?ver=')) {
+		if (stripos($src, '?ver=') && self::is_already_minified($src)) {
 			$src = remove_query_arg('ver', $src);
 		}
 		return $src;
+	}
+
+	/**
+	 * Determine if the source is already minified (served from minify cache)
+	 *
+	 * @param string $src
+	 * @return boolean
+	 */
+	public static function is_already_minified($src) {
+		return false !== strpos($src, 'cache/wpo-minify');
 	}
 
 	/**
@@ -1076,7 +1086,7 @@ class WP_Optimize_Minify_Functions {
 	 * @return boolean
 	 */
 	public static function is_font_awesome($href) {
-		return (boolean) preg_match('/font[-_]?awesome/i', $href);
+		return (bool) preg_match('/font[-_]?awesome/i', $href);
 	}
 
 	/**

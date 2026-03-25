@@ -223,7 +223,7 @@ class WP_Optimize_Admin {
 		 * CACHE
 		 */
 		add_action('wp_optimize_admin_page_wpo_cache_cache', array($this, 'output_page_cache_tab'), 20);
-		if (!WP_Optimize()->does_server_handles_cache()) {
+		if (!WP_Optimize()->get_server_compatibility_instance()->does_server_handle_cache()) {
 			add_action('wp_optimize_admin_page_wpo_cache_preload', array($this, 'output_page_cache_preload_tab'), 20);
 			add_action('wp_optimize_admin_page_wpo_cache_advanced', array($this, 'output_page_cache_advanced_tab'), 20);
 		}
@@ -314,8 +314,9 @@ class WP_Optimize_Admin {
 			$loggers_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_logging_settings')));
 			$settings_trackback_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_trackback_toggle_settings')));
 			$settings_comments_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_comments_toggle_settings')));
+			$settings_general_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_general_settings')));
 
-			WP_Optimize()->include_template('settings/settings.php', false, array('loggers_data' => $loggers_data['data']['wp_optimize_logging_settings'], 'settings_trackback_data' => $settings_trackback_data['data']['wp_optimize_trackback_toggle_settings'], 'settings_comments_data' => $settings_comments_data['data']['wp_optimize_comments_toggle_settings']));
+			WP_Optimize()->include_template('settings/settings.php', false, array('loggers_data' => $loggers_data['data']['wp_optimize_logging_settings'], 'settings_trackback_data' => $settings_trackback_data['data']['wp_optimize_trackback_toggle_settings'], 'settings_comments_data' => $settings_comments_data['data']['wp_optimize_comments_toggle_settings'], 'settings_general_data' => $settings_general_data['data']['wp_optimize_general_settings']));
 		} else {
 			$this->prevent_manage_options_info();
 		}
@@ -371,7 +372,7 @@ class WP_Optimize_Admin {
 			'display' => $display,
 			'can_purge_the_cache' => $wpo_cache->can_purge_cache(),
 			'auto_preload_purged_contents' => $wpo_cache_options['auto_preload_purged_contents'],
-			'does_server_handles_cache' => WP_Optimize()->does_server_handles_cache(),
+			'does_server_handle_cache' => WP_Optimize()->get_server_compatibility_instance()->does_server_handle_cache(),
 			'error' => $error,
 		));
 	}
@@ -533,7 +534,7 @@ class WP_Optimize_Admin {
 			$wp_optimize_commands = new WP_Optimize_Commands();
 			$status_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('all_status')));
 			$optimizations_table_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize')));
-			WP_Optimize()->include_template('database/optimize-table.php', false, array('optimize_db' => $optimize_db, 'optimization_results' => $optimization_results, 'load_data' => false, 'does_server_allows_table_optimization' => WP_Optimize()->does_server_allows_table_optimization(), 'optimizations_table_data' => $optimizations_table_data['data']['wp_optimize'], 'status_data' => $status_data['data']['all_status']));
+			WP_Optimize()->include_template('database/optimize-table.php', false, array('optimize_db' => $optimize_db, 'optimization_results' => $optimization_results, 'load_data' => false, 'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization(), 'optimizations_table_data' => $optimizations_table_data['data']['wp_optimize'], 'status_data' => $status_data['data']['all_status']));
 		} else {
 			$this->prevent_run_optimizations_message();
 		}
@@ -547,7 +548,7 @@ class WP_Optimize_Admin {
 		
 		$optimize_db = $nonce_passed && TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('post', 'optimize-db');
 		
-		if (!WP_Optimize()->does_server_allows_table_optimization()) {
+		if (!WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization()) {
 			$message = __('Your server takes care of table optimization', 'wp-optimize');
 			$this->prevent_run_optimizations_message($message);
 		} elseif (WP_Optimize()->can_run_optimizations()) {
@@ -558,31 +559,36 @@ class WP_Optimize_Admin {
 	}
 	
 	/**
-	 * Outputs the Performance 404 requests Tab
+	 * Outputs Performance 404 requests Tab
 	 */
 	public function output_performance_404_requests() {
 		$wp_optimize = WP_Optimize();
 		$is_enabled = $wp_optimize->get_options()->get_option('404_detector', 0);
-		
+
 		$detector = $wp_optimize->get_404_detector();
-		
-		$requests = $detector->get_suspicious_requests();
-		
+		$suspicious_threshold = $detector->get_suspicious_request_count_threshold();
+
 		$report_has_data = false;
-		foreach ($requests as $url_requests) {
-			foreach ($url_requests as $row) {
-				if (1 < $row->occurrences && 'grouped' === $row->row_type) {
-					if (0 === $row->non_suspicious_referrers && 1 < $row->total_referrers) {
-						continue;
+		$requests = array();
+
+		if ($is_enabled) {
+			$requests = $detector->get_suspicious_requests();
+
+			foreach ($requests as $url_requests) {
+				foreach ($url_requests as $row) {
+					if (1 < $row->occurrences && 'grouped' === $row->row_type) {
+						if (0 === $row->non_suspicious_referrers && 1 < $row->total_referrers) {
+							continue;
+						}
 					}
+					$report_has_data = true;
 				}
-				$report_has_data = true;
 			}
 		}
 		
 		$wp_optimize->include_template('performance/404-detector.php', false, array(
 			'requests' => $requests,
-			'suspicious_threshold' => $detector->get_suspicious_request_count_threshold(),
+			'suspicious_threshold' => $suspicious_threshold,
 			'obj_404_detector' => $detector,
 			'report_has_data' => $report_has_data,
 			'is_enabled' => $is_enabled,

@@ -293,7 +293,7 @@
 			} else {
 				$(this).text(wpoptimize.show_information);
 			}
-	});
+		});
 
 		// Delete log file
 		$('#wpo_min_jsprocessed, #wpo_min_cssprocessed').on('click', '.delete-file', function(e) {

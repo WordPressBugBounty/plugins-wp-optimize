@@ -9,6 +9,17 @@ class WPO_Uninstall {
 	 * Actions to be performed upon plugin uninstallation
 	 */
 	public static function actions() {
+		$is_premium_active = WP_Optimize()->is_active('premium');
+		$is_free_active = WP_Optimize()->is_active();
+
+		if (!$is_premium_active) {
+			self::delete_premium_cache_data();
+		}
+
+		if ($is_premium_active || $is_free_active) {
+			return;
+		}
+
 		WP_Optimize()->get_gzip_compression()->disable();
 		WP_Optimize()->get_browser_cache()->disable();
 		WP_Optimize()->get_options()->delete_all_options();
@@ -18,6 +29,23 @@ class WPO_Uninstall {
 		WP_Optimize()->get_table_management()->delete_plugin_tables();
 		Updraft_Tasks_Activation::uninstall(WPO_PLUGIN_SLUG);
 		self::delete_wpo_folder();
+
+		$htaccess_file = self::get_upload_basedir() . '.htaccess';
+		if (is_file($htaccess_file) && 0 === filesize($htaccess_file)) {
+			wp_delete_file($htaccess_file);
+		}
+		
+		wp_clear_scheduled_hook('process_smush_tasks');
+		WP_Optimize()->wpo_cron_deactivate();
+	}
+
+	/**
+	 * Delete cache data created by premium-only features.
+	 *
+	 * Only runs when premium is not active, to avoid wiping premium data
+	 * while the premium version is still installed.
+	 */
+	private static function delete_premium_cache_data() {
 		if (class_exists('WPO_Gravatar_Data')) {
 			wpo_delete_files(WPO_Gravatar_Data::WPO_CACHE_GRAVATAR_DIR);
 		}
@@ -29,14 +57,6 @@ class WPO_Uninstall {
 		if (class_exists('WP_Optimize_Lazy_Load')) {
 			WP_Optimize_Lazy_Load::instance()->delete_image_cache();
 		}
-		
-		$htaccess_file = self::get_upload_basedir() . '.htaccess';
-		if (is_file($htaccess_file) && 0 === filesize($htaccess_file)) {
-			wp_delete_file($htaccess_file);
-		}
-		
-		wp_clear_scheduled_hook('process_smush_tasks');
-		WP_Optimize()->wpo_cron_deactivate();
 	}
 
 	/**
@@ -72,27 +92,46 @@ class WPO_Uninstall {
 	}
 
 	/**
-	 * Delete `uploads/wpo` sub folders and if it is empty delete the folder itself
+	 * Returns an array of known files in `uploads/wpo` root folder
+	 *
+	 * @return array
+	 */
+	private static function get_wpo_root_files() {
+		return array(
+			'wpo-plugins-tables-list.json'
+		);
+	}
+
+	/**
+	 * Delete `uploads/wpo` folder, its known sub folders, and known files
 	 */
 	public static function delete_wpo_folder() {
 		$wpo_folder = self::get_upload_basedir() . trailingslashit('wpo');
 		require_once WPO_PLUGIN_MAIN_PATH . 'cache/file-based-page-cache-functions.php';
-		if (is_dir($wpo_folder)) {
-			$wpo_sub_folders = self::get_wpo_sub_folders();
-			foreach ($wpo_sub_folders as $folder) {
-				wpo_delete_files($wpo_folder . $folder);
-			}
-			
-			// phpcs:disable
-			// Generic.PHP.NoSilencedErrors.Discouraged -- suppress warning if it arises due to race condition
-			// WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Not applicable in this context
-			$files = @scandir($wpo_folder);
-			if (false === $files) return;
-			if (2 === count($files)) {
-				@rmdir($wpo_folder);
-			}
-			// phpcs:enable
+
+		if (!is_dir($wpo_folder)) {
+			return;
 		}
+
+		$wpo_sub_folders = self::get_wpo_sub_folders();
+		foreach ($wpo_sub_folders as $folder) {
+			wpo_delete_files($wpo_folder . $folder);
+		}
+
+		// Delete known root-level files
+		$wpo_root_files = self::get_wpo_root_files();
+		foreach ($wpo_root_files as $file) {
+			wpo_delete_files($wpo_folder . $file, false);
+		}
+
+		// phpcs:disable
+		// Generic.PHP.NoSilencedErrors.Discouraged -- suppress warning if it arises due to race condition
+		// WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Not applicable in this context
+		$files = @scandir($wpo_folder);
+		if (false !== $files && 2 === count($files)) {
+			@rmdir($wpo_folder);
+		}
+		// phpcs:enable
 	}
 }
 

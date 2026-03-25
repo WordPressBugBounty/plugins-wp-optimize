@@ -1,5 +1,25 @@
 == Changelog ==
 
+= 4.5.1 - 23/Mar/2026 =
+
+* FIX: Fixed compatibility issue with WP Remote 
+* FIX: Notice: Function _load_textdomain_just_in_time was called incorrectly 
+* FIX: Resolved weekly cron not running on WordPress < 5.4 by switching to the wpo_weekly schedule
+* FIX: Database table error when upgrading from free to premium version
+* REFACTOR: Improved WebP conversion flow by separating capability checks from configuration changes
+* REFACTOR: Improved auto-optimization handling by correcting static method usage
+* REFACTOR: Introduced `WP_Optimize_Server_Compatibility` class to centralize all server environment checks
+* REFACTOR: Removed separate `get_schedule_types()` method in premium version
+* SECURITY: Enforced capability checks and allowed-command validation for Smush actions triggered via Heartbeat API. Thanks to WordFence for the responsible disclosure
+* TWEAK: Display the `Enable the caching menu in the admin bar` option only when Cache or Minify is enabled
+* TWEAK: Improved detection of LearnDash plugin tables
+* TWEAK: Improved onboarding wizard RTL support and eliminated dependency on the PHP Reflection class
+* TWEAK: Improved robustness of `uploads/wpo` directory removal during plugin uninstallation
+* TWEAK: Minify - Don't remove the version query argument when the source is not processed by Minify
+* TWEAK: Premium - Unused Images - Enhanced detection of edited WordPress images
+* TWEAK: Prevent deprecation notices in PHP 8.5
+* TWEAK: Add a notice when `.htaccess` file is not available or renamed in Apache servers
+
 = 4.5.0 - 11/Feb/2026 =
 
 * FEATURE: Premium - Cache – Added ability to cache only selected URLs

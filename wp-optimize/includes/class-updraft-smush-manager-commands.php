@@ -277,81 +277,17 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	 */
 	public function update_webp_options($data) {
 		$webp_instance = WP_Optimize()->get_webp_instance();
-		$options = array();
-		$options['webp_conversion'] = isset($data['webp_conversion']) ? filter_var($data['webp_conversion'], FILTER_VALIDATE_BOOLEAN) : false;
-
-		// Only run checks when trying to enable WebP
-		if ($options['webp_conversion']) {
-			//Run checks if we are enabling webp conversion
-			if ($this->is_only_shell_converters_available() && !$webp_instance->shell_functions_available()) {
-				$webp_instance->disable_webp_conversion();
-				$webp_instance->log("Required WebP shell functions are not available on the server, disabling WebP conversion");
-				return new WP_Error('update_failed_no_shell_functions', __('Required WebP shell functions are not available on the server.', 'wp-optimize'));
-			}
-
-			// Run conversion test if not already done and set necessary option value
-			if ($webp_instance->should_run_webp_conversion_test()) {
-				$converter_status = WPO_WebP_Test_Run::get_converter_status();
-
-				if (!$webp_instance->is_webp_conversion_successful()) {
-					$webp_instance->disable_webp_conversion();
-					$webp_instance->log("No working WebP converter was found on the server when updating WebP options, disabling WebP conversion");
-					return new WP_Error('update_failed_no_working_webp_converter', __('No working WebP converter was found on the server.', 'wp-optimize'));
-				}
-
-				$options['webp_conversion_test'] = true;
-				$options['webp_converters'] = $converter_status['working_converters'];
-			}
-
-			// Run serving methods tests and set necessary option values
-			// Not possible to test alter html since test is browser based
-			$webp_instance->save_htaccess_rules();
-			if (!$webp_instance->is_webp_redirection_possible()) {
-				$webp_instance->empty_htaccess_file();
-				$options['redirection_possible'] = 'false';
-			} else {
-				$options['redirection_possible'] = 'true';
-			}
+		$result = $webp_instance->save_webp_settings($data);
+		if (is_wp_error($result)) {
+			return $result;
 		}
-
-		$success = $this->task_manager->update_smush_options($options);
-
-		if (!$success) {
-			$webp_instance->disable_webp_conversion();
-			$webp_instance->log("WebP options could not be updated");
-			return new WP_Error('update_failed', __('WebP options could not be updated.', 'wp-optimize'));
-		}
-
-		// Setup daily CRON only when enabling WebP and Delete daily CRON when disabling WebP
-		if ($options['webp_conversion']) {
-			$webp_instance->init_webp_cron_scheduler();
-		} else {
-			$webp_instance->remove_webp_cron_schedules();
-			$webp_instance->empty_htaccess_file();
-		}
-
-		do_action('wpo_save_images_settings');
 
 		$response = array();
 		$response['status'] = true;
-		$response['saved'] = $success;
+		$response['saved'] = $result;
 		$response['summary'] = __('WebP options updated successfully.', 'wp-optimize');
 
 		return $response;
-	}
-
-	/**
-	 * Checks if only shell converters available for WebP conversion.
-	 *
-	 * @return boolean
-	 */
-	private function is_only_shell_converters_available() {
-		$available_converters = WP_Optimize()->get_options()->get_option('webp_converters');
-		$available_converters = is_array($available_converters) ? $available_converters : array();
-		$converters_with_shell = WPO_WebP_Test_Run::get_converters_with_shell();
-		$available_with_shell = array_intersect($available_converters, $converters_with_shell);
-
-		return count($available_converters) > 0 && count($available_converters) === count($available_with_shell);
 	}
 
 	/**

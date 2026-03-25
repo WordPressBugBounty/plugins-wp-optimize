@@ -325,6 +325,8 @@ var WP_Optimize_Cache = function () {
 				$('#minify-preload').hide();
 			}
 
+			$(document).trigger('wp-optimize/cache/toggle-status', {enabled: response.enabled});
+
 			if (response.result) {
 				// If Result is true, show the success icon.
 				success_icon.show();

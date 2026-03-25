@@ -41,6 +41,7 @@ class WP_Optimize_Performance {
 	 * @return void
 	 */
 	public function init() {
+
 		add_filter('site_health_navigation_tabs', array($this, 'add_health_tab'));
 
 		add_action('site_health_tab_content', array($this, 'site_health_tab_content'));

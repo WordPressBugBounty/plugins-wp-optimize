@@ -4,7 +4,7 @@
 	<form action="#" method="post" enctype="multipart/form-data" name="settings_form" id="settings_form">
 		<div id="wpo_settings_warnings"></div>
 
-		<?php WP_Optimize()->include_template('settings/settings-general.php'); ?>
+		<?php WP_Optimize()->include_template('settings/settings-general.php', false, array('settings_general_data' => $settings_general_data)); ?>
 		<?php WP_Optimize()->include_template('settings/settings-trackback-and-comments.php', false, array('settings_trackback_data' => $settings_trackback_data, 'settings_comments_data' => $settings_comments_data)); ?>
 		<?php WP_Optimize()->include_template('settings/settings-logging.php', false, array('loggers_data' => $loggers_data)); ?>
 		<?php WP_Optimize()->include_template('settings/settings-export-import.php'); ?>

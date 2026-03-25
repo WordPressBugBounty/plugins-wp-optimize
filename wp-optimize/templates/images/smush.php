@@ -80,7 +80,7 @@
 			<?php if (WPO_USE_WEBP_CONVERSION) : ?>
 				<h3><?php esc_html_e('WebP conversion', 'wp-optimize');?></h3>
 
-				<?php if ($does_server_allows_local_webp_conversion) : ?>
+				<?php if ($does_server_allow_local_webp_conversion) : ?>
 					<input type="checkbox" id="enable_webp_conversion" name="webp_conversion" <?php checked($smush_options['webp_conversion']); ?> class="smush-options webp_conversion">
 					<label for="enable_webp_conversion"><?php esc_html_e('Create WebP version of image', 'wp-optimize');?></label>
 					<span tabindex="0" data-tooltip="<?php esc_attr_e('Creates WebP image format and serves it whenever possible.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
@@ -100,7 +100,7 @@
 		</div>
 		<button type="button" class="button button-link wpo-toggle-advanced-options"><span class="text"><span class="dashicons dashicons-arrow-down-alt2"></span> <span class="wpo-toggle-advanced-options__text-show"><?php esc_html_e('Show advanced options', 'wp-optimize');?></span><span class="wpo-toggle-advanced-options__text-hide"><?php esc_html_e('Hide advanced options', 'wp-optimize');?></span></span></button>
 		<div class="smush-advanced wpo-advanced-options">
-			<?php if ($does_server_allows_local_webp_conversion && !empty($converters)) : ?>
+			<?php if ($does_server_allow_local_webp_conversion && !empty($converters)) : ?>
 			<button type="button" id="wpo_reset_webp_serving_method" class="wpo_primary_small button"><?php esc_html_e('Reset WebP serving method', 'wp-optimize'); ?></button>
 			<span id="wpo_reset_webp_serving_method_done" class="display-none"><span class="dashicons dashicons-yes"></span> <?php esc_html_e('The WebP serving method has been reset', 'wp-optimize');?></span>
 			<?php endif; ?>

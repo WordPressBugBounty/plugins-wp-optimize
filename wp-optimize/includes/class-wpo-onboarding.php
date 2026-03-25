@@ -54,19 +54,6 @@ class WPO_Onboarding {
 	}
 
 	/**
-	 * Prevent cloning of the instance
-	 */
-	private function __clone() {
-	}
-
-	/**
-	 * Prevent unserializing of the instance
-	 */
-	public function __wakeup() {
-		throw new Exception("Cannot unserialize singleton");
-	}
-
-	/**
 	 * Setup hooks.
 	 *
 	 * @return void
@@ -80,24 +67,6 @@ class WPO_Onboarding {
 	}
 
 	/**
-	 * Get Steps Ids from a step fields array
-	 *
-	 * @param array $step_fields Step Fields data
-	 *
-	 * @return array
-	 */
-	private function get_step_ids(array $step_fields): array {
-		$step_ids = array();
-		if (!empty($step_fields)) {
-			foreach ($step_fields as $step) {
-				$step_ids[] = $step['id'];
-			}
-		}
-
-		return $step_ids;
-	}
-
-	/**
 	 * Get Features Status
 	 *
 	 * @param array $settings    Settings data
@@ -106,7 +75,7 @@ class WPO_Onboarding {
 	 * @return void
 	 */
 	public function update_step_settings(array $settings, array $step_fields): void {
-		$steps = $this->get_step_ids($step_fields);
+		$step_ids = array_flip(array_column($step_fields, 'id'));
 
 		if (empty($settings)) {
 			return;
@@ -114,7 +83,7 @@ class WPO_Onboarding {
 		foreach ($settings as $setting) {
 			if (empty($setting['id'])) continue;
 
-			if (!in_array($setting['id'], $steps)) continue;
+			if (!isset($step_ids[$setting['id']])) continue;
 
 			$is_lock = isset($setting['is_lock']) ? (bool) $setting['is_lock'] : false;
 			if ($is_lock) {
@@ -150,9 +119,9 @@ class WPO_Onboarding {
 			}
 
 			if ('enable_webp_conversion_onboarding' === $id) {
-				$smush_settings = array();
-				$smush_settings['webp_conversion'] = $value;
-				WP_Optimize()->get_task_manager()->commands->update_webp_options($smush_settings);
+				$webp_data = array();
+				$webp_data['webp_conversion'] = $value;
+				WP_Optimize()->get_webp_instance()->save_webp_settings($webp_data);
 			}
 
 			if ('enable_lazy_load_onboarding' === $id) {
@@ -235,19 +204,19 @@ class WPO_Onboarding {
 	private function intro_step(): array {
 		$intro_bullets = $this->get_intro_bullets();
 
-		$note_1 = $this->is_premium ? __( "Premium plugin", 'wp-optimize' ) : __( "Free plugin", 'wp-optimize' );
-		$note_2 = __( "Quick setup", 'wp-optimize' );
-		$note_3 = __( "No tech skills needed", 'wp-optimize' );
+		$note_1 = $this->is_premium ? __("Premium plugin", 'wp-optimize') : __("Free plugin", 'wp-optimize');
+		$note_2 = __("Quick setup", 'wp-optimize');
+		$note_3 = __("No tech skills needed", 'wp-optimize');
 		$bottom_note = $note_1 . '   •   ' . $note_2 . '   •   ' . $note_3;
 		return array(
 			'id'            => 'intro',
 			'type'          => 'intro',
-			'title'         => __( 'Let\'s get started!', 'wp-optimize' ),
-			'subtitle'      => __( "Speed up and optimize your WordPress site with ease, trusted by over 1 million sites.", 'wp-optimize' ),
+			'title'         => __('Let\'s get started!', 'wp-optimize'),
+			'subtitle'      => __("Speed up and optimize your WordPress site with ease, trusted by over 1 million sites.", 'wp-optimize'),
 			'intro_bullets' => $intro_bullets,
 			'button' => array(
 				'id'    => 'start',
-				'label' => __( 'Start', 'wp-optimize' ),
+				'label' => __('Start', 'wp-optimize'),
 				'icon'  => 'magic-wand',
 			),
 			'note' => $bottom_note,
@@ -268,12 +237,12 @@ class WPO_Onboarding {
 			'id'       => 'license',
 			'type'     => 'license',
 			'icon'     => 'user-lock',
-			'title'    => __( 'Connect and activate your license', 'wp-optimize' ),
+			'title'    => __('Connect and activate your license', 'wp-optimize'),
 			'title_conditional' => array(
-				'licenseActivated' => __( 'License activated!', 'wp-optimize' ),
-				'isUpdating' => __( 'Activating your Premium license...', 'wp-optimize' ),
+				'licenseActivated' => __('License activated!', 'wp-optimize'),
+				'isUpdating' => __('Activating your Premium license...', 'wp-optimize'),
 			),
-			'subtitle' => __( 'Please enter your TeamUpdraft credentials to start using Premium features.', 'wp-optimize' ),
+			'subtitle' => __('Please enter your TeamUpdraft credentials to start using Premium features.', 'wp-optimize'),
 			'subtitle_conditional' => array(
 				'licenseActivated' => '',
 				'isUpdating' => '',
@@ -282,17 +251,17 @@ class WPO_Onboarding {
 				array(
 					'id'    => 'registration_email',
 					'type'  => 'email',
-					'label' => __( 'Email', 'wp-optimize' ),
+					'label' => __('Email', 'wp-optimize'),
 				),
 				array(
 					'id'    => 'registration_password',
 					'type'  => 'password',
-					'label' => __( 'Password', 'wp-optimize' ),
+					'label' => __('Password', 'wp-optimize'),
 				),
 			),
 			'button'   => array(
 				'id'   => 'activate',
-				'label'=> __( 'Confirm and activate', 'wp-optimize' ),
+				'label'=> __('Confirm and activate', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			)
 		);
@@ -309,18 +278,18 @@ class WPO_Onboarding {
 			'id'       => 'page_features',
 			'type'     => 'settings',
 			'icon'     => 'settings',
-			'title'    => __( 'Enable best-practice settings', 'wp-optimize' ),
-			'subtitle' => __( 'We\'ve pre-selected core settings to speed up and optimize your site.', 'wp-optimize' ).' '.__( 'You can tweak them anytime.', 'wp-optimize' ),
+			'title'    => __('Enable best-practice settings', 'wp-optimize'),
+			'subtitle' => __('We\'ve pre-selected core settings to speed up and optimize your site.', 'wp-optimize').' '.__('You can tweak them anytime.', 'wp-optimize'),
 			'fields'   => $features,
 			'button'   => array(
 				'id'   => 'save',
-				'label'=> __( 'Save and continue', 'wp-optimize' ),
+				'label'=> __('Save and continue', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			),
 			'skip_step' => array(
 				'icon' => 'info',
 				'tooltip' => array(
-					'text' => __( 'All above features will be disabled if you skip.', 'wp-optimize' ),
+					'text' => __('All above features will be disabled if you skip.', 'wp-optimize'),
 				),
 			)
 		);
@@ -337,12 +306,12 @@ class WPO_Onboarding {
 			'id'       => 'email',
 			'type'     => 'email',
 			'icon'     => 'mail',
-			'title'    => __( 'Get lightning-fast insights!', 'wp-optimize' ),
-			'subtitle' => __( 'Join our newsletter for speed-optimization tips and best practices.', 'wp-optimize' ).' '.__( 'Delivered straight to your inbox.', 'wp-optimize' ),
+			'title'    => __('Get lightning-fast insights!', 'wp-optimize'),
+			'subtitle' => __('Join our newsletter for speed-optimization tips and best practices.', 'wp-optimize').' '.__('Delivered straight to your inbox.', 'wp-optimize'),
 			'fields'   => $email_fields,
 			'button'   => array(
 				'id'   => 'save',
-				'label'=> __( 'Save and continue', 'wp-optimize' ),
+				'label'=> __('Save and continue', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			),
 		);
@@ -359,13 +328,13 @@ class WPO_Onboarding {
 			'type'           => 'plugins',
 			'icon'           => 'plugin',
 			'first_run_only' => false,
-			'title'          => __( 'Recommended for your setup', 'wp-optimize' ),
+			'title'          => __('Recommended for your setup', 'wp-optimize'),
 			'title_conditional' => array(
-				'all_installed' => __( 'Best-practice plugins enabled', 'wp-optimize' ),
+				'all_installed' => __('Best-practice plugins enabled', 'wp-optimize'),
 			),
-			'subtitle'       => __( 'We\'ve carefully handpicked these plugins to match your website\'s setup, so everything works just the way it should.', 'wp-optimize' ),
+			'subtitle'       => __('We\'ve carefully handpicked these plugins to match your website\'s setup, so everything works just the way it should.', 'wp-optimize'),
 			'subtitle_conditional' => array(
-				'all_installed' => __( 'Wow, your site already meets all our plugin recommendations, let\'s move on!', 'wp-optimize' ),
+				'all_installed' => __('Wow, your site already meets all our plugin recommendations, let\'s move on!', 'wp-optimize'),
 			),
 			'fields'         => array(
 				array(
@@ -375,7 +344,7 @@ class WPO_Onboarding {
 			),
 			'button'         => array(
 				'id'    => 'save',
-				'label' => __( 'Install and continue', 'wp-optimize' ),
+				'label' => __('Install and continue', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			),
 		);
@@ -392,11 +361,11 @@ class WPO_Onboarding {
 			'id'        => 'go_premium',
 			'type'      => 'go_premium',
 			'icon'      => 'bolt',
-			'title'     => __( 'Upgrade to Premium', 'wp-optimize' ),
-			'subtitle'  => __( 'The complete optimization suite with safe defaults and expert help.', 'wp-optimize' ),
+			'title'     => __('Upgrade to Premium', 'wp-optimize'),
+			'subtitle'  => __('The complete optimization suite with safe defaults and expert help.', 'wp-optimize'),
 			'bullets'   => $go_premium_step_bullets,
 			'enable_premium_btn' => true,
-			'premium_btn_text' => __( 'Upgrade to Premium', 'wp-optimize' ),
+			'premium_btn_text' => __('Upgrade to Premium', 'wp-optimize'),
 		);
 	}
 
@@ -414,9 +383,9 @@ class WPO_Onboarding {
 			'id'        => 'completed',
 			'type'      => 'completed',
 			'icon'      => 'CheckRoundedIcon',
-			'title'     => __( 'You\'re all set!', 'wp-optimize' ),
+			'title'     => __('You\'re all set!', 'wp-optimize'),
 			'title_conditional' => array(
-				'isInstalling' => __( 'Almost done, finalizing...', 'wp-optimize' ),
+				'isInstalling' => __('Almost done, finalizing...', 'wp-optimize'),
 			),
 			'subtitle'  => $last_step_subtitle,
 			'subtitle_conditional' => array(
@@ -425,7 +394,7 @@ class WPO_Onboarding {
 			'bullets'   => $last_step_bullets,
 			'button'  => array(
 				'id'    => 'finish',
-				'label' => __( 'Go to settings', 'wp-optimize' ),
+				'label' => __('Go to settings', 'wp-optimize'),
 			),
 		);
 	}
@@ -442,23 +411,7 @@ class WPO_Onboarding {
 			return false;
 		}
 
-		try {
-			/*
-			 * The is_connected() method is protected in class Updraft_Manager_Updater_1_9.
-			 * So we cannot call it directly from outside the class without using ReflectionClass.
-			 */
-			$reflection = new ReflectionClass($updraft_updater_instance);
-			if (!$reflection->hasMethod('is_connected')) {
-				return false;
-			}
-			$method = $reflection->getMethod('is_connected');
-			$method->setAccessible(true);
-
-			return (bool) $method->invoke($updraft_updater_instance);
-		} catch (\Throwable $e) {
-			// Any exception results in returning false
-			return false;
-		}
+		return (bool) $updraft_updater_instance->is_connected();
 	}
 
 	/**
@@ -548,14 +501,14 @@ class WPO_Onboarding {
 				'id'      => 'email_reports_mailinglist',
 				'key'     => 'email_reports_mailinglist',
 				'type'    => 'email',
-				'label'   => __( 'Email', 'wp-optimize'),
+				'label'   => __('Email', 'wp-optimize'),
 				'default' => '',
 			),
 			array(
 				'id'      => 'tips_tricks_mailinglist',
 				'key'     => 'tips_tricks_mailinglist',
 				'type'    => 'checkbox',
-				'label'   => __( 'I agree to receive emails with tips, updates and marketing content.',  'wp-optimize').' '.__( 'I understand I can unsubscribe at any time.', 'wp-optimize' ),
+				'label'   => __('I agree to receive emails with tips, updates and marketing content.',  'wp-optimize').' '.__('I understand I can unsubscribe at any time.', 'wp-optimize'),
 				'default' => false,
 				'show_privacy_link' => true,
 			),
@@ -579,18 +532,13 @@ class WPO_Onboarding {
 		}
 
 		$webp_instance = WP_Optimize()->get_webp_instance();
-		$webp_tooltip  = __( 'Serve modern WebP images for smaller downloads.', 'wp-optimize' );
+		$webp_tooltip  = __('Serve modern WebP images for smaller downloads.', 'wp-optimize');
 		$is_lock_webp  = false;
 
-		if (!$webp_instance->shell_functions_available()) {
+		$webp_result = $webp_instance->evaluate_webp_capability();
+		if (!$webp_result['is_available']) {
 			$is_lock_webp = true;
-			$webp_tooltip = __( 'Required WebP shell functions are not available on your server.', 'wp-optimize' );
-		} elseif ($webp_instance->should_run_webp_conversion_test()) {
-			WPO_WebP_Test_Run::get_converter_status();
-			if (!$webp_instance->is_webp_conversion_successful()) {
-				$is_lock_webp = true;
-				$webp_tooltip = __( 'No working WebP converter was found on your server.', 'wp-optimize' );
-			}
+			$webp_tooltip = $webp_result['message'];
 		}
 
 		return array(
@@ -599,9 +547,9 @@ class WPO_Onboarding {
 				'key'     => 'enable_caching_onboarding',
 				'type'    => 'checkbox',
 				'subtype' => 'switch',
-				'label'   => __( 'Page caching', 'wp-optimize' ),
+				'label'   => __('Page caching', 'wp-optimize'),
 				'tooltip' => array(
-					'text' => __( 'Cache full pages for faster repeat visits.', 'wp-optimize' ),
+					'text' => __('Cache full pages for faster repeat visits.', 'wp-optimize'),
 				),
 				'default' => true,
 			),
@@ -610,9 +558,9 @@ class WPO_Onboarding {
 				'key'     => 'enable_minify_onboarding',
 				'type'    => 'checkbox',
 				'subtype' => 'switch',
-				'label'   => __( 'Minify static assets', 'wp-optimize' ),
+				'label'   => __('Minify static assets', 'wp-optimize'),
 				'tooltip' => array(
-					'text' => __( 'Shrink HTML, CSS and JavaScript files for quicker loads.', 'wp-optimize' ),
+					'text' => __('Shrink HTML, CSS and JavaScript files for quicker loads.', 'wp-optimize'),
 				),
 				'default' => true,
 			),
@@ -621,9 +569,9 @@ class WPO_Onboarding {
 				'key'     => 'enable_image_compression_onboarding',
 				'type'    => 'checkbox',
 				'subtype' => 'switch',
-				'label'   => __( 'Image compression', 'wp-optimize' ),
+				'label'   => __('Image compression', 'wp-optimize'),
 				'tooltip' => array(
-					'text' => __( 'Automatically reduce image file sizes on upload to improve page load speed.', 'wp-optimize' ).' '.__( 'In settings, you can adjust compression quality as well as manually compress existing images.', 'wp-optimize' ),
+					'text' => __('Automatically reduce image file sizes on upload to improve page load speed.', 'wp-optimize').' '.__('In settings, you can adjust compression quality as well as manually compress existing images.', 'wp-optimize'),
 				),
 				'default' => true,
 			),
@@ -633,7 +581,7 @@ class WPO_Onboarding {
 				'type'    => 'checkbox',
 				'subtype' => 'switch',
 				'is_lock' => $is_lock_webp,
-				'label'   => __( 'WebP conversion', 'wp-optimize' ),
+				'label'   => __('WebP conversion', 'wp-optimize'),
 				'tooltip' => array(
 					'text' => $webp_tooltip,
 				),
@@ -650,7 +598,7 @@ class WPO_Onboarding {
 					'heading' => array(
 						'text' => $is_lock ? $premium_heading : ''
 					),
-					'text' => $is_lock ? $premium_text : __( 'Load images and videos only when they enter the viewport.', 'wp-optimize' ),
+					'text' => $is_lock ? $premium_text : __('Load images and videos only when they enter the viewport.', 'wp-optimize'),
 				),
 				'default' => !$is_lock,
 			),
@@ -665,7 +613,7 @@ class WPO_Onboarding {
 					'heading' => array(
 						'text' => $is_lock ? $premium_heading : ''
 					),
-					'text' => $is_lock ? $premium_text : __( 'Auto-add missing width and height to improve load speed and reduce layout shifts.', 'wp-optimize' ),
+					'text' => $is_lock ? $premium_text : __('Auto-add missing width and height to improve load speed and reduce layout shifts.', 'wp-optimize'),
 				),
 				'default' => !$is_lock,
 			),
@@ -683,7 +631,7 @@ class WPO_Onboarding {
 		$upgrade_url_tooltip = WP_Optimize_Utils::add_utm_params($this->upgrade_url, $this->get_utm_params_to_override('upgrade-to-premium', 'tooltip'), true);
 		$text = sprintf(
 			// translators: %s: Text with Link
-			__( '%s to unlock this and other advanced options.', 'wp-optimize' ), '<a href="'.$upgrade_url_tooltip.'" class="underline" target="_blank">' . __( 'Upgrade to Premium', 'wp-optimize' ) . '</a>');
+			__('%s to unlock this and other advanced options.', 'wp-optimize'), '<a href="'.esc_url($upgrade_url_tooltip).'" class="underline" target="_blank">' . __('Upgrade to Premium', 'wp-optimize') . '</a>');
 
 		return array($heading, $text);
 	}
@@ -697,23 +645,23 @@ class WPO_Onboarding {
 		return array(
 			array(
 				'icon'  => 'database',
-				'title' => __( 'Clean database', 'wp-optimize' ),
-				'desc'  => __( 'Remove unnecessary data to keep your site fast.', 'wp-optimize' ),
+				'title' => __('Clean database', 'wp-optimize'),
+				'desc'  => __('Remove unnecessary data to keep your site fast.', 'wp-optimize'),
 			),
 			array(
 				'icon'  => 'compress',
-				'title' => __( 'Compress images', 'wp-optimize' ),
-				'desc'  => __( 'Reduce image sizes for quicker page loads.', 'wp-optimize' ),
+				'title' => __('Compress images', 'wp-optimize'),
+				'desc'  => __('Reduce image sizes for quicker page loads.', 'wp-optimize'),
 			),
 			array(
 				'icon'  => 'cache',
-				'title' => __( 'Cache pages', 'wp-optimize' ),
-				'desc'  => __( 'Store pages for instant loading.', 'wp-optimize' ),
+				'title' => __('Cache pages', 'wp-optimize'),
+				'desc'  => __('Store pages for instant loading.', 'wp-optimize'),
 			),
 			array(
 				'icon'  => 'minify',
-				'title' => __( 'Minify code', 'wp-optimize' ),
-				'desc'  => __( 'Shrink CSS, JavaScript, and HTML for better performance.', 'wp-optimize' ),
+				'title' => __('Minify code', 'wp-optimize'),
+				'desc'  => __('Shrink CSS, JavaScript, and HTML for better performance.', 'wp-optimize'),
 			),
 		);
 	}
@@ -753,9 +701,9 @@ class WPO_Onboarding {
 			$onboarding->mailing_list                   = array($this->is_premium ? self::MAILING_LIST_PREMIUM_ID : self::MAILING_LIST_FREE_ID);
 			$onboarding->mailing_list_endpoint          = self::MAILING_LIST_ENDPOINT;
 			$onboarding->caller_slug                    = $this->caller_slug;
-			$onboarding->capability                     = 'manage_options';
+			$onboarding->capability                     = $this->is_multisite ? 'manage_network_options' : 'manage_options';
 			$onboarding->support_url                    = $support_link;
-			$onboarding->privacy_url_label              = __( 'Privacy Policy.', 'wp-optimize' );
+			$onboarding->privacy_url_label              = __('Privacy Policy.', 'wp-optimize');
 			$onboarding->privacy_statement_url          = WP_Optimize_Utils::add_utm_params('https://teamupdraft.com/privacy/', $this->get_utm_params_to_override('privacy-statement'));
 			$onboarding->forgot_password_url            = WP_Optimize_Utils::add_utm_params('https://teamupdraft.com/my-account/lost-password/', $this->get_utm_params_to_override('forgot-password'));
 			$onboarding->documentation_url              = WP_Optimize_Utils::add_utm_params('https://teamupdraft.com/documentation/wp-optimize/', $this->get_utm_params_to_override('documentation'));
@@ -764,7 +712,7 @@ class WPO_Onboarding {
 			$onboarding->version                        = WPO_VERSION;
 			$onboarding->languages_dir                  = WPO_PLUGIN_MAIN_PATH . 'languages';
 			$onboarding->text_domain                    = 'wp-optimize';
-			$onboarding->exit_wizard_text               = __( 'Exit setup', 'wp-optimize' );
+			$onboarding->exit_wizard_text               = __('Exit setup', 'wp-optimize');
 			$onboarding->reload_settings_page_on_finish = true;
 			$onboarding->udmupdater_muid = 2;
 			$onboarding->udmupdater_slug = 'wp-optimize-premium';

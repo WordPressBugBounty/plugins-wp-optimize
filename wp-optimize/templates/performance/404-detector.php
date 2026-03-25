@@ -109,13 +109,13 @@ foreach ($requests as $url => $url_requests) {
 				if ('over' === $group && empty($url_requests['over'])) {
 					// There are both over and under the threshold, split it with a title
 					// translators: %s is a number
-					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('No URLs with many 404 requests found', 'wp-optimize') . ' (' . sprintf(esc_html__('over %s hits in a single hour', 'wp-optimize'), $obj_404_detector->get_suspicious_request_count_threshold()) . ')</h4></td></tr>';
+					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('No URLs with many 404 requests found', 'wp-optimize') . ' (' . sprintf(esc_html__('over %s hits in a single hour', 'wp-optimize'), $suspicious_threshold) . ')</h4></td></tr>';
 				}
 
 				if ('under' === $group && (0 < count($url_requests['under']))) {
 					// There are both over and under the threshold, split it with a title
 					// translators: %s is a number
-					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('URLs with few 404 requests', 'wp-optimize') . ' (' . sprintf(esc_html__('under %s hits in a single hour', 'wp-optimize'), $obj_404_detector->get_suspicious_request_count_threshold()) . ')</h4></td></tr>';
+					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('URLs with few 404 requests', 'wp-optimize') . ' (' . sprintf(esc_html__('under %s hits in a single hour', 'wp-optimize'), $suspicious_threshold) . ')</h4></td></tr>';
 				}
 
 				foreach ($url_requests[$group] as $item) {

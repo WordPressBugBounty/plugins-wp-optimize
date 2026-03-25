@@ -537,6 +537,8 @@ class WP_Optimize_Database_Information {
 		if (!in_array($wpo, $plugin_tables['tm_tasks'], true)) {
 			$plugin_tables['tm_tasks'][] = $wpo;
 		}
+		
+		$plugin_tables = array_merge($plugin_tables, $this->get_learndash_tables());
 
 		return $plugin_tables;
 	}
@@ -550,12 +552,33 @@ class WP_Optimize_Database_Information {
 	public function get_table_plugin($table) {
 		global $wpdb;
 
+		$plugins = array();
+		$original_table = $table;
 		// delete table prefix.
 		$table = preg_replace('/^'.$wpdb->prefix.'([0-9]+_)?/', '', $table);
 		$plugins_tables = $this->get_all_plugin_tables_relationship();
 
+		// If a direct match exists.
 		if (array_key_exists($table, $plugins_tables)) {
-			return $plugins_tables[$table];
+			$plugins = $plugins_tables[$table];
+		}
+
+		// special handling for tables when plugins use custom prefix.
+		foreach ($plugins_tables as $plugin_table => $plugin_names) {
+			if (false === strpos($plugin_table, '*')) {
+				continue;
+			}
+
+			// support for wildcard * in table names.
+			$pattern = '/^'.str_replace('\*', '.*', preg_quote($plugin_table, '/')).'$/';
+
+			if (preg_match($pattern, $original_table)) {
+				$plugins = array_merge($plugins, $plugin_names);
+			}
+		}
+
+		if (!empty($plugins)) {
+			return array_unique($plugins);
 		}
 
 		return false;
@@ -688,5 +711,26 @@ class WP_Optimize_Database_Information {
 			$rows_count = $wpdb->get_var("SELECT COUNT(*) FROM `" . esc_sql($table->Name) . "`");
 			set_transient('wpo_' . $table->Name . '_count', $rows_count, 24*60*60);
 		}
+	}
+
+	/**
+	 * Get a list of LearnDash tables with plugin slug for each of them.
+	 *
+	 * @return array
+	 */
+	private function get_learndash_tables() {
+		$table_names = array(
+			'*pro_quiz_category',
+			'*pro_quiz_form',
+			'*pro_quiz_lock',
+			'*pro_quiz_prerequisite',
+			'*pro_quiz_question',
+			'*pro_quiz_statistic',
+			'*pro_quiz_statistic_ref',
+			'*pro_quiz_template',
+			'*pro_quiz_toplist',
+		);
+
+		return array_fill_keys($table_names, array('sfwd-lms'));
 	}
 }

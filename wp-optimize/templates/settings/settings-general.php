@@ -10,12 +10,14 @@
 		<br>
 		<small><?php esc_html_e('This option will add a link labeled "WP-Optimize" in the top admin bar, for easy access to the different features.', 'wp-optimize'); ?> <?php esc_html_e('Requires a page refresh after saving the settings.', 'wp-optimize'); ?></small>
 	</p>
-	<p>
+
+	<p id="enable_cache_in_admin_bar_option" class="<?php echo $settings_general_data['minify_or_cache_enabled'] ? '' : 'wpo_hidden'; ?>">
 		<label>
 			<input name="enable_cache_in_admin_bar" id="enable-cache-admin-bar" type="checkbox" value ="1" <?php checked($options->get_option('enable_cache_in_admin_bar', true)); ?> />
 			<?php esc_html_e('Enable the caching menu in the admin bar', 'wp-optimize'); ?>
 		</label>
 		<br>
-		<small><?php esc_html_e('This option will add a caching menu on the top admin bar.', 'wp-optimize'); ?> <?php esc_html_e('Requires a page refresh after saving the settings.', 'wp-optimize'); ?></small>
+		<small><?php esc_html_e('This option will add a caching menu on the top admin bar.', 'wp-optimize'); ?> <?php esc_html_e('The admin bar menu is displayed only if Cache or Minify is enabled.', 'wp-optimize'); ?> <?php esc_html_e('Requires a page refresh after saving the settings.', 'wp-optimize'); ?></small>
 	</p>
+
 </div>

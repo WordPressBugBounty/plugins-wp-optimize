@@ -10,7 +10,7 @@ interface WP_Optimize_Table_Interface {
 	 *
 	 * @return string
 	 */
-	public function get_table_name();
+	public function get_table_name(): string;
 
 	/**
 	 * Return an array with `dbDelta()` field strings (and keys)
@@ -21,7 +21,7 @@ interface WP_Optimize_Table_Interface {
 	 *
 	 * @return array
 	 */
-	public function describe();
+	public function describe(): array;
 
 	/**
 	 * Returns singleton instance

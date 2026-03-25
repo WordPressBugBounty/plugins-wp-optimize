@@ -25,7 +25,7 @@ class WP_Optimize_Commands {
 	public function enable_or_disable_feature($data) {
 	
 		$type = (string) $data['type'];
-		$enable = (boolean) $data['enable'];
+		$enable = (bool) $data['enable'];
 	
 		$options = array($type => $enable);
 
@@ -306,8 +306,9 @@ class WP_Optimize_Commands {
 			$loggers_data = $this->get_wp_optimize_logging_settings_data();
 			$settings_trackback_data = $this->get_wp_optimize_trackback_toggle_settings_data();
 			$settings_comments_data = $this->get_wp_optimize_comments_toggle_settings_data();
+			$settings_general_data = $this->get_wp_optimize_general_settings_data();
 
-			WP_Optimize()->include_template('settings/settings.php', false, array('loggers_data' => $loggers_data, 'settings_trackback_data' => $settings_trackback_data, 'settings_comments_data' => $settings_comments_data));
+			WP_Optimize()->include_template('settings/settings.php', false, array('loggers_data' => $loggers_data, 'settings_trackback_data' => $settings_trackback_data, 'settings_comments_data' => $settings_comments_data, 'settings_general_data' => $settings_general_data));
 		} else {
 			$wpo_admin->prevent_manage_options_info();
 		}
@@ -538,7 +539,7 @@ class WP_Optimize_Commands {
 	public function get_wp_optimize_contents() {
 		$status_data = $this->get_all_status_data();
 		$optimization_data = $this->get_wp_optimize_data();
-		$content = WP_Optimize()->include_template('database/optimize-table.php', true, array('optimize_db' => false, 'load_data' => WP_Optimize()->template_should_include_data(), 'does_server_allows_table_optimization' => WP_Optimize()->does_server_allows_table_optimization(), 'optimizations_table_data' => $optimization_data, 'status_data' => $status_data));
+		$content = WP_Optimize()->include_template('database/optimize-table.php', true, array('optimize_db' => false, 'load_data' => WP_Optimize()->template_should_include_data(), 'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization(), 'optimizations_table_data' => $optimization_data, 'status_data' => $status_data));
 
 		if (WP_Optimize()->is_updraft_central_request()) {
 			$content .= $this->get_status_box_contents();
@@ -862,7 +863,7 @@ class WP_Optimize_Commands {
 	 * @return array
 	 */
 	public function get_database_tabs() {
-		return array_merge(array('optimizations' => $this->get_optimizations_table(), 'does_server_allows_table_optimization' => WP_Optimize()->does_server_allows_table_optimization()), $this->get_table_list());
+		return array_merge(array('optimizations' => $this->get_optimizations_table(), 'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization()), $this->get_table_list());
 	}
 
 	/**
@@ -1415,12 +1416,12 @@ class WP_Optimize_Commands {
 		$wp_optimize = WP_Optimize();
 
 		$optimizations = $this->optimizer->sort_optimizations($this->optimizer->get_optimizations());
-		$does_server_allows_table_optimization = $wp_optimize->does_server_allows_table_optimization();
+		$does_server_allow_table_optimization = $wp_optimize->get_server_compatibility_instance()->does_server_allow_table_optimization();
 
 		$optimizations_data = array();
 
 		foreach ($optimizations as $id => $optimization) {
-			if ('optimizetables' == $id && false === $does_server_allows_table_optimization) continue;
+			if ('optimizetables' == $id && false === $does_server_allow_table_optimization) continue;
 			// If we don't want to show optimization on the first tab.
 			if (false === $optimization->display_in_optimizations_list()) continue;
 			// This is an array, with attributes dom_id, activated, settings_label, info; all values are strings.
@@ -1730,11 +1731,14 @@ class WP_Optimize_Commands {
 		$revisions_retention_count = (int) $this->options->get_option('revisions-retention-count', '2');
 		$revisions_retention_enabled = 'true' === $this->options->get_option('revisions-retention-enabled');
 
+		$minify_or_cache_enabled = WP_Optimize()->get_page_cache()->is_enabled() || wp_optimize_minify_config()->get('enabled');
+
 		return array(
 			'retention_period' => $retention_period,
 			'retention_enabled' => $retention_enabled,
 			'revisions_retention_count' => $revisions_retention_count,
 			'revisions_retention_enabled' => $revisions_retention_enabled,
+			'minify_or_cache_enabled' => $minify_or_cache_enabled,
 		);
 	}
 
@@ -1938,7 +1942,7 @@ class WP_Optimize_Commands {
 			// Backwards compatibility:
 			if ('wpo_otherweekly' == $schedule_type_saved_id) $schedule_type_saved_id = 'wpo_fortnightly';
 
-			$schedule_types = $wp_optimize::get_schedule_types();
+			$schedule_types = WP_Optimize::get_schedule_types();
 
 			$schedule_options = array_map(
 				function ($value, $key) use ($schedule_type_saved_id) {
@@ -1958,12 +1962,12 @@ class WP_Optimize_Commands {
 	
 			$optimizations_data = array();
 
-			$does_server_allows_table_optimization = WP_Optimize()->does_server_allows_table_optimization();
+			$does_server_allow_table_optimization = WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization();
 
 			foreach ($optimizations as $id => $optimization) {
 				if (empty($optimization->available_for_auto)) continue;
 
-				if ('optimizetables' == $id && false === $does_server_allows_table_optimization) continue;
+				if ('optimizetables' == $id && false === $does_server_allow_table_optimization) continue;
 	
 				$auto_id = $optimization->get_auto_id();
 	
@@ -2004,7 +2008,7 @@ class WP_Optimize_Commands {
 		} else {
 			$wp_optimize_premium = WP_Optimize_Premium();
 			$auto_options = $wp_optimize_premium->get_scheduled_optimizations();
-
+			$auto_optimizations = $wp_optimize_premium->get_auto_optimizations();
 
 			$next_optimization_timestamp = 0;
 
@@ -2017,7 +2021,7 @@ class WP_Optimize_Commands {
 				}
 			}
 
-			$all_provided_optimizations = array_values(WP_Optimize_Premium::get_auto_optimizations());
+			$all_provided_optimizations = array_values($auto_optimizations);
 			$all_schedule_types = WP_Optimize::get_schedule_types();
 			$week_days = WP_Optimize_Premium::get_week_days();
 			$days = WP_Optimize_Premium::get_days();
@@ -2116,7 +2120,7 @@ class WP_Optimize_Commands {
 				'next_optimization' => $next_optimization_timestamp ? esc_html(gmdate(get_option('date_format') . ' ' . get_option('time_format'), $next_optimization_timestamp)) : '',
 				'is_auto_innodb' => $this->options->get_option('auto-innodb'),
 				'scheduled_optimizations' => $auto_options,
-				'auto_optimizations' => $wp_optimize_premium->get_auto_optimizations(),
+				'auto_optimizations' => $auto_optimizations,
 				'warning_url' => $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/topics/database-optimization/faqs/', __('Warning: you should read the FAQ about the risks of this operation first.', 'wp-optimize'), '', '', true)
 			);
 		}
