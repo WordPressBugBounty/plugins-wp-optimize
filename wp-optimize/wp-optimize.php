@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.5.1
+Version: 4.5.2
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.5.1');
+define('WPO_VERSION', '4.5.2');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -110,7 +110,6 @@ class WP_Optimize {
 		}
 
 		$this->load_ajax_handler();
-		WP_Optimize_Heartbeat::get_instance();
 
 		// Show update to Premium notice for non-premium multisite.
 		add_action('wpo_additional_options', array($this, 'show_multisite_update_to_premium_notice'));
@@ -313,8 +312,20 @@ class WP_Optimize {
 		$skin = $upgrader_object->skin;
 		if ('plugin' === $options['type']) {
 			// A plugin is updated using the default update system (upgrader_overwrote_package is used for the upload method)
-			if (property_exists($skin, 'plugin_active') && $skin->plugin_active) {
-				$should_purge_cache = true;
+			$plugins = array();
+			if (!empty($options['plugin'])) {
+				$plugins = array($options['plugin']);
+			} elseif (!empty($options['plugins']) && is_array($options['plugins'])) {
+				$plugins = $options['plugins'];
+			}
+
+			foreach ($plugins as $plugin) {
+				if (!empty($plugin) && ! is_wp_error($upgrader_object->result)) {
+					if (is_plugin_active($plugin)) {
+						$should_purge_cache = true;
+						break;
+					}
+				}
 			}
 		} elseif ('theme' === $options['type']) {
 			$active_theme = get_stylesheet();
@@ -381,6 +392,7 @@ class WP_Optimize {
 		}
 
 		WPO_Page_Builder_Compatibility::instance();
+		WPO_KD_Submissions_Compatibility::instance();
 
 		if (class_exists('Custom_Permalinks')) {
 			WPO_Custom_Permalink_Compatibility::instance();
@@ -680,6 +692,10 @@ class WP_Optimize {
 			return;
 		}
 
+		if (is_admin() && current_user_can($this->capability_required())) {
+			WP_Optimize_Heartbeat::get_instance();
+		}
+
 		if ($this->get_server_compatibility_instance()->does_server_handle_cache()) {
 			add_filter('wp_optimize_admin_page_wpo_cache_tabs', array($this, 'filter_cache_tabs'), 99, 1);
 
@@ -698,6 +714,7 @@ class WP_Optimize {
 		}
 
 		if (!self::is_premium()) {
+			$this->get_server_compatibility_instance()->maybe_disable_unsupported_table_optimization();
 			add_action('auto_option_settings', array($this->get_options(), 'auto_option_settings'));
 		}
 

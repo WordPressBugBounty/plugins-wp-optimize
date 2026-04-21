@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <?php if ($does_server_handle_cache) : ?>
 <div class="wpo-info highlight-dashicons">
 	<h3><?php esc_html_e('Your web hosting company/server handles:', 'wp-optimize'); ?></h3>

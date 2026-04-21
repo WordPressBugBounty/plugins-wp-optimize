@@ -485,17 +485,17 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "1.0.27",
-            "version_normalized": "1.0.27.0",
+            "version": "1.0.28",
+            "version_normalized": "1.0.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "56fa436a7a7b87e17d3f1b91d58afb1a6cbaedc9"
+                "reference": "8e2adfd761c11421ff4f4b694b4d0db78f3b4355"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/56fa436a7a7b87e17d3f1b91d58afb1a6cbaedc9",
-                "reference": "56fa436a7a7b87e17d3f1b91d58afb1a6cbaedc9",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/8e2adfd761c11421ff4f4b694b4d0db78f3b4355",
+                "reference": "8e2adfd761c11421ff4f4b694b4d0db78f3b4355",
                 "shasum": ""
             },
             "require": {
@@ -513,7 +513,7 @@
                 "ext-xml": "Install the XML extension to load XML formatted public keys.",
                 "pear-pear/PHP_Compat": "Install PHP_Compat to get phpseclib working on PHP < 5.0.0."
             },
-            "time": "2026-03-19T02:51:43+00:00",
+            "time": "2026-04-10T01:27:33+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -586,7 +586,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.27"
+                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.28"
             },
             "funding": [
                 {
@@ -1166,12 +1166,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/DavidAnderson684/webp-convert.git",
-                "reference": "dd2aa9d268393f229d886b6fe0f255aea83acea8"
+                "reference": "15120a3379aa7043f8f557d91cc4e07c5c36e43b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DavidAnderson684/webp-convert/zipball/dd2aa9d268393f229d886b6fe0f255aea83acea8",
-                "reference": "dd2aa9d268393f229d886b6fe0f255aea83acea8",
+                "url": "https://api.github.com/repos/DavidAnderson684/webp-convert/zipball/15120a3379aa7043f8f557d91cc4e07c5c36e43b",
+                "reference": "15120a3379aa7043f8f557d91cc4e07c5c36e43b",
                 "shasum": ""
             },
             "require": {
@@ -1191,7 +1191,7 @@
                 "ext-imagick": "to use Imagick extension for converting. Note: Gd must be compiled with webp support",
                 "ext-vips": "to use Vips extension for converting."
             },
-            "time": "2026-03-21T17:23:49+00:00",
+            "time": "2026-04-01T14:30:21+00:00",
             "default-branch": true,
             "type": "library",
             "extra": {

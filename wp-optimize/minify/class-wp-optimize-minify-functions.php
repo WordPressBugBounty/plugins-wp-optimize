@@ -1036,7 +1036,7 @@ class WP_Optimize_Minify_Functions {
 		
 		$args = array(
 			// info (needed for Google fonts woff files + hinted fonts) as well as to bypass some security filters
-			'user-agent' => WP_Optimize_Utils::get_user_agent(),
+			'user-agent' => WP_Optimize_Utils::get_user_agent('gfont'),
 			'timeout' => 7
 		);
 
@@ -1154,7 +1154,7 @@ class WP_Optimize_Minify_Functions {
 	public static function get_remote_file_size($url) {
 		$args = array(
 			// info (needed for Google fonts woff files + hinted fonts) as well as to bypass some security filters
-			'user-agent' => WP_Optimize_Utils::get_user_agent(),
+			'user-agent' => WP_Optimize_Utils::get_user_agent('gfont'),
 			'timeout' => 7
 		);
 

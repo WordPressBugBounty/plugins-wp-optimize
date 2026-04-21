@@ -961,12 +961,13 @@ function wpo_can_serve_from_cache() {
 	}
 
 	// check in not disabled current user agent
-	if (!empty($_SERVER['HTTP_USER_AGENT']) && false === wpo_is_accepted_user_agent($_SERVER['HTTP_USER_AGENT'])) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- `wpo_is_accepted_user_agent` compares strings and return true or false
+	$user_agent = isset($_SERVER['HTTP_USER_AGENT']) && is_string($_SERVER['HTTP_USER_AGENT']) ? htmlspecialchars(stripslashes($_SERVER['HTTP_USER_AGENT'])) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- false positive
+	if (!empty($user_agent) && false === wpo_is_accepted_user_agent($user_agent)) {
 		$no_cache_because[] = "In the settings, caching is disabled for matches for this request's user agent";
 	}
 
 	$is_cache_page_forced = function_exists('apply_filters') ? apply_filters('wpo_cache_page_force', false) : false;
-	$is_get_request = isset($_SERVER['REQUEST_METHOD']) && 'GET' === $_SERVER['REQUEST_METHOD']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Not needed only comparing value against literal string
+	$is_get_request = isset($_SERVER['REQUEST_METHOD']) && 'GET' === $_SERVER['REQUEST_METHOD'];
 
 	// Don't cache non-GET requests.
 	if (!$is_cache_page_forced && !$is_get_request) {
@@ -1434,8 +1435,6 @@ if (!function_exists('wpo_url_exception_match')) :
 			return false;
 		}
 		
-		$exception = str_replace('*', '.*', $exception);
-		
 		$exception = trim($exception);
 		
 		// Used to test websites placed in subdirectories.
@@ -1454,21 +1453,11 @@ if (!function_exists('wpo_url_exception_match')) :
 		$url = urldecode(rtrim($url, '/')) . '/';
 		$exception = rtrim($exception, '/');
 		
-		// if we have no wildcard in the end of exception then add slash.
-		if (!preg_match('#\(\.\*\)$#', $exception)) $exception .= '/';
-		
-		$exception = preg_quote($exception);
-		
-		// fix - unescape some possibly escaped mask characters
-		$search = array(
-			'\\.\\*',
-			'\\-',
-		);
-		$replace = array(
-			'.*',
-			'-',
-		);
-		$exception = urldecode(str_replace($search, $replace, $exception));
+		$exception = wpo_mask_to_regex($exception, true);
+
+		if (!$exception) return false;
+
+		$exception = urldecode($exception);
 		
 		return (preg_match('#^'.$exception.'$#i', $url) || preg_match('#^'.$sub_dir.$exception.'$#i', $url));
 	}
@@ -1503,13 +1492,53 @@ if (!function_exists('wpo_is_mobile')) :
 endif;
 
 /**
+ * Converts a wildcard mask to a regular expression pattern.
+ *
+ * @param string $mask
+ * @param boolean $add_trailing_slash Whether to add a trailing slash to the regex pattern if the mask doesn't already end with a wildcard. This allows matching URLs with or without a trailing slash.
+ * @return string|false Regular expression pattern if conversion is successful, false if the input mask is empty after trimming.
+ */
+if (!function_exists('wpo_mask_to_regex')) :
+	function wpo_mask_to_regex($mask, $add_trailing_slash = false) {
+		$mask = trim($mask);
+
+		if ('' === $mask) {
+			return false;
+		}
+
+		// Convert wildcard to regex
+		$mask = str_replace('*', '.*', $mask);
+
+		// If the mask doesn't already end with a wildcard, add a trailing slash to match URLs with or without a trailing slash.
+		if ($add_trailing_slash && !preg_match('#\(\.\*\)$#', $mask)) {
+			$mask = rtrim($mask, '/') . '/';
+		}
+
+		// Escape regex characters
+		$mask = preg_quote($mask);
+
+		// Restore wildcard and dash
+		$mask = str_replace(
+			array('\.\*', '\-'),
+			array('.*', '-'),
+			$mask
+		);
+
+		return $mask;
+	}
+endif;
+
+
+/**
  * Check if current browser agent is not disabled in options.
+ *
+ * @param string $user_agent
  *
  * @return bool
  */
 if (!function_exists('wpo_is_accepted_user_agent')) :
 	function wpo_is_accepted_user_agent($user_agent) {
-		
+
 		if (empty($GLOBALS['wpo_cache_config'])) return true;
 
 		$exceptions = is_array($GLOBALS['wpo_cache_config']['cache_exception_browser_agents']) ? $GLOBALS['wpo_cache_config']['cache_exception_browser_agents'] : preg_split('#(\n|\r)#', $GLOBALS['wpo_cache_config']['cache_exception_browser_agents']);
@@ -1517,8 +1546,9 @@ if (!function_exists('wpo_is_accepted_user_agent')) :
 		if (!empty($exceptions)) {
 			foreach ($exceptions as $exception) {
 				if ('' === trim($exception)) continue;
-				
-				if (preg_match('#'.$exception.'#i', $user_agent)) return false;
+
+				$exception = wpo_mask_to_regex($exception);
+				if ($exception && preg_match('#'.$exception.'#i', $user_agent)) return false;
 			}
 		}
 		

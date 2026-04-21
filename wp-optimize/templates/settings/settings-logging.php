@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div id="wpo_logging_settings">
 	<h3><?php esc_html_e('Logging settings', 'wp-optimize'); ?></h3>
 

@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION'))  die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div class="wpo_section wpo_group">
 	<form id="wpo_minify_settings_form">
 		<div id="wpo_settings_warnings"></div>

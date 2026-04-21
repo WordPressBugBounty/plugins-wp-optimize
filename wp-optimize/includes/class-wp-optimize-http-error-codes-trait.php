@@ -1,5 +1,5 @@
 <?php
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!trait_exists('WP_Optimize_HTTP_Error_Codes_Trait')) :
 trait WP_Optimize_HTTP_Error_Codes_Trait {

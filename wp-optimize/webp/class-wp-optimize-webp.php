@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('WP_Optimize_WebP')) :
 
@@ -27,13 +27,6 @@ class WP_Optimize_WebP {
 	 */
 	private function __construct() {
 		$this->_should_use_webp = (bool) WP_Optimize()->get_options()->get_option('webp_conversion');
-
-		if ($this->_should_use_webp && $this->get_webp_conversion_test_result()) {
-			if (!is_admin()) {
-				// Allow filters added in theme files to run
-				add_action('after_setup_theme', array($this, 'maybe_decide_webp_serve_method'));
-			}
-		}
 
 		$this->logger = new Updraft_File_Logger($this->get_logfile_path());
 
@@ -214,21 +207,31 @@ class WP_Optimize_WebP {
 
 	/**
 	 * If .htaccess redirection is not possible, attempts to use the alter_html method
+	 *
+	 * @param string $buffer Page HTML
+	 *
+	 * @return string
 	 */
-	public function maybe_decide_webp_serve_method() {
+	public function maybe_decide_webp_serve_method(string $buffer): string {
 		if (!$this->is_webp_redirection_possible()) {
-			$this->maybe_use_alter_html();
+			$buffer = $this->maybe_use_alter_html($buffer);
 		}
+		return $buffer;
 	}
 
 	/**
 	 * If alter html method is possible, then use it
+	 *
+	 * @param string $buffer Page HTML
+	 *
+	 * @return string
 	 */
-	private function maybe_use_alter_html() {
+	private function maybe_use_alter_html(string $buffer): string {
 		if ($this->is_alter_html_possible()) {
 			$this->empty_htaccess_file();
-			$this->use_alter_html();
+			$buffer = WPO_WebP_Alter_HTML::get_instance()->alter_html($buffer);
 		}
+		return $buffer;
 	}
 
 	/**
@@ -255,13 +258,6 @@ class WP_Optimize_WebP {
 	 */
 	private function is_alter_html_possible() {
 		return WPO_WebP_Utils::is_browser_accepting_webp();
-	}
-
-	/**
-	 * Setup alter html method
-	 */
-	private function use_alter_html() {
-		WPO_WebP_Alter_HTML::get_instance();
 	}
 
 	/**
@@ -412,7 +408,7 @@ class WP_Optimize_WebP {
 	 *
 	 * @return boolean Returns the value of the webp_conversion_test saved in the options table
 	 */
-	private function get_webp_conversion_test_result() {
+	public function get_webp_conversion_test_result(): bool {
 		return (bool) WP_Optimize()->get_options()->get_option('webp_conversion_test');
 	}
 
@@ -545,7 +541,7 @@ class WP_Optimize_WebP {
 	 *
 	 * @return bool
 	 */
-	public function is_webp_conversion_enabled() {
+	public function is_webp_conversion_enabled(): bool {
 		return $this->_should_use_webp;
 	}
 
@@ -644,7 +640,7 @@ class WP_Optimize_WebP {
 	 *
 	 * @return bool
 	 */
-	public function is_webp_enabled() {
+	public function is_webp_enabled(): bool {
 		return $this->_should_use_webp;
 	}
 	

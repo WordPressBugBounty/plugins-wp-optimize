@@ -97,16 +97,9 @@ class WPO_Onboarding {
 				$wpo_page_cache = WP_Optimize()->get_page_cache();
 
 				if (true === $value) {
-					$cache_operation_success = $wpo_page_cache->enable(true);
+					$wpo_page_cache->enable(true);
 				} else {
-					$cache_operation_success = $wpo_page_cache->disable();
-				}
-
-				if (true === $cache_operation_success) {
-					$wpo_cache_config                    = WPO_Cache_Config::instance();
-					$cache_config                        = $wpo_cache_config->get();
-					$cache_config['enable_page_caching'] = $value;
-					$wpo_cache_config->update($cache_config);
+					$wpo_page_cache->disable();
 				}
 			}
 

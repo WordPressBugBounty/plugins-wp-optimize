@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <?php if (!empty($button_meta) && 'review' == $button_meta) : ?>
 

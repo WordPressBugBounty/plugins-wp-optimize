@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <div id="wp-optimize-dashnotice" class="updated">
 

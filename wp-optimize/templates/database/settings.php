@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <div id="wp-optimize-database-settings" class="wpo_section wpo_group">
 	<form action="#" method="post" enctype="multipart/form-data" name="database_settings_form" id="database_settings_form">

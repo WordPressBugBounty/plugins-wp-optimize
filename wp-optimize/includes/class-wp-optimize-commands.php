@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 /**
  * All commands that are intended to be available for calling from any sort of control interface (e.g. wp-admin, UpdraftCentral) go in here. All public methods should either return the data to be returned, or a WP_Error with associated error code, message and error data.
@@ -986,8 +986,9 @@ class WP_Optimize_Commands {
 
 		$cache = WP_Optimize()->get_page_cache();
 		$cache->create_folders();
+		$cache_enable_result = null;
 		if ($cache_settings['enable_page_caching']) {
-			$cache->enable();
+			$cache_enable_result = $cache->enable();
 		}
 
 		$wpo_browser_cache = WP_Optimize()->get_browser_cache();
@@ -1005,6 +1006,10 @@ class WP_Optimize_Commands {
 		$smush_result = WP_Optimize()->get_task_manager()->commands->update_smush_options($smush_settings);
 		$webp_result = WP_Optimize()->get_task_manager()->commands->update_webp_options($smush_settings);
 		$this->save_settings($database_settings);
+
+		if (is_wp_error($cache_enable_result)) {
+			$message .= $cache_enable_result->get_error_message() . PHP_EOL;
+		}
 
 		if (is_wp_error($cache_result)) {
 			$message .= $cache_result->get_error_message() . PHP_EOL;

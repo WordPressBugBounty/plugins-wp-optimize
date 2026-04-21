@@ -23,7 +23,7 @@
 	 * otherwise, it rejects on the first error encountered.
 	 *
 	 * @param {number} index - The current index of the script element being processed.
-	 * @param {Array<HTMLElement>} script_elements - An array of script elements to be loaded.
+	 * @param {NodeListOf<HTMLElementTagNameMap[string]>} script_elements - An array of script elements to be loaded.
 	 * @param {function} resolve - A function to call when all scripts have been successfully loaded.
 	 * @param {function} reject - A function to call if an error occurs during loading of any script.
 	 */
@@ -48,7 +48,7 @@
 	 * For the given list of script elements with type="text/plain", replace the current script element
 	 * with the appropriate type or replace the src attribute with the data-src value for externally loaded scripts.
 	 *
-	 * @param {Array} script_elements
+	 * @param {NodeListOf<HTMLElementTagNameMap[string]>} script_elements
 	 * @returns {Promise}
 	 */
 	function load_scripts_sequentially(script_elements) {
@@ -155,7 +155,7 @@
 	}
 
 	/**
-	 * Get all script elements and load them if their loading was delayed."
+	 * Get all script elements and load them if their loading was delayed.
 	 *
 	 * @return {void}
 	 */

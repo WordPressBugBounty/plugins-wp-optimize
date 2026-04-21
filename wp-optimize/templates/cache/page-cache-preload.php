@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <h3 class="wpo-first-child"><?php esc_html_e('Preload now', 'wp-optimize'); ?></h3>
 

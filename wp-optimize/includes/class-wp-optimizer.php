@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 /**
  * This class invokes optimiazations. The optimizations themselves live in the 'optimizations' subdirectory of the plugin.  The proper way to obtain access to the instance is via WP_Optimize()->get_optimizer()

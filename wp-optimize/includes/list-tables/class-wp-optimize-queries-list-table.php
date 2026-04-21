@@ -1,5 +1,5 @@
 <?php
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('WP_Optimize_Queries_List_Table')) :
 

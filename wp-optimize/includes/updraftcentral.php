@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 /**
  * This file is the bootstrapper for UpdraftCentral integration: i.e. it registers what is necessary to deal with commands in the wpoptimize namespace.

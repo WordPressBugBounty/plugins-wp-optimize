@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed');
+<?php if (!defined('ABSPATH')) die('No direct access allowed');
 
 $sqlversion = (string) $wp_optimize->get_db_info()->get_version();
 ?>

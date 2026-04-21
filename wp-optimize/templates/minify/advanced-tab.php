@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div id="wp-optimize-minify-advanced" class="wpo_section wpo_group">
 	<h3><?php esc_html_e('Minify cache information', 'wp-optimize'); ?></h3>
 	<div class="wpo-fieldgroup">

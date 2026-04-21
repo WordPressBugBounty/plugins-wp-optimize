@@ -59,10 +59,21 @@ class WP_Optimize_Cache_Commands {
 				// Disabling failed
 				if ($disabled && is_wp_error($disabled)) {
 					// If disabling failed, we re-enable whatever was disabled, to make sure nothing breaks.
-					if ($previous_settings['enable_page_caching']) WPO_Page_Cache::instance()->enable(true);
+					$cache_enable_result = null;
+					if ($previous_settings['enable_page_caching']) {
+						$cache_enable_result = WPO_Page_Cache::instance()->enable(true);
+					}
+
+					$error_message = $disabled->get_error_message();
+
+					if (is_wp_error($cache_enable_result)) {
+						// translators: %s: The error message.
+						$error_message .= ' '. sprintf(__('Additionally, WP-Optimize failed to re-enable page caching after the failed disable attempt: %s', 'wp-optimize'), $cache_enable_result->get_error_message());
+					}
+
 					$return['error'] = array(
 						'code' => $disabled->get_error_code(),
-						'message' => $disabled->get_error_message()
+						'message' => $error_message,
 					);
 				} elseif (WPO_Page_Cache::instance()->has_warnings()) {
 					$return['warnings_label'] = __('Page caching was disabled, but with some warnings:', 'wp-optimize');

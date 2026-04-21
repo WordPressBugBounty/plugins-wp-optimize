@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <li id="<?php echo esc_attr($file['uid']); ?>">
 	<span class="filename"><a href="<?php echo esc_url($file['file_url']); ?>" target="_blank"><?php echo esc_html($file['filename']); ?></a> (<?php echo esc_html($file['fsize']); ?>)</span>
 	<a href="#" class="log"><?php esc_html_e('Show information', 'wp-optimize'); ?></a>

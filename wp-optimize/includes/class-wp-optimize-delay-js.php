@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('WP_Optimize_Delay_JS')) :
 /**
@@ -20,9 +20,6 @@ class WP_Optimize_Delay_JS {
 	 */
 	private function __construct() {
 		$this->options = wp_optimize_minify_config()->get();
-		if ($this->should_process()) {
-			$this->process();
-		}
 	}
 
 	/**
@@ -43,46 +40,22 @@ class WP_Optimize_Delay_JS {
 	 *
 	 * @return bool
 	 */
-	private function should_process() {
+	public function should_process() {
 		return ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
 	}
 
 	/**
 	 * Main processing function to manage JavaScript optimizations.
-	 *
-	 * @return void
-	 */
-	private function process() {
-		add_action('template_redirect', array($this, 'start_buffering'));
-		if ($this->is_delay_js_enabled()) {
-			$this->register_callback_to_output_delay_js_script();
-		}
-	}
-	
-	/**
-	 * Start output buffering with callback to optimize the content for delaying JavaScript execution.
-	 *
-	 * @return void
-	 */
-	public function start_buffering() {
-		static $registered = false;
-		
-		if (!$registered) {
-			ob_start(array($this, 'optimize_buffered_content_for_delaying_js_execution'));
-			$registered = true;
-		}
-	}
-	
-	/**
-	 * A callback function that replaces script tags to make them delayable when the Delay JS option is enabled,
+	 * Replaces script tags to make them delayable when the Delay JS option is enabled,
 	 * and generates a list of tags to preload scripts when the Preload JavaScript Files option is enabled.
 	 *
-	 * @param string $content The content to be processed.
-	 * @return string The modified content.
+	 * @param string $buffer The content to be processed.
+	 *
+	 * @return string
 	 */
-	private function optimize_buffered_content_for_delaying_js_execution($content) {
-		$content = $this->maybe_preload_js($content);
-		return $this->maybe_delay_js($content);
+	public function process($buffer): string {
+		$buffer = $this->maybe_preload_js($buffer);
+		return $this->maybe_delay_js($buffer);
 	}
 	
 	/**
@@ -168,24 +141,31 @@ class WP_Optimize_Delay_JS {
 			$content = $updated_content;
 		}
 
-		return $content;
+		return preg_replace('/<\/body>/i', $this->get_delay_js_script() . '</body>', $content);
 	}
 
 
 
 	/**
-	 * Output the Delay JS Script.
+	 * Gets Delay JS inline script
 	 *
-	 * @return void
+	 * @return string
 	 */
-	public function output_delay_js_script() {
+	private function get_delay_js_script(): string {
 		$min_or_not_internal = WP_Optimize()->get_min_or_not_internal_string();
-		echo '<script data-no-delay-js>';
+		$script = '<script data-no-delay-js>';
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- we don't need to escape inline scripts
-		echo file_get_contents(WPO_PLUGIN_MAIN_PATH . 'js/delay-js' . $min_or_not_internal . '.js');
-		echo '</script>';
+		$delay_js = file_get_contents(WPO_PLUGIN_MAIN_PATH . 'js/delay-js' . $min_or_not_internal . '.js');
+		if (false === $delay_js) {
+			$script .= 'console.error("Failed to load delay-js.js");';
+			$script .= '</script>';
+			return $script;
+		}
+		$script .= $delay_js;
+		$script .= '</script>';
+		return $script;
 	}
-
+	
 	/**
 	 * Retrieve the list of excluded scripts from the options.
 	 *
@@ -338,7 +318,6 @@ class WP_Optimize_Delay_JS {
 	 * @return string
 	 */
 	private function build_delay_js_tag($attributes, $change_type, $inline_script) {
-
 		if (!isset($attributes['data-no-delay-js'])) {
 			// Change 'src' attribute to 'data-src' attr for external scripts
 			if (!empty($attributes['src'])) {
@@ -395,15 +374,6 @@ class WP_Optimize_Delay_JS {
 	 */
 	private function get_scripts_pattern() {
 		return '/<script(.*)>(.*)<\/script>/Uis';
-	}
-	
-	/**
-	 * Registers callback to output Delay JS script.
-	 *
-	 * @return void
-	 */
-	private function register_callback_to_output_delay_js_script() {
-		add_action('wp_footer', array($this, 'output_delay_js_script'));
 	}
 	
 	/**

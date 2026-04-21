@@ -1,5 +1,5 @@
 <?php
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 ?>
 <div class="wpo_shade hidden">

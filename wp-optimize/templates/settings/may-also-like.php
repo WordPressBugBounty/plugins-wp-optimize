@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div class="wpo_col wpo_half_width wpo_feature_cont">
 	<header>
 		<h2><?php esc_html_e("WP-Optimize free / premium comparison", 'wp-optimize');?></h2>

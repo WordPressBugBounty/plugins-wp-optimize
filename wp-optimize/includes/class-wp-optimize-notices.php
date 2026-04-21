@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('Updraft_Notices_1_2')) require_once(WPO_PLUGIN_MAIN_PATH.'vendor/team-updraft/common-libs/src/updraft-notices/updraft-notices.php');
 

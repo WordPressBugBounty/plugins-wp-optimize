@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <button id="wp-optimize-nav-page-menu" aria-expanded="false" aria-controls="wpo-menu">
 	<span class="dashicons dashicons-no-alt"></span>
 	<span class="dashicons dashicons-menu"></span>

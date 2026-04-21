@@ -504,8 +504,8 @@ class WPO_Page_Cache {
 		}
 
 		if (!$force_enable) {
-			$already_ran_enable = true;
-			return true;
+			$already_ran_enable = $this->update_page_cache_enabled_state(true);
+			return $already_ran_enable;
 		}
 
 		if (!$this->write_advanced_cache() && version_compare($this->get_advanced_cache_version(), $this->_minimum_advanced_cache_file_version, '<')) {
@@ -534,15 +534,14 @@ class WPO_Page_Cache {
 			return $already_ran_enable;
 		}
 
-		$already_ran_enable = true;
-
-		return true;
+		$already_ran_enable = $this->update_page_cache_enabled_state(true);
+		return $already_ran_enable;
 	}
 
 	/**
 	 * Disables page cache
 	 *
-	 * @return bool - true on success, false otherwise
+	 * @return bool|WP_Error - true on success or WP_Error on failure.
 	 */
 	public function disable() {
 		global $is_apache;
@@ -554,13 +553,6 @@ class WPO_Page_Cache {
 		// N.B. The only use of WP_CACHE in WP core is to include('advanced-cache.php') (and run a function if it's then defined); so, if the decision to leave it enable is, for some unexpected reason, technically incorrect, it still can't cause a problem.
 		$disabled_wp_config = $this->write_wp_config(false);
 		if (!$disabled_wp_config) {
-			$plugin_basename = basename(WPO_PLUGIN_MAIN_PATH);
-			$action = "deactivate_".$plugin_basename."/wp-optimize.php";
-			if (current_action() === $action) {
-				$cache_config = WPO_Cache_Config::instance()->config;
-				$cache_config['enable_page_caching'] = false;
-				WPO_Cache_Config::instance()->update($cache_config, true);
-			}
 			$this->log("Could not turn off the WP_CACHE constant in wp-config.php");
 			$this->add_warning('error_disabling', __('Could not turn off the WP_CACHE constant in wp-config.php', 'wp-optimize'));
 		}
@@ -593,11 +585,33 @@ class WPO_Page_Cache {
 		// Unschedule cron job to purge old cache
 		wp_clear_scheduled_hook('wpo_purge_old_cache');
 
-		if (!is_wp_error($ret)) wp_clear_scheduled_hook('wpo_prune_cache_logs');
+		if (!is_wp_error($ret)) {
+			wp_clear_scheduled_hook('wpo_prune_cache_logs');
+			$ret = $this->update_page_cache_enabled_state(false);
+		}
 
 		return $ret;
 	}
 
+	/**
+	 * Update page cache enabled state.
+	 * Only updates `enable_page_caching` if the option exists and the value has changed.
+	 *
+	 * @param bool $enabled Whether page caching should be marked as enabled.
+	 *
+	 * @return true|WP_Error true on success, WP_Error on failure.
+	 */
+	private function update_page_cache_enabled_state($enabled) {
+		$config = WPO_Cache_Config::instance();
+		$cache_config = $config->get();
+
+		if (isset($cache_config['enable_page_caching']) && $cache_config['enable_page_caching'] === $enabled) {
+			return true;
+		}
+
+		$cache_config['enable_page_caching'] = $enabled;
+		return $config->update($cache_config, true);
+	}
 
 	/**
 	 * Purges the cache

@@ -70,5 +70,29 @@ class WP_Optimize_Server_Compatibility {
 		 */
 		return (bool) apply_filters('wpo_is_kinsta_server', $is_kinsta);
 	}
+
+	/**
+	 * Disable table optimization if the server does not allow it.
+	 *
+	 * @return void
+	 */
+	public function maybe_disable_unsupported_table_optimization(): void {
+
+		if ($this->does_server_allow_table_optimization()) {
+			return;
+		}
+
+		$options = WP_Optimize()->get_options();
+		$auto_options = $options->get_option('auto');
+
+		if (empty($auto_options) || !is_array($auto_options)) {
+			return;
+		}
+
+		if (!empty($auto_options['optimize']) && 'true' === $auto_options['optimize']) {
+			$auto_options['optimize'] = 'false';
+			$options->update_option('auto', $auto_options);
+		}
+	}
 }
 endif;

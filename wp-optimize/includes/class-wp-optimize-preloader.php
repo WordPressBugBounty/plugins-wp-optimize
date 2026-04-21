@@ -16,7 +16,11 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 		$this->options = WP_Optimize()->get_options();
 		// setup loggers
-		add_action('init', array($this, 'setup_loggers'));
+		if (did_action('init')) {
+			$this->setup_loggers();
+		} else {
+			add_action('init', array($this, 'setup_loggers'));
+		}
 
 		add_action('wpo_' . $this->preload_type . '_preload_continue', array($this, 'process_tasks_queue'));
 		add_filter('updraft_interrupt_tasks_queue_'.$this->task_type, array($this, 'maybe_interrupt_queue'), 20);

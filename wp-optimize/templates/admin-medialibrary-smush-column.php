@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access.'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div style="<?php echo esc_attr($smush_info_display); ?>">
 	<p><?php echo esc_html($smush_info); ?></p>
 	<?php echo $smush_details; // phpcs:ignore WordPress.Security.EscapeOutput -- Output is already escaped ?>

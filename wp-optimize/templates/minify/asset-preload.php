@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <h3><?php esc_html_e('Preload key requests / assets', 'wp-optimize'); ?></h3>
 <div class="wpo-fieldgroup">
 	<p class="wpo_min-bold-green wpo_min-rowintro">

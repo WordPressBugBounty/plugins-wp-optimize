@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div id="wp-optimize-minify-status" class="wpo_section wpo_group<?php echo (!$wpo_minify_options['enabled']) ? ' wpo-feature-is-disabled' : ''; ?>">
 	<form>
 		<div class="wpo-info wpo-show">

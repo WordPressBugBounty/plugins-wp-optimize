@@ -279,12 +279,22 @@ class WP_Optimize_Utils {
 	 * @return string
 	 */
 	public static function get_user_agent($type = 'desktop') {
-		$user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
-		if ('mobile' === $type) {
-			$user_agent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/21F79 Safari/604.1';
+		global $wp_version;
+
+		$user_agent = sprintf(
+			'WP-Optimize/%s WordPress/%s (%s; %s)',
+			WPO_VERSION,
+			$wp_version,
+			('mobile' === $type) ? 'Mobile' : 'Desktop',
+			home_url('/')
+		);
+
+		if ('gfont' === $type) {
+			// Custom UA returns TTF format. We use modern UA to get WOFF2 which is better for web
+			$user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 		}
 
-		return $user_agent;
+		return apply_filters('wpo_user_agent', $user_agent, $type);
 	}
 
 	/**

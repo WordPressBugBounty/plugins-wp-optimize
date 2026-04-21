@@ -136,7 +136,6 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 	 * @param mixed $response - The response object
 	 */
 	public function process_server_response($response) {
-		global $http_response_header;
 
 		$response = parent::process_server_response($response);
 		$data = json_decode(wp_remote_retrieve_body($response));
@@ -170,9 +169,7 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 		} else {
 			$this->fail("invalid_response", "The compression apparently succeeded, but WP-Optimize could not retrieve the compressed image from the remote server.");
 			$this->log("data: ".wp_json_encode($data));
-			if (!empty($http_response_header) && is_array($http_response_header)) {
-				$this->log("headers: ".implode("\n", $http_response_header));
-			}
+			$this->log("error: ".$compressed_image_response->get_error_message());
 			return false;
 		}
 	}

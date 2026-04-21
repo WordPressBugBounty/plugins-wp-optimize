@@ -30,14 +30,18 @@ class WPO_Page_Optimizer {
 	 *
 	 * @return string
 	 */
-	private function optimize($buffer, $flags) {
-	
+	private function optimize($buffer, $flags): string {
 		$buffer = apply_filters('wp_optimize_buffer', $buffer, $flags);
-		$buffer = $this->maybe_host_google_fonts_locally($buffer);
-		$buffer = $this->maybe_remove_unused_css($buffer);
-		$buffer = $this->maybe_apply_capojs_rules($buffer);
+		
+		if (WP_Optimize_Utils::is_valid_html($buffer)) {
+			$buffer = $this->maybe_host_google_fonts_locally($buffer);
+			$buffer = $this->maybe_remove_unused_css($buffer);
+			$buffer = $this->maybe_apply_capojs_rules($buffer);
+			$buffer = $this->maybe_add_missing_image_dimensions($buffer);
+			$buffer = $this->maybe_delay_js($buffer);
+			$buffer = $this->maybe_alter_html_for_webp($buffer);
+		}
 		$buffer = $this->maybe_cache_page($buffer, $flags);
-
 		return $buffer;
 	}
 
@@ -59,7 +63,7 @@ class WPO_Page_Optimizer {
 	}
 
 	/**
-	 * Optimize head tags sequence to make web page load optimally
+	 * Optimize head tags sequence to make a web page load optimally
 	 *
 	 * @param string $buffer source HTML page
 	 * @return string
@@ -73,7 +77,7 @@ class WPO_Page_Optimizer {
 	}
 
 	/**
-	 * Hosts Google Fonts locally from the provided HTML and the CSS files included in it, when the option is enabled.
+	 * Hosts Google Fonts locally from the provided HTML and the CSS files included in it when the option is enabled.
 	 *
 	 * @param string $buffer
 	 * @return string
@@ -120,7 +124,7 @@ class WPO_Page_Optimizer {
 	}
 
 	/**
-	 * Initialise output buffer handler.
+	 * Initialise the output buffer handler.
 	 *
 	 * @return void
 	 */
@@ -158,7 +162,7 @@ class WPO_Page_Optimizer {
 	}
 
 	/**
-	 * Checks if the current execution context is cron job request.
+	 * Checks if the current execution context is a cron job request.
 	 *
 	 * @return boolean
 	 */
@@ -211,7 +215,7 @@ class WPO_Page_Optimizer {
 	}
 
 	/**
-	 * Returns singleton instance of WPO_Page_Optimizer
+	 * Returns a singleton instance of WPO_Page_Optimizer
 	 *
 	 * @return WPO_Page_Optimizer
 	 */
@@ -220,6 +224,49 @@ class WPO_Page_Optimizer {
 			self::$instance = new self();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Add missing image dimensions if enabled
+	 *
+	 * @param string $buffer
+	 *
+	 * @return string
+	 */
+	private function maybe_add_missing_image_dimensions(string $buffer): string {
+		if (WP_Optimize::is_premium() && WP_Optimize()->get_options()->get_option('image_dimensions')) {
+			$buffer = WP_Optimize_Image_Dimensions::instance()->add_missing_image_dimensions($buffer);
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Delay JavaScript execution if enabled
+	 *
+	 * @param string $buffer
+	 * @return string
+	 */
+	private function maybe_delay_js(string $buffer): string {
+		$delay_js = WP_Optimize_Delay_JS::instance();
+		if ($delay_js->should_process()) {
+			$buffer = $delay_js->process($buffer);
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Alter HTML for WebP if redirection is not possible
+	 *
+	 * @param string $buffer
+	 *
+	 * @return string
+	 */
+	private function maybe_alter_html_for_webp(string $buffer): string {
+		$webp = WP_Optimize_WebP::get_instance();
+		if ($webp->is_webp_conversion_enabled() && $webp->get_webp_conversion_test_result()) {
+			$buffer = $webp->maybe_decide_webp_serve_method($buffer);
+		}
+		return $buffer;
 	}
 
 	/**

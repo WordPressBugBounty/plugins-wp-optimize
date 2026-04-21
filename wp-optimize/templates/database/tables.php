@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div class="wpo_shade hidden">
 	<div class="wpo_shade_inner">
 			<span class="dashicons dashicons-update-alt wpo-rotate"></span>

@@ -322,7 +322,8 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 		 * @param array $urls
 		 * @return array
 		 */
-		return apply_filters('wpo_preload_get_site_urls', $urls);
+		$filtered_urls = apply_filters('wpo_preload_get_site_urls', $urls);
+		return is_array($filtered_urls) ? $filtered_urls : $urls;
 	}
 
 	/**

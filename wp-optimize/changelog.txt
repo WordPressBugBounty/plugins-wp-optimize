@@ -1,5 +1,24 @@
 == Changelog ==
 
+= 4.5.2 - 20/Apr/2026 =
+
+* FIX: Bug preg_match() fails on wildcard * patterns in browser agents exclusion list
+* FIX: Cache - purge the cache when a plugin is auto-updated
+* FIX: Ensure page caching is fully disabled by updating internal cache configuration to prevent constant-related errors in logs
+* FIX: Premium - Unused images - Fixed an issue where multiple unused images were displayed for an edited image on setups where images are not stored in /yyyy/mm folders
+* FIX: Minify - The cron job to purge old cache files is not created
+* REFACTOR: Instead of nested output buffering, code make use of single buffer using Page Optimizer class
+* REFACTOR: Refactor Updraft_Smush_Manager::update_smush_options() method
+* REFACTOR: Using ABSPATH to prevent direct access instead of plugin constants to comply with PCP
+* TWEAK: Added a safety check to remove scheduled table optimization cron jobs when the server does not allow table optimization
+* TWEAK: Enhanced database table detection by marking the KD Submissions database table as used by Elementor Pro
+* TWEAK: Fixed a UI issue with WebP conversion in the Media Library
+* TWEAK: Handle WP_Error in WPO_Page_Cache::enable() callers
+* TWEAK: Initialize Heartbeat only on admin pages
+* TWEAK: Premium - Preload only selected URLs in the "Cache Specific URLs Only" setting
+* TWEAK: Premium - Smush - Improved PHP 8.5 compatibility by replacing deprecated $http_response_header usage
+* TWEAK: Updated user agent for the cache preloader
+
 = 4.5.1 - 23/Mar/2026 =
 
 * FIX: Fixed compatibility issue with WP Remote 

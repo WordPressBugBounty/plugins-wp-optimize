@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div id="wpo_smush_settings">
 	<div class="wpo-info">
 		<a class="wpo-info__trigger" href="#"><span class="dashicons dashicons-sos"></span> <?php esc_html_e('How to use the image compression feature', 'wp-optimize'); ?> <span class="wpo-info__close"><?php esc_html_e('Close', 'wp-optimize'); ?></span></a>

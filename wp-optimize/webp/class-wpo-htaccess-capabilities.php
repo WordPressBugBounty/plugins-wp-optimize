@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('WPO_PLUGIN_MAIN_PATH')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 require_once(WPO_PLUGIN_MAIN_PATH . 'vendor/autoload.php');
 use HtaccessCapabilityTester\HtaccessCapabilityTester;

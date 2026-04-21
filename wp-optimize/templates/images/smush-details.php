@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <a class="wpo-collapsible"><?php esc_html_e('More', 'wp-optimize'); ?></a>
 <div class="wpo-collapsible-content">
 	<table class="smush-details">

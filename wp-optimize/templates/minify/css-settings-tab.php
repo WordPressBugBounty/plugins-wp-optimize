@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION'))  die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div id='wpo_section_css' class="wpo_section wpo_group">
 	<div id="wpo_settings_warnings"></div>
 	<div class="notice notice-warning wpo-warning is-dismissible wpo_section_notice_css" style="<?php echo $show_section_notice ? '' : 'display:none;'; ?>">

@@ -1,3 +1,4 @@
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <script type="text/html" id="tmpl-wpo-modal">
 	<div class="wpo-modal--bg"></div>
 	<div class="wpo-modal" tabindex="0">

@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.5.1
+Stable tag: 4.5.2
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,25 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.5.2 - 20/Apr/2026 =
+
+* FIX: Bug preg_match() fails on wildcard * patterns in browser agents exclusion list
+* FIX: Cache - purge the cache when a plugin is auto-updated
+* FIX: Ensure page caching is fully disabled by updating internal cache configuration to prevent constant-related errors in logs
+* FIX: Premium - Unused images - Fixed an issue where multiple unused images were displayed for an edited image on setups where images are not stored in /yyyy/mm folders
+* FIX: Minify - The cron job to purge old cache files is not created
+* REFACTOR: Instead of nested output buffering, code make use of single buffer using Page Optimizer class
+* REFACTOR: Refactor Updraft_Smush_Manager::update_smush_options() method
+* REFACTOR: Using ABSPATH to prevent direct access instead of plugin constants to comply with PCP
+* TWEAK: Added a safety check to remove scheduled table optimization cron jobs when the server does not allow table optimization
+* TWEAK: Enhanced database table detection by marking the KD Submissions database table as used by Elementor Pro
+* TWEAK: Fixed a UI issue with WebP conversion in the Media Library
+* TWEAK: Handle WP_Error in WPO_Page_Cache::enable() callers
+* TWEAK: Initialize Heartbeat only on admin pages
+* TWEAK: Premium - Preload only selected URLs in the "Cache Specific URLs Only" setting
+* TWEAK: Premium - Smush - Improved PHP 8.5 compatibility by replacing deprecated $http_response_header usage
+* TWEAK: Updated user agent for the cache preloader
 
 = 4.5.1 - 23/Mar/2026 =
 
@@ -790,35 +809,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 * REFACTOR: Premium - Unused Images - Separate classes for Beaver Builder, Estatik, and Yoast SEO plugins
 * FIX: Premium - WP CLI commands permission issues solved
 
-= 3.2.15 - 09/May/2023 =
-
-* FEATURE: Premium - Cache - Added compatibility with the "WooCommerce Multilingual & Multicurrency" plugin's multi-currency feature
-* FIX: Premium - Above the folder elements should not be loaded lazily
-* FIX: Prevents minify cache invalidation when asset version is changed but content is same
-* FIX: Prevent PHP 8 uncaught exception `TypeError` when using CloudFlare
-* FIX: Add logging destination UI
-* FIX: Premium - Cache - Prevents a PHP fatal error that occurs when user cache is enabled on sites running on MariaDB with a version prefix of '5.5.5-' and PHP versions prior to 8.0
-* FIX: Serving WebP images only to supported browsers wasn't working properly when page caching is enabled
-* FIX: Minify - `inherit` Google fonts method is not working
-* TWEAK: Prevent PHP deprecation notice when purging minify cache
-* TWEAK: Cache - Prevent PHP warning when deleting cache
-* TWEAK: Suppress PHP notice when cannot write to .htaccess file
-* TWEAK: Add user capability check for smush task manager ajax handling method
-* TWEAK: Minify - Do not send cache control and last modified headers if already present
-* TWEAK: Smush - clean up log entries
-* TWEAK: Correctly handle XX and T1 country codes in Cloudflare's IP country header
-* REFACTOR: Separate classes for activation, deactivation and uninstall actions
-
-= 3.2.14 - 30/Mar/2023 =
-
-* FIX: Compatibility with WordPress 6.2 when using PHP 8.x
-* FIX: Divi builder's edit mode when WebP serving is using the "alter HTML" method
-* FIX: Premium - Unused images feature - improve compatibility with Beaver Builder and its addons
-* FIX: Cache - Page caching wasn't working on the IIS webserver
-* TWEAK: Update seasonal notices
-* TWEAK: Prevent deprecation notices in PHP 8.2+
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.5.1: A lot of bug fixes and tweaks - a recommended update for all
+* 4.5.2: A lot of bug fixes and tweaks - a recommended update for all

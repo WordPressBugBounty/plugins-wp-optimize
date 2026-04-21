@@ -1,18 +1,18 @@
 <?php
 
-if (!defined('WPO_VERSION')) die('No direct access allowed');
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('WPO_WebP_Alter_HTML')) :
 
 class WPO_WebP_Alter_HTML {
 
 	private $tags = array('img', 'source', 'input', 'iframe', 'div', 'li', 'link', 'a', 'section', 'video');
-
+	
 	/**
 	 * Constructor
 	 */
 	private function __construct() {
-		add_action('template_redirect', array($this, 'start'), 9999);
+
 	}
 
 	/**
@@ -29,27 +29,15 @@ class WPO_WebP_Alter_HTML {
 	}
 	
 	/**
-	 * Start to alter html in output buffer
-	 */
-	public function start() {
-		if (apply_filters('wpo_disable_webp_alter_html', false)) {
-			return;
-		}
-
-		if (!is_admin() || (defined('DOING_AJAX') && DOING_AJAX)) {
-			ob_start(array(__CLASS__, 'alter_html'));
-		}
-	}
-
-	/**
 	 * Alter html to change image related tags to specify webp images
 	 *
 	 * @param string $html - HTML document as string
 	 * @return string
 	 */
-	public function alter_html($html) {
-		
-		if (!WP_Optimize_Utils::is_valid_html($html)) return $html;
+	public function alter_html(string $html): string {
+		if (apply_filters('wpo_disable_webp_alter_html', false)) {
+			return $html;
+		}
 
 		// MAX_FILE_SIZE is defined in simple_html_dom.
 		// For safety, we make sure it is defined before using
@@ -77,8 +65,9 @@ class WPO_WebP_Alter_HTML {
 				}
 			}
 		}
-
-		return $dom->save();
+		
+		$result = $dom->save();
+		return $result;
 	}
 
 	/**

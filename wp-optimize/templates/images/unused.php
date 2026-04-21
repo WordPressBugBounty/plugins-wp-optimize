@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <div class="wpo-unused-images-section">
 	<h3 class="wpo-first-child"><?php esc_html_e('Unused images', 'wp-optimize');?></h3>

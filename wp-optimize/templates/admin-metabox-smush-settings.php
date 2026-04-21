@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access.'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <div class='wpo_smush_single_image compression_level wpo-fieldgroup' style="<?php echo esc_attr($smush_display); ?>">
 	<div class="wpo-fieldgroup__subgroup">
 		<label for="enable_lossy_compression">

@@ -737,18 +737,27 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	}
 
 	/**
-	 * Updates global smush options
+	 * Update smush options
+	 * Only options whose values differ from the stored values are updated.
 	 *
-	 * @param array $options - sent in via AJAX
-	 * @return bool - status of the update
+	 * @param array $options Associative array of option names and values sent in via AJAX.
+	 * @return bool True if all updates succeeded or no changes were required,
+	 *              false if at least one option update failed.
 	 */
 	public function update_smush_options($options) {
-		
+		$success = true;
 		foreach ($options as $option => $value) {
-			$this->options->update_option($option, $value);
-		}
+			// Here we only store string, array as string after serialization, boolean, and integer values which will be stored as strings (LONGTEXT field type)
+			// So loose comparison is fine, strict comparison results to buggy behavior
+			if ($this->options->get_option($option) == $value) {
+				continue;
+			}
 
-		return true;
+			if (!$this->options->update_option($option, $value)) {
+				$success = false;
+			}
+		}
+		return $success;
 	}
 
 	/**

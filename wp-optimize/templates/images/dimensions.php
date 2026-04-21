@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 <?php
 $fcp_link = 'https://getwpo.com/first-contentful-paint/';
 $cls_link = 'https://getwpo.com/cumulative-layout-shift/';

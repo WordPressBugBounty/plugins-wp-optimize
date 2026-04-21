@@ -3,7 +3,7 @@
         'name' => 'updraftplus/wp-optimize',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'fb2f7f495630c23214eb8e1d3a285eeb849e7bb6',
+        'reference' => '3d59440fe38b0c2dc7bddfb871cd91c59f8885c8',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -80,9 +80,9 @@
             'dev_requirement' => false,
         ),
         'phpseclib/phpseclib' => array(
-            'pretty_version' => '1.0.27',
-            'version' => '1.0.27.0',
-            'reference' => '56fa436a7a7b87e17d3f1b91d58afb1a6cbaedc9',
+            'pretty_version' => '1.0.28',
+            'version' => '1.0.28.0',
+            'reference' => '8e2adfd761c11421ff4f4b694b4d0db78f3b4355',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpseclib/phpseclib',
             'aliases' => array(),
@@ -169,7 +169,7 @@
         'rosell-dk/webp-convert' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'dd2aa9d268393f229d886b6fe0f255aea83acea8',
+            'reference' => '15120a3379aa7043f8f557d91cc4e07c5c36e43b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../rosell-dk/webp-convert',
             'aliases' => array(
@@ -227,7 +227,7 @@
         'updraftplus/wp-optimize' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'fb2f7f495630c23214eb8e1d3a285eeb849e7bb6',
+            'reference' => '3d59440fe38b0c2dc7bddfb871cd91c59f8885c8',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

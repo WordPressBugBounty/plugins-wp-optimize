@@ -1,4 +1,4 @@
-<?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
+<?php if (!defined('ABSPATH')) die('No direct access allowed'); ?>
 
 <div id="wp-optimize-database-table-analysis" class="wpo_section wpo_group premium-only">
 	<div class="wpo-fieldgroup">
