@@ -83,6 +83,8 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 		add_filter('manage_media_columns', array($this, 'manage_media_columns'));
 		add_action('manage_media_custom_column', array($this, 'manage_media_custom_column'), 10, 2);
 
+		add_filter('is_protected_meta', array($this, 'is_protected_meta'), 10, 3);
+
 		// clean backup images cron action.
 		add_action('wpo_smush_clear_backup_images', array($this, 'clear_backup_images'));
 
@@ -376,12 +378,20 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 
 		$image_path = get_attached_file($image_id);
 		$backup_path = get_post_meta($image_id, 'original-file', true);
-		
+		$uploads_dir = wp_upload_dir();
+		$uploads_basedir = realpath($uploads_dir['basedir']);
+
+		if (false === $uploads_basedir) {
+			if ($switched_blog) {
+				restore_current_blog();
+			}
+			return new WP_Error('restore_backup_issue', __('The uploads base directory is not correct.', 'wp-optimize'));
+		}
+
+		$uploads_basedir = trailingslashit($uploads_basedir);
+
 		// If the file doesn't exist, check if it's relative
 		if (!is_file($backup_path)) {
-			$uploads_dir = wp_upload_dir();
-			$uploads_basedir = trailingslashit($uploads_dir['basedir']);
-
 			if (is_file($uploads_basedir . $backup_path)) {
 				$backup_path = $uploads_basedir . $backup_path;
 			}
@@ -410,6 +420,15 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 				$backup_path = substr($backup_path, strpos($backup_path, 'wp-content/uploads/') + strlen('wp-content/uploads/'));
 				$backup_path = $uploads_basedir . $backup_path;
 			}
+		}
+
+		$backup_path = realpath($backup_path);
+
+		if (!$backup_path || 0 !== strpos($backup_path, $uploads_basedir)) {
+			if ($switched_blog) {
+				restore_current_blog();
+			}
+			return new WP_Error('restore_backup_issue', __('The backup file path is not correct.', 'wp-optimize'));
 		}
 
 		if (!is_file($backup_path)) {
@@ -1644,8 +1663,11 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	public function unscheduled_original_file_deletion($post_id) {
 		$the_original_file = get_post_meta($post_id, 'original-file', true);
 		$uploads_dir = wp_get_upload_dir();
-		$the_original_file = trailingslashit($uploads_dir['basedir'])  . $the_original_file;
-		if ('' != $the_original_file && file_exists($the_original_file)) {
+		$uploads_basedir = realpath($uploads_dir['basedir']);
+		if (!$uploads_basedir) return;
+		$uploads_basedir = trailingslashit($uploads_basedir);
+		$the_original_file = realpath($uploads_basedir  . $the_original_file);
+		if ($the_original_file && 0 === strpos($the_original_file, $uploads_basedir) && file_exists($the_original_file)) {
 			wp_delete_file($the_original_file);
 		}
 	}
@@ -1735,6 +1757,36 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 				'value'   => '',
 			),
 		);
+	}
+
+	/**
+	 * Protects smush meta keys
+	 *
+	 * @param bool   $protected Whether the key is considered protected
+	 * @param string $meta_key  Metadata key
+	 * @param string $meta_type Type of metadata object
+	 *
+	 * @return bool
+	 */
+	public function is_protected_meta($protected, $meta_key, $meta_type) {
+		if ('post' !== $meta_type) {
+			return $protected;
+		}
+
+		$keys = array(
+			'smush-complete',
+			'smush-marked',
+			'smush-info',
+			'smush-stats',
+			'original-file',
+			'wpo-webp-conversion-complete',
+		);
+
+		if (in_array($meta_key, $keys, true)) {
+			return true;
+		}
+
+		return $protected;
 	}
 }
 

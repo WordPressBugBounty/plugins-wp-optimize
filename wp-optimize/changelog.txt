@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 4.5.3 - 29/Apr/2026 =
+* SECURITY: Prevented path traversal security risk. Thanks to Wordfence for the responsible disclosure
+
 = 4.5.2 - 20/Apr/2026 =
 
 * FIX: Bug preg_match() fails on wildcard * patterns in browser agents exclusion list

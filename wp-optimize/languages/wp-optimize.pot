@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: Team Updraft <mail@example.com>\n"
 "Last-Translator: John Doe <mail@example.com>\n"
-"POT-Creation-Date: 2026-04-21 16:43+0000\n"
+"POT-Creation-Date: 2026-04-29 13:52+0000\n"
 "Report-Msgid-Bugs-To: http://example.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -81,11 +81,11 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
-#: src/wp-optimize.php:1010, src/includes/class-updraft-smush-manager.php:813, src/includes/class-updraft-smush-manager.php:1186, src/templates/admin-metabox-smush.php:63, src/templates/cache/page-cache-preload.php:7, src/templates/database/optimizations-table.php:72, src/templates/database/optimizations-table.php:88, src/templates/database/optimizations-table.php:101, src/templates/database/tables-list-after.php:64, src/templates/images/smush-popup.php:35, src/templates/images/smush-popup.php:68, src/templates/minify/preload-tab.php:27, src/templates/settings/settings-logging.php:48, src/templates/settings/settings-logging.php:48
+#: src/wp-optimize.php:1010, src/includes/class-updraft-smush-manager.php:832, src/includes/class-updraft-smush-manager.php:1205, src/templates/admin-metabox-smush.php:63, src/templates/cache/page-cache-preload.php:7, src/templates/database/optimizations-table.php:72, src/templates/database/optimizations-table.php:88, src/templates/database/optimizations-table.php:101, src/templates/database/tables-list-after.php:64, src/templates/images/smush-popup.php:35, src/templates/images/smush-popup.php:68, src/templates/minify/preload-tab.php:27, src/templates/settings/settings-logging.php:48, src/templates/settings/settings-logging.php:48
 msgid "Cancel"
 msgstr ""
 
-#: src/wp-optimize.php:1011, src/includes/class-updraft-smush-manager.php:1187
+#: src/wp-optimize.php:1011, src/includes/class-updraft-smush-manager.php:1206
 msgid "Cancelling..."
 msgstr ""
 
@@ -667,7 +667,7 @@ msgstr ""
 msgid "Blog ID is invalid"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager-commands.php:106, src/includes/class-updraft-smush-manager.php:372
+#: src/includes/class-updraft-smush-manager-commands.php:106, src/includes/class-updraft-smush-manager.php:374
 msgid "The blog ID provided does not match the current blog."
 msgstr ""
 
@@ -764,19 +764,19 @@ msgid_plural "The selected images were successfully marked as uncompressed"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/includes/class-updraft-smush-manager-commands.php:481, src/includes/class-updraft-smush-manager-commands.php:512, src/includes/class-updraft-smush-manager.php:545
+#: src/includes/class-updraft-smush-manager-commands.php:481, src/includes/class-updraft-smush-manager-commands.php:512, src/includes/class-updraft-smush-manager.php:564
 msgid "All the compressed images were successfully restored."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager-commands.php:515, src/includes/class-updraft-smush-manager.php:553
+#: src/includes/class-updraft-smush-manager-commands.php:515, src/includes/class-updraft-smush-manager.php:572
 msgid "All the compressed images were successfully marked as uncompressed."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager-commands.php:508, src/includes/class-updraft-smush-manager.php:541
+#: src/includes/class-updraft-smush-manager-commands.php:508, src/includes/class-updraft-smush-manager.php:560
 msgid "All the compressed images with backup copies of their original files were successfully restored."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager-commands.php:510, src/includes/class-updraft-smush-manager.php:543, src/includes/class-updraft-smush-manager.php:534
+#: src/includes/class-updraft-smush-manager-commands.php:510, src/includes/class-updraft-smush-manager.php:562, src/includes/class-updraft-smush-manager.php:553
 msgid "Unable to restore %s image without backup files."
 msgid_plural "Unable to restore %s images without backup files."
 msgstr[0] ""
@@ -798,191 +798,199 @@ msgstr ""
 msgid "Image not found"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:194, src/includes/class-updraft-smush-manager.php:880
+#: src/includes/class-updraft-smush-manager.php:196, src/includes/class-updraft-smush-manager.php:899
 msgid "Compressing this file type extension is not supported"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:201
+#: src/includes/class-updraft-smush-manager.php:203
 msgid "Convert to WebP"
 msgstr ""
 
+#: src/includes/class-updraft-smush-manager.php:388
+msgid "The uploads base directory is not correct."
+msgstr ""
+
+#: src/includes/class-updraft-smush-manager.php:431
+msgid "The backup file path is not correct."
+msgstr ""
+
 #. translators: %s is the backup file path
-#: src/includes/class-updraft-smush-manager.php:425
+#: src/includes/class-updraft-smush-manager.php:444
 msgid "The backup file %s could not be deleted."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:422
+#: src/includes/class-updraft-smush-manager.php:441
 msgid "The file could not be copied; check your PHP error logs for details"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:420
+#: src/includes/class-updraft-smush-manager.php:439
 msgid "The destination could not be written to."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:420
+#: src/includes/class-updraft-smush-manager.php:439
 msgid "Please check your folder's permissions"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:418
+#: src/includes/class-updraft-smush-manager.php:437
 msgid "The backup was not found; it may have been deleted or was already restored"
 msgstr ""
 
 #. translators: %s is the number of restored images.
-#: src/includes/class-updraft-smush-manager.php:514
+#: src/includes/class-updraft-smush-manager.php:533
 msgid "%s compressed images were restored from their backup"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:511
+#: src/includes/class-updraft-smush-manager.php:530
 msgid "%1$s compressed images were restored from their backup for the site %2$s"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:551
+#: src/includes/class-updraft-smush-manager.php:570
 msgid "All the compressed images for the site %s were successfully marked as uncompressed."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:537
+#: src/includes/class-updraft-smush-manager.php:556
 msgid "All the compressed images for the site %s were successfully restored."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:532
+#: src/includes/class-updraft-smush-manager.php:551
 msgid "All the compressed images for site %s with backup copies of their original files were successfully restored."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:783
+#: src/includes/class-updraft-smush-manager.php:802
 msgid "resmushIt"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:786
+#: src/includes/class-updraft-smush-manager.php:805
 msgid "No uncompressed images were found."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:787
+#: src/includes/class-updraft-smush-manager.php:806
 msgid "An unexpected response was received from the server."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:787
+#: src/includes/class-updraft-smush-manager.php:806
 msgid "More information has been logged in the browser console."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:788
+#: src/includes/class-updraft-smush-manager.php:807
 msgid "Please wait: compressing the selected image."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:789
+#: src/includes/class-updraft-smush-manager.php:808
 msgid "Please try again later."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:790
+#: src/includes/class-updraft-smush-manager.php:809
 msgid "Connecting to the Smush API server, please wait"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:791
+#: src/includes/class-updraft-smush-manager.php:810
 msgid "Please wait while the request is being processed"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:792
+#: src/includes/class-updraft-smush-manager.php:811
 msgid "There was an error connecting to the image compression server."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:793
+#: src/includes/class-updraft-smush-manager.php:812
 msgid "This could mean either the server is temporarily unavailable or there are connectivity issues with your internet connection."
 msgstr ""
 
 #. translators: %s is a link
-#: src/includes/class-updraft-smush-manager.php:795
+#: src/includes/class-updraft-smush-manager.php:814
 msgid "(Also ensure IPs listed at the bottom of this %s page are whitelisted by your webserver)."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:796
+#: src/includes/class-updraft-smush-manager.php:815
 msgid "Please try later."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:797
+#: src/includes/class-updraft-smush-manager.php:816
 msgid "This image is too large to be optimized — it exceeds the provider's size limit"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:798
+#: src/includes/class-updraft-smush-manager.php:817
 msgid "Please select the images you want compressed from the \"Uncompressed images\" panel first"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:799
+#: src/includes/class-updraft-smush-manager.php:818
 msgid "Please wait: updating information about the selected image."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:800
+#: src/includes/class-updraft-smush-manager.php:819
 msgid "Please select the images you want to mark as already compressed from the \"Uncompressed images\" panel first"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:801
+#: src/includes/class-updraft-smush-manager.php:820
 msgid "View Image"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:802
+#: src/includes/class-updraft-smush-manager.php:821
 msgid "Do you really want to delete all backup images now?"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:802, src/includes/class-updraft-smush-manager.php:803
+#: src/includes/class-updraft-smush-manager.php:821, src/includes/class-updraft-smush-manager.php:822
 msgid "This action is irreversible."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:803
+#: src/includes/class-updraft-smush-manager.php:822
 msgid "Do you really want to mark all the images as uncompressed?"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:804
+#: src/includes/class-updraft-smush-manager.php:823
 msgid "Do you want to restore the original images from the backup (where they exist?)"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:805
+#: src/includes/class-updraft-smush-manager.php:824
 msgid "Do you really want to restore all the compressed images?"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:806
+#: src/includes/class-updraft-smush-manager.php:825
 msgid "No WebP conversion tools are available on your web-server."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:807
+#: src/includes/class-updraft-smush-manager.php:826
 msgid "How to get the WebP conversion tools to work?"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:808, src/templates/images/smush-details.php:2
+#: src/includes/class-updraft-smush-manager.php:827, src/templates/images/smush-details.php:2
 msgid "More"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:809
+#: src/includes/class-updraft-smush-manager.php:828
 msgid "Less"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:810
+#: src/includes/class-updraft-smush-manager.php:829
 msgid "Converting image to WebP format, please wait"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:811, src/includes/class-updraft-smush-manager.php:831
+#: src/includes/class-updraft-smush-manager.php:830, src/includes/class-updraft-smush-manager.php:850
 msgid "Compress Image"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:812, src/includes/class-updraft-smush-manager.php:1185, src/templates/admin-medialibrary-smush-column.php:11, src/templates/admin-metabox-smush.php:28
+#: src/includes/class-updraft-smush-manager.php:831, src/includes/class-updraft-smush-manager.php:1204, src/templates/admin-medialibrary-smush-column.php:11, src/templates/admin-metabox-smush.php:28
 msgid "Compress"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:814, src/templates/admin-metabox-smush.php:58, src/templates/modal.php:5, src/templates/cache/page-cache.php:11, src/templates/images/smush-popup.php:52, src/templates/images/smush-popup.php:58, src/templates/images/smush-popup.php:63, src/templates/images/smush.php:4, src/templates/minify/status-tab.php:5
+#: src/includes/class-updraft-smush-manager.php:833, src/templates/admin-metabox-smush.php:58, src/templates/modal.php:5, src/templates/cache/page-cache.php:11, src/templates/images/smush-popup.php:52, src/templates/images/smush-popup.php:58, src/templates/images/smush-popup.php:63, src/templates/images/smush.php:4, src/templates/minify/status-tab.php:5
 msgid "Close"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:890, src/templates/images/smush.php:137
+#: src/includes/class-updraft-smush-manager.php:909, src/templates/images/smush.php:137
 msgid "Only the original image will be restored."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:892, src/templates/images/smush.php:139
+#: src/includes/class-updraft-smush-manager.php:911, src/templates/images/smush.php:139
 msgid "In order to restore the other sizes, you should use a plugin such as \"Regenerate Thumbnails\"."
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:1188
+#: src/includes/class-updraft-smush-manager.php:1207
 msgid "The images were restored successfully"
 msgstr ""
 
 #. translators: %s is a service used to compress images
-#: src/includes/class-updraft-smush-manager.php:1275
+#: src/includes/class-updraft-smush-manager.php:1294
 msgid "Service is provided by %s"
 msgstr ""
 
