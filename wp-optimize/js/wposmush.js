@@ -745,13 +745,13 @@ var WP_Optimize_Smush = function() {
 		};
 		block_ui(wposmush.converting_to_webp, {}, 0, true);
 		smush_manager_send_command('convert_to_webp_format', data, function(response) {
-			if (response.error) {
-				block_ui(response.error, {}, 2000);
-			} else {
+			if (response.success) {
 				block_ui(response.success, {}, 2000);
 				$link.next().remove();
 				if ($link.prev().is('.wpo-action-separator')) $link.prev().remove();
 				$link.remove();
+			} else {
+				block_ui(response.error || response.error_message || wposmush.server_error , {}, 2000);
 			}
 		});
 	});
@@ -1444,12 +1444,14 @@ var WP_Optimize_Smush = function() {
 	 * @param {[type]}   data	   Data to send
 	 * @param {Function} callback   Will be called with the results
 	 * @param {boolean}  json_parse JSON parse the results
+	 * @param {boolean}  wait       Wait for the response
 	 *
 	 * @return {JSON}
 	 */
-	function smush_manager_send_command(action, data, callback, json_parse) {
+	function smush_manager_send_command(action, data, callback, json_parse, wait) {
 
 		json_parse = ('undefined' === typeof json_parse) ? true : json_parse;
+		var _wait = ('undefined' === typeof wait) ? false : wait;
 
 		var skip_notice = data.hasOwnProperty('skip_notice');
 		var data_has_only_skip_notice = skip_notice && 1 === Object.keys(data).length;
@@ -1460,7 +1462,7 @@ var WP_Optimize_Smush = function() {
 
 		(function(single_callback, _keep, _unique) {
 			heartbeat_agents.push(heartbeat.add_agent({
-				_wait: false,
+				_wait: _wait,
 				_keep: _keep,
 				_unique: _unique,
 				command: 'updraft_smush_ajax',

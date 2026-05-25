@@ -793,7 +793,7 @@ class WP_Optimize_Minify_Front_End {
 					$inline_css_hash = md5(implode('', $inline_css_group));
 					$hash = hash('adler32', $handle_str . $inline_css_hash . $last_modified_str);
 				} else {
-					$hash = $handle_str . $last_modified_str;
+					$hash = sanitize_file_name($handle_str . $last_modified_str);
 				}
 
 				// static cache file info
@@ -1069,7 +1069,7 @@ class WP_Optimize_Minify_Front_End {
 					// Change the hash based on last modified timestamp
 					$hash = hash('adler32', $handles_str . $last_modified_str);
 				} else {
-					$hash = $handles_str . $last_modified_str;
+					$hash = sanitize_file_name($handles_str . $last_modified_str);
 				}
 								
 				// static cache file info
@@ -1425,7 +1425,7 @@ class WP_Optimize_Minify_Front_End {
 				if ($merge_js) {
 					$hash = hash('adler32', $handles_str . $last_modified_str);
 				} else {
-					$hash = $handles_str . $last_modified_str;
+					$hash = sanitize_file_name($handles_str . $last_modified_str);
 				}
 
 				// static cache file info
@@ -1889,7 +1889,7 @@ class WP_Optimize_Minify_Front_End {
 					$inline_css_hash = md5(implode('', $inline_css_group));
 					$hash = hash('adler32', $handles_str . $inline_css_hash . $last_modified_str);
 				} else {
-					$hash = $handles_str . $last_modified_str;
+					$hash = sanitize_file_name($handles_str . $last_modified_str);
 				}
 
 				// static cache file info
@@ -2067,6 +2067,15 @@ class WP_Optimize_Minify_Front_End {
 
 			$href = WP_Optimize_Minify_Functions::get_hurl($script['url']);
 			if (WP_Optimize_Minify_Functions::is_minified_css_js_filename($href)) continue;
+
+			$asset_content = WP_Optimize_Minify_Functions::get_asset_content($href);
+			$code = $asset_content['content'];
+			
+			
+			if (WP_Optimize_Minify_Functions::has_js_import_statements($code)) {
+				// If the module script contains import statements, we cannot safely minify or cache it, so skip it.
+				continue;
+			}
 
 			$last_modified = WP_Optimize_Minify_Functions::get_modification_time($script['url']);
 			$handle = $script['handle'];

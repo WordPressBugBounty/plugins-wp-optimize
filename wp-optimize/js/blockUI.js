@@ -10,9 +10,17 @@ var wp_optimize = window.wp_optimize || {};
  */
 wp_optimize.block_ui = function (message, options, timeout, is_popup_blocking_screen) {
 
+	var font_size = 'medium';
+	if (typeof message === 'string') {
+		if (message.length < 30) {
+			font_size = 'large';
+		} else if (message.length > 100) {
+			font_size = 'small';
+		}
+	}
+
 	var $ = jQuery,
 	logo_src = (typeof wpoptimize !== 'undefined' && wpoptimize.logo_src) || (typeof wposmush !== 'undefined' && wposmush.logo_src),
-		font_size = message.length < 30 ? 'large' : ( message.length < 100 ? 'medium' : 'small'),
 		params = {
 			css: {
 				width: '300px',

@@ -53,7 +53,7 @@ class WPO_Image_Utils {
 	 *
 	 * @return string
 	 */
-	public static function get_extension($file) {
+	public static function get_extension($file): string {
 		$file_type = wp_check_filetype($file);
 		return (string) $file_type['ext'];
 	}

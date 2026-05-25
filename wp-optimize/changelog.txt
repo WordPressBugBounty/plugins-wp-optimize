@@ -1,5 +1,34 @@
 == Changelog ==
 
+= 4.5.4 - 25/May/2026 =
+
+* FIX: WebP image compression breaking in some cases
+* REFACTOR: Avoid instantiating PHPSQLParser on each call in WPO_DB_Table_Analysis
+* REFACTOR: Class WPO_WebP_Convert
+* REFACTOR: Make markup readable in `tables-body.php` template
+* REFACTOR: Refactored duplicated cache_admin_bar logic by centralizing it in the admin class and removing redundant implementations.
+* REFACTOR: Removed unused `WPO_Htaccess_Capabilities` class
+* REFACTOR: WPO_Activation class
+* REFACTOR: WPO_Uninstall class
+* REFACTOR: WPO_WebP_Alter_HTML class
+* REFACTOR: WPO_WebP_Self_Test class
+* REFACTOR: WPO_WebP_Test_Run class
+* REFACTOR: WPO_WebP_Utils class
+* REFACTOR: WPO_Webp_Task_Manager class
+* REFACTOR: WP_Optimize_WebP class
+* REFACTOR: WP_Optimize_WebP_Images class
+* TWEAK: Added an additional check to prevent SplFileInfo::getSize() RuntimeException in WP_Optimize_Utils::get_folder_stats()
+* TWEAK: All in One SEO plugin compatibility issue
+* TWEAK: Cache - Inconsistent REST cache filenames due to query parameter order 
+* TWEAK: Cache - Set the purge old cache cron schedule based on the Cache lifespan setting
+* TWEAK: Ensure parsed result is an array in WPO_DB_Table_Analysis::get_query_table()
+* TWEAK: Exclude GIF from being converted to WebP with `wpo_webp_convert_compressed_images` cron job
+* TWEAK: Optimized `wpo_username_from_cookies()` to avoid repeated database queries per request
+* TWEAK: Precheck for existing WebP format of file before running WebP conversion
+* TWEAK: Remove redundant code that is not reachable.
+* TWEAK: Resolved edge cases in CapoJS
+
+
 = 4.5.3 - 29/Apr/2026 =
 * SECURITY: Prevented path traversal security risk. Thanks to Wordfence for the responsible disclosure
 

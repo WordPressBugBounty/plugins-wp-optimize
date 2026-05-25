@@ -233,21 +233,55 @@ class WPO_Page_Cache {
 	}
 
 	/**
+	 * Handle cache settings update
+	 *
+	 * @param array $new_settings
+	 * @return void
+	 */
+	public function cache_settings_updated($new_settings) {
+
+		$this->unschedule_purge_old_cache();
+
+		if ($new_settings['enable_page_caching']) {
+			$this->schedule_purge_old_cache();
+		}
+	}
+
+	/**
 	 * Activate cron job when the cache is enabled for deleting expired cache files
 	 */
 	public function cron_activate() {
-		$page_cache_length = $this->config->get_option('page_cache_length');
 		if ($this->is_enabled()) {
-			if (!wp_next_scheduled('wpo_purge_old_cache')) {
-				wp_schedule_event(time() + (false === $page_cache_length ? '86400' : $page_cache_length), 'wpo_purge_old_cache', 'wpo_purge_old_cache');
-			}
-			if (!wp_next_scheduled('wpo_prune_cache_logs')) {
-				wp_schedule_event(time(), 'weekly', 'wpo_prune_cache_logs');
-			}
+			$this->schedule_purge_old_cache();
 		} else {
-			wp_clear_scheduled_hook('wpo_purge_old_cache');
-			wp_clear_scheduled_hook('wpo_prune_cache_logs');
+			$this->unschedule_purge_old_cache();
 		}
+	}
+
+	/**
+	 * Schedules events to purge old cache
+	 *
+	 * @return void
+	 */
+	private function schedule_purge_old_cache() {
+		$page_cache_length = $this->config->get_option('page_cache_length');
+
+		if (!wp_next_scheduled('wpo_purge_old_cache')) {
+			wp_schedule_event(time() + (false === $page_cache_length ? 86400 : $page_cache_length), 'wpo_purge_old_cache', 'wpo_purge_old_cache');
+		}
+		if (!wp_next_scheduled('wpo_prune_cache_logs')) {
+			wp_schedule_event(time(), 'weekly', 'wpo_prune_cache_logs');
+		}
+	}
+
+	/**
+	 * Unschedules events to purge old cache
+	 *
+	 * @return void
+	 */
+	private function unschedule_purge_old_cache() {
+		wp_clear_scheduled_hook('wpo_purge_old_cache');
+		wp_clear_scheduled_hook('wpo_prune_cache_logs');
 	}
 
 	/**

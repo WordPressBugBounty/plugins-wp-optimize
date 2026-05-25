@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.5.3
+Version: 4.5.4
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.5.3');
+define('WPO_VERSION', '4.5.4');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -91,7 +91,6 @@ class WP_Optimize {
 
 		$this->load_admin();
 		add_action('admin_init', array($this, 'admin_init'));
-		add_action('admin_bar_menu', array($this, 'cache_admin_bar'), 100, 1);
 
 		add_filter("plugin_action_links_".plugin_basename(__FILE__), array($this, 'plugin_settings_link'));
 		add_action('wpo_cron_event2', array($this, 'cron_action'));
@@ -222,7 +221,7 @@ class WP_Optimize {
 	 *
 	 * @param string $class_name The name of the class.
 	 */
-	private function loader($class_name) {
+	public function loader($class_name) {
 		$dirs = $this->get_class_directories();
 
 		foreach ($dirs as $dir) {
@@ -1071,39 +1070,6 @@ class WP_Optimize {
 		);
 		$filtered_translations = apply_filters('wpo_js_translations', $translations);
 		return is_array($filtered_translations) ? $filtered_translations : $translations;
-	}
-
-	/**
-	 * Manages the admin bar menu for caching (currently page and minify)
-	 */
-	public function cache_admin_bar($wp_admin_bar) {
-
-		$options = $this->get_options();
-		if (!$options->get_option('enable_cache_in_admin_bar', true)) return;
-
-		/**
-		 * The "purge cache" menu items
-		 *
-		 * @param array  $menu_items - The menu items, in the format required by $wp_admin_bar->add_menu()
-		 * @param object $wp_admin_bar
-		 */
-		$menu_items = apply_filters('wpo_cache_admin_bar_menu_items', array(), $wp_admin_bar);
-
-		if (empty($menu_items) || !is_array($menu_items)) return;
-
-		$wp_admin_bar->add_menu(array(
-			'id'    => 'wpo_purge_cache',
-			'title' => __('Purge cache', 'wp-optimize'),
-			'href'  => '#',
-			'meta'  => array(
-				'title' => __('Purge cache', 'wp-optimize'),
-			),
-			'parent' => false,
-		));
-
-		foreach ($menu_items as $item) {
-			$wp_admin_bar->add_menu($item);
-		}
 	}
 
 	/**

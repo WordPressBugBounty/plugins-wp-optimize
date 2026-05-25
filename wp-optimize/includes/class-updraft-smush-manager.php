@@ -157,6 +157,9 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	 */
 	public function get_media_smush_column_content($attachment_id) {
 		$file = get_attached_file($attachment_id);
+		if (false === $file) {
+			return '';
+		}
 		$ext = WPO_Image_Utils::get_extension($file);
 		$allowed_extensions = WPO_Image_Utils::get_allowed_extensions();
 

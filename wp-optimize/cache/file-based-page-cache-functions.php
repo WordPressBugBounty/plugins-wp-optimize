@@ -529,6 +529,7 @@ function wpo_rest_cache_filename($params) {
 	$cache_key = '';
 
 	if (!empty($params)) {
+		ksort($params);
 		foreach ($params as $key => $value) {
 			if (is_array($value)) $value = serialize($value);
 			$_cache_key = $key.'_'.$value;

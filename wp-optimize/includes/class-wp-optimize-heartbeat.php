@@ -112,7 +112,11 @@ class WP_Optimize_Heartbeat {
 
 					$method = new ReflectionMethod($commands, $command_data['subaction']);
 					
-					$command_response = $method->invokeArgs($commands, array($command_data_param));
+					try {
+						$command_response = $method->invokeArgs($commands, array($command_data_param));
+					} catch (Exception $e) {
+						$command_response = new WP_Error($e->getCode() ? $e->getCode() : 1, $e->getMessage());
+					}
 
 					if (is_array($command_response)) {
 						$response['callbacks'][$uid] = $command_response;

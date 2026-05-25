@@ -615,7 +615,9 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 
 		$images['original'] = get_attached_file($attachment_id);
 		foreach ($images as $image) {
-			WPO_WebP_Utils::do_webp_conversion($image);
+			if (!is_file($image.'.webp')) {
+				WPO_WebP_Utils::do_webp_conversion($image);
+			}
 		}
 
 		return array(

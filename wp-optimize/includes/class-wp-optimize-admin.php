@@ -13,6 +13,7 @@ class WP_Optimize_Admin {
 		} else {
 			add_action('admin_menu', array($this, 'admin_menu'));
 		}
+		add_action('admin_bar_menu', array($this, 'cache_admin_bar'), 100, 1);
 	}
 	
 	/**
@@ -698,10 +699,9 @@ class WP_Optimize_Admin {
 	 * Manages the admin bar menu for caching (currently page and minify)
 	 */
 	public function cache_admin_bar($wp_admin_bar) {
-		
 		$options = WP_Optimize()->get_options();
 		if (!$options->get_option('enable_cache_in_admin_bar', true)) return;
-		
+
 		/**
 		 * The "purge cache" menu items
 		 *

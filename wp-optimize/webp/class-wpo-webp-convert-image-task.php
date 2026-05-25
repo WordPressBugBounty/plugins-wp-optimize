@@ -33,8 +33,7 @@ class WPO_Webp_Convert_Image_Task extends Updraft_Task_1_2 {
 			WPO_WebP_Utils::do_webp_conversion($image);
 		}
 
-		$webp_converter = new WPO_WebP_Convert();
-		$destination = $webp_converter->get_destination_path($source);
+		$destination = WPO_WebP_Utils::get_destination_path($source);
 		if (file_exists($destination)) {
 			update_post_meta($attachment_id, 'wpo-webp-conversion-complete', true);
 		}

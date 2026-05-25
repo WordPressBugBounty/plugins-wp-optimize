@@ -50,6 +50,7 @@ class WP_Optimize_Cache_Commands {
 		$disabled = false;
 		$return = empty($validation) ? array() : $validation;
 		$previous_settings = WPO_Cache_Config::instance()->get();
+		$settings_changed = false;
 
 		// Attempt to change current status if required
 		if (isset($previous_settings['enable_page_caching']) && (bool) $previous_settings['enable_page_caching'] !== (bool) $data['cache-settings']['enable_page_caching']) {
@@ -113,7 +114,12 @@ class WP_Optimize_Cache_Commands {
 		$save_settings_result = WPO_Cache_Config::instance()->update($data['cache-settings'], $skip_if_no_file_yet);
 
 		if ($save_settings_result && !is_wp_error($save_settings_result)) {
-			WP_Optimize_Page_Cache_Preloader::instance()->cache_settings_updated($data['cache-settings'], $previous_settings);
+			$settings_changed = !WP_Optimize_Utils::array_contains($data['cache-settings'], $previous_settings);
+
+			if ($settings_changed) {
+				WP_Optimize_Page_Cache_Preloader::instance()->cache_settings_updated($data['cache-settings'], $previous_settings);
+				WPO_Page_Cache::instance()->cache_settings_updated($data['cache-settings']);
+			}
 			$return['result'] = $save_settings_result;
 		} else {
 			// Saving the settings returned an error
@@ -159,7 +165,7 @@ class WP_Optimize_Cache_Commands {
 			}
 		}
 		// $disable can either be boolean or WP_Error
-		if (!is_wp_error($disabled) && $disabled) {
+		if (!is_wp_error($disabled) && $disabled && $settings_changed) {
 			WPO_Page_Cache::instance()->prune_cache_logs();
 			wp_clear_scheduled_hook('wpo_prune_cache_logs');
 		}

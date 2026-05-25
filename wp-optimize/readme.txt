@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.5.3
+Stable tag: 4.5.4
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,35 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.5.4 - 25/May/2026 =
+
+* FIX: WebP image compression breaking in some cases
+* REFACTOR: Avoid instantiating PHPSQLParser on each call in WPO_DB_Table_Analysis
+* REFACTOR: Class WPO_WebP_Convert
+* REFACTOR: Make markup readable in `tables-body.php` template
+* REFACTOR: Refactored duplicated cache_admin_bar logic by centralizing it in the admin class and removing redundant implementations.
+* REFACTOR: Removed unused `WPO_Htaccess_Capabilities` class
+* REFACTOR: WPO_Activation class
+* REFACTOR: WPO_Uninstall class
+* REFACTOR: WPO_WebP_Alter_HTML class
+* REFACTOR: WPO_WebP_Self_Test class
+* REFACTOR: WPO_WebP_Test_Run class
+* REFACTOR: WPO_WebP_Utils class
+* REFACTOR: WPO_Webp_Task_Manager class
+* REFACTOR: WP_Optimize_WebP class
+* REFACTOR: WP_Optimize_WebP_Images class
+* TWEAK: Added an additional check to prevent SplFileInfo::getSize() RuntimeException in WP_Optimize_Utils::get_folder_stats()
+* TWEAK: All in One SEO plugin compatibility issue
+* TWEAK: Cache - Inconsistent REST cache filenames due to query parameter order 
+* TWEAK: Cache - Set the purge old cache cron schedule based on the Cache lifespan setting
+* TWEAK: Ensure parsed result is an array in WPO_DB_Table_Analysis::get_query_table()
+* TWEAK: Exclude GIF from being converted to WebP with `wpo_webp_convert_compressed_images` cron job
+* TWEAK: Optimized `wpo_username_from_cookies()` to avoid repeated database queries per request
+* TWEAK: Precheck for existing WebP format of file before running WebP conversion
+* TWEAK: Remove redundant code that is not reachable.
+* TWEAK: Resolved edge cases in CapoJS
+
 
 = 4.5.3 - 29/Apr/2026 =
 * SECURITY: Prevented path traversal security risk. Thanks to Wordfence for the responsible disclosure
@@ -786,33 +815,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 * FIX: A bug in the v3.2.17 release that caused certain database optimization buttons to be disabled has been fixed
 * TWEAK: Reset WebP serving method upon updating to version 3.2.18
 
-= 3.2.17 - 08/Aug/2023 =
-
-* FIX: Automatically compress newly-added images feature now works on multisite in case of attachment ID is the same in both sites
-* FIX: Minify - No separate try-catch blocks for same handle
-* FIX: Premium - Unused Images - Recognise Elementor Carousel, Slides, Flip Box, and Site logo widget images
-* FIX: Premium - Prevent memory exhausted PHP fatal error when using unused images feature with Elementor
-* TWEAK: External links will open in new tab/window
-* TWEAK: Remove `htaccess-capability-tester` dependency
-* TWEAK: Remove residue folders in `uploads/wpo`
-
-= 3.2.16 - 06/Jul/2023 =
-
-* FIX: HTML minify should not remove `title` tag added by AIOSEO
-* FIX: Premium - Fetching unused images data is incorrect when previous task queue is not properly unlocked
-* FIX: Premium - Unused Images - Recognise Elementor background images
-* TWEAK: Premium - Prevent conflicts between the minify feature and the `YITH Point of Sale for WooCommerce` plugin
-* TWEAK: Premium - Compatibility issue with Smart Slider 3
-* TWEAK: Suppress PHP warnings caused by WebP converter
-* TWEAK: Database optimization - Prevent duplicate AJAX requests, minor code improvements
-* TWEAK: Smush - Add a cron job to run pending image compressions, ensuring completion of the process even if bulk image compression encounters interruptions or failures
-* TWEAK: Clean up files on uninstall
-* TWEAK: Added compatibility for `Custom Permalinks` plugin
-* TWEAK: If minifying is enabled, then check that the purge cron event exists (not only upon plugin activation)
-* REFACTOR: Premium - Unused Images - Separate classes for Beaver Builder, Estatik, and Yoast SEO plugins
-* FIX: Premium - WP CLI commands permission issues solved
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.5.3: A security risk fix - a recommended update for all
+* 4.5.4: A lot of bug fixes and tweaks - a recommended update for all

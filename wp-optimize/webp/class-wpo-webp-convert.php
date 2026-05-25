@@ -4,51 +4,63 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 if (!class_exists('WPO_WebP_Convert')) :
 
+/**
+ * Handles WebP conversion by iterating through available converters.
+ */
 class WPO_WebP_Convert {
 
-	public $converters = null;
+	/**
+	 * @var array<string>
+	 */
+	private $converters = array();
 
-	public function __construct() {
-		$this->converters = WP_Optimize()->get_options()->get_option('webp_converters');
+	private function __construct() {
+		$webp_converters = WP_Optimize()->get_options()->get_option('webp_converters');
+		$this->converters = false === $webp_converters ? array() : $webp_converters;
 	}
 
 	/**
-	 * Converts uploaded image to webp format
+	 * Singleton instance
 	 *
-	 * @param string $source - path of the source file
-	 * @return bool
+	 * @return WPO_WebP_Convert
 	 */
-	public function convert($source) {
-		if (count($this->converters) < 1) return false;
-
-		$destination = $this->get_destination_path($source);
-		return $this->check_converters_and_do_conversion($source, $destination);
+	public static function get_instance(): self {
+		static $instance = null;
+		if (null === $instance) {
+			$instance = new self();
+		}
+		return $instance;
 	}
 
 	/**
-	 * Returns the destination full path
+	 * Convert an image file to WebP format using the first available converter that succeeds.
 	 *
-	 * @param string $source - path of the source file
-	 *
-	 * @return string $destination - path of destination file
+	 * @param string $source Path of the source file.
+	 * @return bool True if conversion succeeded, false otherwise.
 	 */
-	public function get_destination_path($source) {
-		$path_parts = pathinfo($source);
-		return $path_parts['dirname'] . '/'. basename($source) . '.webp';
+	public function convert($source): bool {
+		if (empty($this->converters)) {
+			return false;
+		}
+
+		$destination = WPO_WebP_Utils::get_destination_path($source);
+
+		return $this->attempt_conversion($source, $destination);
 	}
 
 	/**
-	 * Loop through available converters and do the conversion
+	 * Try each configured converter in order until one produces a WebP file.
 	 *
-	 * @param string $source      - path of source file
-	 * @param string $destination - path of destination file
-	 *
-	 * @return bool
+	 * @param string $source      Path of the source file.
+	 * @param string $destination Path of the destination file.
+	 * @return bool True if a converter produced the destination file.
 	 */
-	protected function check_converters_and_do_conversion($source, $destination) {
+	private function attempt_conversion($source, $destination): bool {
 		foreach ($this->converters as $converter) {
 			WPO_WebP_Utils::perform_webp_conversion($converter, $source, $destination);
-			if (is_file($destination)) return true;
+			if (is_file($destination)) {
+				return true;
+			}
 		}
 
 		return false;

@@ -216,7 +216,7 @@ img.addons {
 }
 #wpoptimize_table_list .optimization_done_icon {
   color: #009B24;
-  font-size: 26px;
+  font-size: 26px !important;
   display: inline-block;
   position: relative;
 }
@@ -2370,6 +2370,16 @@ div#wp-optimize-nav-tab-wpo_mayalso-may_also-contents .wpo-tab-postbox {
 }
 
 /* tablesorter */
+#wp-optimize-wrap #wpoptimize_table_list td:nth-child(2) span {
+  font-size: 11px;
+}
+#wp-optimize-wrap #wpoptimize_table_list td:nth-child(2) span.status {
+  color: #9B0000;
+  font-weight: bold;
+}
+#wp-optimize-wrap #wpoptimize_table_list td span {
+  font-size: 13px;
+}
 #wp-optimize-wrap .wp-list-table td {
   word-break: break-all;
 }

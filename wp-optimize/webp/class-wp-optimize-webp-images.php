@@ -5,20 +5,6 @@ if (!class_exists('WP_Optimize_WebP_Images')) :
 
 class WP_Optimize_WebP_Images {
 
-	private $directory = '';
-
-	private $filename = '';
-
-	private $original_extension = '';
-
-	private $webp_extension = '.webp';
-
-	private $meta = false;
-
-	private $sizes = array();
-
-	private $images = array();
-
 	/**
 	 * Constructor
 	 */
@@ -31,110 +17,101 @@ class WP_Optimize_WebP_Images {
 	 *
 	 * @return WP_Optimize_WebP_Images
 	 */
-	public static function get_instance() {
+	public static function get_instance(): self {
 		static $instance = null;
 		if (null === $instance) {
-			$instance = new WP_Optimize_WebP_Images();
+			$instance = new self();
 		}
 		return $instance;
 	}
 
 	/**
-	 * Deletes related image sizes and alternate webp format images
+	 * Deletes related image sizes and alternate WebP format images
 	 *
 	 * @param int $attachment_id
 	 * @return void
 	 */
-	public function delete_related_images($attachment_id) {
-		$this->set_meta($attachment_id);
-		$this->set_file_info_properties($attachment_id);
-		$this->set_sizes();
-		$this->set_images();
-		$this->delete_images();
-		$this->reset();
-	}
+	public function delete_related_images($attachment_id): void {
+		$meta = wp_get_attachment_metadata($attachment_id);
+		if (false === $meta) {
+			return;
+		}
 
-	/**
-	 * Sets meta property with attachment metadata
-	 *
-	 * @param int $attachment_id
-	 * @return void
-	 */
-	private function set_meta($attachment_id) {
-		$this->meta = wp_get_attachment_metadata($attachment_id);
-	}
-
-	/**
-	 * Sets file information properties
-	 *
-	 * @param int $attachment_id
-	 * @return void
-	 */
-	private function set_file_info_properties($attachment_id) {
 		$file_path = get_attached_file($attachment_id);
-		$file_path_info = pathinfo($file_path);
-		$this->filename = $file_path_info['filename'];
-		$this->original_extension = '.' . $file_path_info['extension'];
+		if (false === $file_path) {
+			return;
+		}
+		$file_info = pathinfo($file_path);
+		$directory = $this->get_upload_directory($file_info['basename'], $meta);
+		$filename = $file_info['filename'];
+		$original_extension = '.' . ($file_info['extension'] ?? '');
+		$sizes = empty($meta['sizes']) ? array() : $meta['sizes'];
 
-		$file = $this->meta['file'] ?? '';
-		$basename = $file_path_info['basename'];
+		$images = $this->build_image_paths(
+			$directory,
+			$filename,
+			$original_extension,
+			$sizes
+		);
+
+		$this->delete_files($images);
+	}
+
+	/**
+	 * Computes the upload directory path for the attachment
+	 *
+	 * @param string                                                         $basename The original file basename
+	 * @param array<string, int|string|array<string, array<string, string>>> $meta     The attachment metadata
+	 * @return string
+	 */
+	private function get_upload_directory($basename, $meta): string {
+		$file = isset($meta['file']) && is_string($meta['file']) ? $meta['file'] : '';
 		$sub_directory = '';
-		if (!empty($file)) {
+		if ('' !== $file) {
 			$sub_directory = str_replace($basename, '', $file);
 		}
 
 		$uploads = wp_get_upload_dir();
-		$this->directory = $uploads['basedir'] . '/' . $sub_directory;
+		return $uploads['basedir'] . '/' . $sub_directory;
 	}
 
 	/**
-	 * Returns all available image sizes for the given attachment id
-	 */
-	private function set_sizes() {
-		if (false !== $this->meta) {
-			$this->sizes = $this->meta['sizes'] ?? array();
-		}
-	}
-
-	/**
-	 * Sets images property
+	 * Builds a list of image file paths to delete, including both
+	 * original size variants and their WebP counterparts
 	 *
+	 * @param string                               $directory          Upload directory path
+	 * @param string                               $filename           Image filename without extension
+	 * @param string                               $original_extension Original file extension with leading dot
+	 * @param array<string, array<string, string>> $sizes              Registered image size definitions
+	 * @return array<string> List of absolute file paths
+	 */
+	private function build_image_paths($directory, $filename, $original_extension, $sizes) {
+		$webp_extension = '.webp';
+		$images = array(
+			$directory . $filename . $original_extension . $webp_extension,
+		);
+
+		$unscaled_filename = preg_replace('/-scaled$/', '', $filename);
+
+		foreach ($sizes as $size) {
+			$size_suffix = '-' . $size['width'] . 'x' . $size['height'];
+			$images[] = $directory . $filename . $size_suffix . $original_extension;
+			$images[] = $directory . $unscaled_filename . $size_suffix . $original_extension . $webp_extension;
+		}
+
+		return $images;
+	}
+
+	/**
+	 * Deletes the given list of files from disk
+	 *
+	 * @param array<string> $files List of absolute file paths to delete
 	 * @return void
 	 */
-	private function set_images() {
-		$webp_format = $this->directory . $this->filename . $this->original_extension . $this->webp_extension;
-		$this->images[] = $webp_format;
-
-		foreach ($this->sizes as $size) {
-			$original_format = $this->directory . $this->filename . '-' . $size['width'] . 'x' . $size['height'] . $this->original_extension;
-			$this->images[] = $original_format;
-			$webp_format = $this->directory . preg_replace('/-scaled$/', '', $this->filename) . '-' . $size['width'] . 'x' . $size['height'] . $this->original_extension . $this->webp_extension;
-			$this->images[] = $webp_format;
+	private function delete_files($files): void {
+		foreach ($files as $file) {
+			wp_delete_file($file);
 		}
-
-	}
-
-	/**
-	 * Delete related images
-	 *
-	 * @return void
-	 */
-	private function delete_images() {
-		foreach ($this->images as $image) {
-			wp_delete_file($image);
-		}
-	}
-
-	/**
-	 * Reset class property values
-	 */
-	private function reset() {
-		$this->directory = '';
-		$this->filename = '';
-		$this->original_extension = '';
-		$this->meta = false;
-		$this->sizes = array();
-		$this->images = array();
 	}
 }
 

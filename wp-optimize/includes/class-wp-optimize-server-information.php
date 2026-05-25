@@ -191,7 +191,7 @@ class WP_Optimize_Server_Information {
 	 */
 	public function webp_redirection_status() {
 		$webp = WP_Optimize_WebP::get_instance();
-		$enabled = $webp->is_webp_enabled();
+		$enabled = $webp->is_webp_conversion_enabled();
 		if (!$enabled) return false;
 
 		$is_possible = $webp->is_webp_redirection_possible();

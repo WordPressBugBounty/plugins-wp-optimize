@@ -356,6 +356,17 @@ class WP_Optimize_Minify_Functions {
 	}
 
 	/**
+	 * Check if the JS code contains import statements
+	 *
+	 * @param string $js
+	 * @return boolean
+	 */
+	public static function has_js_import_statements($js) {
+		$js = preg_replace('/\/\/.*|\/\*[\s\S]*?\*\//', '', $js); // Remove comments to avoid false positives
+		return 1 === preg_match('/\bimport\b/', $js);
+	}
+
+	/**
 	 * Functions, minify html
 	 *
 	 * @param string $html

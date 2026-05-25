@@ -153,8 +153,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			$this->log('There were no WebP conversion tools found on your server.');
 		}
 
-		$webp_converter = new WPO_WebP_Convert();
-		$destination = $webp_converter->get_destination_path($file_path);
+		$destination = WPO_WebP_Utils::get_destination_path($file_path);
 		if ($webp_tools_available && file_exists($destination)) {
 			if (is_multisite()) {
 				switch_to_blog($this->get_option('blog_id', 1));
