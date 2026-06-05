@@ -1393,17 +1393,17 @@
         },
         {
             "name": "team-updraft/common-libs",
-            "version": "3.0.7",
-            "version_normalized": "3.0.7.0",
+            "version": "3.1.10",
+            "version_normalized": "3.1.10.0",
             "source": {
                 "type": "git",
                 "url": "ssh://git@source.updraftplus.com:20022/team-updraft/common-libs.git",
-                "reference": "30a5b39a3043cc12a6e1358183682d24376b3fdd"
+                "reference": "027214202c3dbc15a807bb3860da36e764c1a58f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=30a5b39a3043cc12a6e1358183682d24376b3fdd",
-                "reference": "30a5b39a3043cc12a6e1358183682d24376b3fdd",
+                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=027214202c3dbc15a807bb3860da36e764c1a58f",
+                "reference": "027214202c3dbc15a807bb3860da36e764c1a58f",
                 "shasum": ""
             },
             "require-dev": {

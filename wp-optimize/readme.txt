@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.5.4
+Stable tag: 4.5.5
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,10 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.5.5 - 05/Jun/2026 =
+
+* TWEAK: Update the bundled common-libs version
 
 = 4.5.4 - 25/May/2026 =
 
@@ -818,4 +822,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.5.4: A lot of bug fixes and tweaks - a recommended update for all
+* 4.5.5: Updated dependency package - a recommended update for all

@@ -2,9 +2,9 @@
 
 if (!defined('ABSPATH')) die('No direct access allowed');
 
-if (!class_exists('Updraft_Notices_1_2')) require_once(WPO_PLUGIN_MAIN_PATH.'vendor/team-updraft/common-libs/src/updraft-notices/updraft-notices.php');
+if (!class_exists('Updraft_Notices_1_3')) require_once(WPO_PLUGIN_MAIN_PATH.'vendor/team-updraft/common-libs/src/updraft-notices/updraft-notices.php');
 
-class WP_Optimize_Notices extends Updraft_Notices_1_2 {
+class WP_Optimize_Notices extends Updraft_Notices_1_3 {
 
 	private $initialized = false;
 
@@ -322,6 +322,9 @@ class WP_Optimize_Notices extends Updraft_Notices_1_2 {
 		$extract_variables = array_merge($advert_information, array('wp_optimize_notices' => $this));
 
 		return WP_Optimize()->include_template('notices/'.$template_file, $return_instead_of_echo, $extract_variables);
+	}
+
+	protected function widget_enqueue() {
 	}
 }
 

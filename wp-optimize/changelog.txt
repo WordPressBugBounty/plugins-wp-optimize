@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 4.5.5 - 05/Jun/2026 =
+
+* TWEAK: Update the bundled common-libs version
+
 = 4.5.4 - 25/May/2026 =
 
 * FIX: WebP image compression breaking in some cases
