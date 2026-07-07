@@ -102,7 +102,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		}
 
 		// A sub site administrator can only compress their own image. If the blog ID isn't theirs, return an error.
-		if ($blog && is_multisite() && get_current_blog_id() !== $blog && !current_user_can('manage_network_options')) {
+		if ($blog && is_multisite() && get_current_blog_id() !== $blog && !WP_Optimize()->current_user_can('manage_network_options')) {
 			return new WP_Error('compression_not_permitted', __('The blog ID provided does not match the current blog.', 'wp-optimize'));
 		}
 

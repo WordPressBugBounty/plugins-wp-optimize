@@ -61,11 +61,11 @@ class WPO_Ajax {
 	public function handle_heartbeat_requests($action) {
 		$this->set_heartbeat_subaction($action);
 
-		if (!$this->is_user_capable()) {
+		if (!WP_Optimize()->current_user_can()) {
 			return wp_json_encode($this->send_user_capability_error_response(false));
 		}
 
-		if (is_multisite() && !current_user_can('manage_network_options')) {
+		if (is_multisite() && !WP_Optimize()->current_user_can('manage_network_options')) {
 			if (!$this->is_valid_multisite_command()) {
 				return wp_json_encode($this->send_invalid_multisite_command_error_response(false));
 			}
@@ -106,11 +106,11 @@ class WPO_Ajax {
 			$this->send_security_check_failed_error_response();
 		}
 
-		if (!$this->is_user_capable()) {
+		if (!WP_Optimize()->current_user_can()) {
 			$this->send_user_capability_error_response();
 		}
 		
-		if (is_multisite() && !current_user_can('manage_network_options')) {
+		if (is_multisite() && !WP_Optimize()->current_user_can('manage_network_options')) {
 			if (!$this->is_valid_multisite_command()) {
 				$this->send_invalid_multisite_command_error_response();
 			}
@@ -190,16 +190,6 @@ class WPO_Ajax {
 			'error_code' => 'security_check',
 			'error_message' => __('The security check failed; try refreshing the page.', 'wp-optimize')
 		));
-	}
-
-
-	/**
-	 * Checks whether current user capable of doing this action or not
-	 *
-	 * @return bool
-	 */
-	private function is_user_capable() {
-		return current_user_can(WP_Optimize()->capability_required());
 	}
 
 	/**

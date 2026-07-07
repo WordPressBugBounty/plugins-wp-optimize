@@ -218,7 +218,7 @@ span#wpo_smush_images_save_options_done {
 }
 
 #smush-backup-delete-days {
-  width: 50px;
+  width: 70px;
   margin: 0 8px;
 }
 
@@ -369,6 +369,11 @@ span#wpo_smush_delete_backup_done {
   vertical-align: middle;
   color: #444;
   transition: 0.2s all;
+  position: relative;
+}
+
+.wp-version-7 .wpo-fieldgroup .button.wpo-toggle-advanced-options span.dashicons {
+  top: -6px;
 }
 
 .wpo-fieldgroup .wpo-toggle-advanced-options span.text {
@@ -411,6 +416,10 @@ span#wpo_smush_delete_backup_done {
 
 .wpo-fieldgroup .button.wpo-toggle-advanced-options.opened span.dashicons {
   transform: rotate(180deg);
+}
+
+.wp-version-7 .wpo-fieldgroup .button.wpo-toggle-advanced-options.opened span.dashicons {
+  top: 4px;
 }
 
 .wpo-fieldgroup .wpo-advanced-options {

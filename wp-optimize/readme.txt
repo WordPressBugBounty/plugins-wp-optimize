@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.5.5
+Stable tag: 4.6.0
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -383,6 +383,32 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 == Changelog ==
 
+= 4.6.0 - 06/Jul/2026 =
+
+* FEATURE: Premium - Automatically preloads the page’s Largest Contentful Paint (LCP) element to improve initial load speed and perceived performance
+* FIX: Cache - Fixed an issue related to cache setting saving
+* FIX: Fixed a UI issue in WooCommerce variation products when Automatically preload content after it is purged is enabled
+* FIX: Fixed browser caching issue where admin pages were cached
+* FIX: Mobile UI issue
+* FIX: Notice Dismissal issue
+* FIX: Usage of htmlspecialchars()
+* REFACTOR: Code from can_purge_cache() method moved to WP_Optimize_Utils::current_user_can_purge_cache()
+* REFACTOR: Fix WordPress Security check errors and warnings on admin page
+* REFACTOR: Make `is_edit_mode` a static method and avoid duplication
+* REFACTOR: Optimized WP_Optimize_Database_Information::get_table_plugin() method
+* TWEAK: Added method to check current user has the capability
+* TWEAK: Added methods to retrieve and save essential WP-Optimize toggleable settings for UpdraftCentral
+* TWEAK: Disable and hide the "Speed up WooCommerce 'Get total spent' query" Power Tweak when it's no longer relevant
+* TWEAK: Handle race conditions in font downloading and optimize cache stats storage 
+* TWEAK: Improved image grid action button visibility to accommodate WordPress 7.0 button styling changes
+* TWEAK: Matched response styles when purging via the admin bar
+* TWEAK: Premium - Handle empty orders in WooCommerce Total Spent Power Tweak feature
+* TWEAK: Premium - Improved hash logic for the Unused CSS Removal feature
+* TWEAK: Prevent unwanted cache growth caused by crawlers or preload bots
+* TWEAK: UI changes to match WordPress 7.0 
+* TWEAK: Unschedule all WP-Optimize cron jobs on deactivation in multisite
+* TWEAK: WP_Optimize_Power_Tweaks class method deactivate bug fixed related to the array_diff function
+
 = 4.5.5 - 05/Jun/2026 =
 
 * TWEAK: Update the bundled common-libs version
@@ -414,7 +440,6 @@ If none of the above works, disable processing of JavaScript files in the minify
 * TWEAK: Precheck for existing WebP format of file before running WebP conversion
 * TWEAK: Remove redundant code that is not reachable.
 * TWEAK: Resolved edge cases in CapoJS
-
 
 = 4.5.3 - 29/Apr/2026 =
 * SECURITY: Prevented path traversal security risk. Thanks to Wordfence for the responsible disclosure
@@ -783,43 +808,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 = 3.2.21 - 18/Oct/2023 =
 * FIX: Prevent PHP fatal error when updating from older versions of WP-Optimize
 
-= 3.2.20 - 16/Oct/2023 =
-
-* FIX: WebP - Performance issue because of possible infinite loop
-* FIX: Cache purging occurred prior to the cache lifespan expiration
-* FIX: Premium - Smush - Do not consider images in trashed posts as unused
-* TWEAK - Remove extra slash from plugin asset urls and paths
-* TWEAK: Image - Add a tooltip next to the restore button on the edit media screen
-* TWEAK: Premium - Prevent PHP deprecated warning when generating variations from attributes for new WooCommerce variable products
-* TWEAK: Premium - Purge cache when the `Variation Swatches for WooCommerce` plugin settings get updated
-* TWEAK: Premium - Settings - Style improvement for the `Purge cache permissions` select2 box
-* TWEAK: Recognise LearnDash plugin tables in database optimization
-* TWEAK: Remove empty `uploads/.htaccess` file and remaining cron events
-* TWEAK: Smush - Disable server info in smush logs by default
-* TWEAK: Smush - Resolve double log entries when compressing a single image from the media library metabox
-* TWEAK: Prevent unwanted PHP notice upon update
-
-= 3.2.19 - 15/Sep/2023 =
-
-* FIX: Cache - Relevant caches are now purged upon updating homepage display settings and posts per page settings
-* FIX: Minify - Multiline content inside textareas break after exporting and importing settings
-* FIX: Smush - Images are not compressed with default (image quality = 100) settings
-* FIX: Premium - Cache - Caching stops working when WordPress salt keys contain backslash (\) character
-* FIX: Premium - User per role cache not working when tables do not have `wp` prefix
-* FIX: Premium - When lazy loading is enabled, the picture tag in initial viewport is not visible
-* TWEAK: Fixed date format and timezone in the cache last modification comment according to the site configuration
-* TWEAK: Fixed spelling errors in the repository 
-* TWEAK: Minify - The process of purging cache for 3rd party caching solutions now works properly when multiple other solutions are present
-* TWEAK: Premium - Lazy load - Added Jetpack, Optimole, Rocket Lazy Load, and Smush (WPMU Dev) plugins to the incompatibility notice
-* TWEAK: Prevent PHP warning upon installing themes from the WordPress repository
-* TWEAK: Update the composer package yahnis-elsts/plugin-update-checker for PHP 8.2 compatibility
-
-= 3.2.18 - 11/Aug/2023 =
-
-* FIX: A bug in the v3.2.17 release that caused certain database optimization buttons to be disabled has been fixed
-* TWEAK: Reset WebP serving method upon updating to version 3.2.18
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.5.5: Updated dependency package - a recommended update for all
+* 4.6.0: Premium - Auto preload LCP elements feature, and lot of tweaks and fixes - a recommended update for all

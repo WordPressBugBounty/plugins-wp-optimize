@@ -258,7 +258,8 @@ class WP_Optimize_Minify_Admin {
 	 */
 	public function output_css_settings() {
 		$template_args = $this->get_output_setting('css');
-		$template_args['show_unused_css'] = WP_Optimize::is_premium() && $template_args['is_enabled_minification'];
+		$template_args['show_unused_css'] = !WP_Optimize::is_premium() || (WP_Optimize::is_premium() && $template_args['is_enabled_minification']);
+		$template_args['show_unused_css_advertise'] = !WP_Optimize::is_premium();
 		WP_Optimize()->include_template(
 			'minify/css-settings-tab.php',
 			false,

@@ -65,7 +65,7 @@ class WP_Optimize_Heartbeat {
 	 */
 	public function receive_heartbeat($response, $data) {
 		$allowed_smush_commands = Updraft_Smush_Manager_Commands::get_allowed_ajax_commands();
-		$capability_required = current_user_can(WP_Optimize()->capability_required());
+		$user_can = WP_Optimize()->current_user_can();
 		$commands = new Updraft_Smush_Manager_Commands(Updraft_Smush_Manager::instance());
 		$commands->heartbeat_command = true;
 
@@ -82,7 +82,7 @@ class WP_Optimize_Heartbeat {
 				$command_name = key($command);
 				if ('updraft_smush_ajax' === $command_name) {
 
-					if (!$capability_required) {
+					if (!$user_can) {
 						continue;
 					}
 

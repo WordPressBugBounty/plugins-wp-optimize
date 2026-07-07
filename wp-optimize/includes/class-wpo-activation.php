@@ -45,7 +45,7 @@ class WPO_Activation {
 	 * @return void
 	 */
 	private static function check_user_capability(): void {
-		if (is_multisite() && !current_user_can('manage_network_options')) {
+		if (is_multisite() && !WP_Optimize()->current_user_can('manage_network_options')) {
 			self::deactivate_and_die();
 		}
 	}

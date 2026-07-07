@@ -408,6 +408,19 @@ class WP_Optimize_Utils {
 	}
 
 	/**
+	 * Defines MAX_FILE_SIZE constant if not already defined.
+	 *
+	 * @return void
+	 */
+	public static function define_maxfile_size_constant() {
+		$maxfile_size = apply_filters('wpo_max_file_size', 600000);
+		$maxfile_size = is_numeric($maxfile_size) && $maxfile_size > 0 ? (int) $maxfile_size : 600000;
+		if (!defined('MAX_FILE_SIZE')) {
+			define('MAX_FILE_SIZE', $maxfile_size);
+		}
+	}
+
+	/**
 	 * Check if the given array contains all key-value pairs of another array.
 	 *
 	 * @param array $needle   The array of key-value pairs to check for.
@@ -430,6 +443,28 @@ class WP_Optimize_Utils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if the current user has permission to purge cache.
+	 *
+	 * @return bool
+	 */
+	public static function current_user_can_purge_cache() {
+		if (WP_Optimize::is_premium()) {
+			return WP_Optimize()->current_user_can() || WP_Optimize_Premium()->can_purge_the_cache();
+		} else {
+			return WP_Optimize()->current_user_can();
+		}
+	}
+
+	/**
+	 * Get URL without purge cache-related parameters.
+	 *
+	 * @return string
+	 */
+	public static function get_url_without_cache_purge_params() {
+		return remove_query_arg(array('_wpo_purge', 'wpo_minify_cache_purged', '_wpo_purge_minify_cache', 'wpo_all_pages_cache_purged', 'wpo_single_page_cache_purged'));
 	}
 }
 

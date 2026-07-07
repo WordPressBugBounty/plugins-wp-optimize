@@ -99,9 +99,9 @@ class WP_Optimize_Minify {
 	public function admin_bar_menu($menu_items) {
 		$wpo_minify_options = wp_optimize_minify_config()->get();
 
-		if (!$wpo_minify_options['enabled'] || !current_user_can('manage_options') || !($wpo_minify_options['enable_css'] || $wpo_minify_options['enable_js'])) return $menu_items;
+		if (!$wpo_minify_options['enabled'] || !WP_Optimize()->current_user_can('manage_options') || !($wpo_minify_options['enable_css'] || $wpo_minify_options['enable_js'])) return $menu_items;
 		
-		$act_url = remove_query_arg('wpo_minify_cache_purged');
+		$act_url = WP_Optimize_Utils::get_url_without_cache_purge_params();
 		$cache_path = WP_Optimize_Minify_Cache_Functions::cache_path();
 		$cache_size_info = '<h4>'.__('Minify cache', 'wp-optimize').'</h4><span><span class="label">'.__('Cache size:', 'wp-optimize').'</span> <span class="stats">'.esc_html(WP_Optimize_Minify_Cache_Functions::get_cachestats($cache_path['cachedir'])).'</span></span>';
 
@@ -128,16 +128,17 @@ class WP_Optimize_Minify {
 	 */
 	public function handle_purge_minify_cache() {
 		$wpo_minify_options = wp_optimize_minify_config()->get();
-		if (!$wpo_minify_options['enabled'] || !current_user_can('manage_options')) return;
+		if (!$wpo_minify_options['enabled'] || !WP_Optimize()->current_user_can('manage_options')) return;
 
 		$is_cache_purged = TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_minify_cache_purged');
 		if (null !== $is_cache_purged) {
 			if (is_admin()) {
-				add_action('admin_notices', array($this, 'notice_purge_minify_cache_success'));
+				$notice_function = 'notice_purge_minify_cache_' . ('false' === $is_cache_purged ? 'failure' : 'success');
+				add_action('admin_notices', array($this, $notice_function));
 				return;
 			} else {
-				$message = __('Minify cache purged', 'wp-optimize');
-				printf('<script>alert("%s");</script>', esc_html($message));
+				$message =  'false' === $is_cache_purged ? __('Failed to purge the minify cache.', 'wp-optimize') : __('Minify cache purged', 'wp-optimize');
+				printf('<script>window.onload = function() {alert("%s");}</script>', esc_js($message));
 				return;
 			}
 		}
@@ -152,7 +153,10 @@ class WP_Optimize_Minify {
 			if ("caches cleared" === $results['result']) $success = true;
 
 			// remove nonce from url and reload page.
-			wp_redirect(add_query_arg('wpo_minify_cache_purged', $success, remove_query_arg('_wpo_purge_minify_cache')));
+			$redirect_url = WP_Optimize_Utils::get_url_without_cache_purge_params();
+			$redirect_url = add_query_arg('wpo_minify_cache_purged', $success ? $success : 'false', $redirect_url);
+			wp_redirect($redirect_url);
+			
 			exit;
 
 		}
@@ -261,6 +265,13 @@ class WP_Optimize_Minify {
 	}
 
 	/**
+	 * Shows failure notice for purge minify cache
+	 */
+	public function notice_purge_minify_cache_failure() {
+		$this->show_notice(__('Failed to purge the minify cache.', 'wp-optimize'), 'error');
+	}
+
+	/**
 	 * Show notification in WordPress admin.
 	 *
 	 * @param string $message HTML (no further escaping is performed)
@@ -300,12 +311,6 @@ class WP_Optimize_Minify {
 	 * @return bool
 	 */
 	public function can_purge_cache() {
-		$required_capability = is_multisite() ? 'manage_network_options' : 'manage_options';
-
-		if (WP_Optimize::is_premium()) {
-			return current_user_can($required_capability) || WP_Optimize_Premium()->can_purge_the_cache();
-		} else {
-			return current_user_can($required_capability);
-		}
+		return WP_Optimize_Utils::current_user_can_purge_cache();
 	}
 }

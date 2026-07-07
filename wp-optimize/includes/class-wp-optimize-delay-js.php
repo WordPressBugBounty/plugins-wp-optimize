@@ -41,7 +41,7 @@ class WP_Optimize_Delay_JS {
 	 * @return bool
 	 */
 	public function should_process() {
-		return ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
+		return ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !WPO_Page_Builder_Compatibility::is_edit_mode();
 	}
 
 	/**
@@ -374,16 +374,6 @@ class WP_Optimize_Delay_JS {
 	 */
 	private function get_scripts_pattern() {
 		return '/<script(.*)>(.*)<\/script>/Uis';
-	}
-	
-	/**
-	 * Determines whether the page is in edit mode using page builders
-	 * Beaver Builder, Divi Theme, Elementor, and Oxygen Builder
-	 *
-	 * @return bool
-	 */
-	private function is_edit_mode() {
-		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['elementor-preview']) || isset($_GET['oxygen']) || isset($_GET['ct_builder']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- We are not using any global values, only checking for existence
 	}
 }
 

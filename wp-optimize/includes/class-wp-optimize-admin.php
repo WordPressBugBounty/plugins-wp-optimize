@@ -55,6 +55,7 @@ class WP_Optimize_Admin {
 			'wpo_cache' => array(
 				'cache' => __('Page cache', 'wp-optimize'),
 				'preload' => __('Preload', 'wp-optimize'),
+				'lcp' => __('Auto LCP', 'wp-optimize').'<span class="menu-pill premium-only">Premium</span>',
 				'advanced' => __('Advanced settings', 'wp-optimize'),
 				'gzip' => __('Gzip compression', 'wp-optimize'),
 				'settings' => __('Static file headers', 'wp-optimize')  // Adds a settings tab
@@ -100,13 +101,15 @@ class WP_Optimize_Admin {
 		$can_manage_options = WP_Optimize()->can_manage_options();
 		
 		if (!current_user_can($capability_required) || (!$can_run_optimizations && !$can_manage_options)) {
-			echo "Permission denied.";
+			echo esc_html__('Permission denied.', 'wp-optimize');
 			return;
 		}
 		
 		$this->register_admin_content();
 		
-		echo '<div id="wp-optimize-wrap">';
+		global $wp_version;
+
+		echo '<div id="wp-optimize-wrap" class="'.(version_compare($wp_version, '7.0', '>=') ? 'wp-version-7' : '').'">';
 		
 		WP_Optimize()->include_template('admin-page-header.php', false, array('show_notices' => !(WP_Optimize()->get_install_or_update_notice()->show_current_notice())));
 		
@@ -135,7 +138,6 @@ class WP_Optimize_Admin {
 	 * @param string $page wp-optimize page id i.e. dashboard, database, images, cache, ...
 	 */
 	public function display_admin_page($page) {
-		
 		$active_page = TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('request', 'page', 'string', 'sanitize_text_field', '');
 		
 		echo '<div class="wpo-page' . ($active_page === $page ? ' active' : '') . '" data-whichpage="'.esc_attr($page).'">';
@@ -151,7 +153,7 @@ class WP_Optimize_Admin {
 		} else {
 			$tab_keys = array_keys($tabs);
 			$default_tab = apply_filters('wp_optimize_admin_'.$page.'_default_tab', $tab_keys[0]);
-			$active_tab = substr(TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'tab', null, 'sanitize_text_field', ''), 12);
+			$active_tab = substr(TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'tab', null, 'sanitize_text_field', $default_tab), 12);
 			if (!in_array($active_tab, array_keys($tabs))) $active_tab = $default_tab;
 		}
 		
@@ -231,6 +233,8 @@ class WP_Optimize_Admin {
 		add_action('wp_optimize_admin_page_wpo_cache_gzip', array($this, 'output_cache_gzip_tab'), 20);
 		add_action('wp_optimize_admin_page_wpo_cache_settings', array($this, 'output_cache_settings_tab'), 20);
 		add_action('wpo_page_cache_advanced_settings', array($this, 'output_cloudflare_settings'), 20);
+		add_action('wp_optimize_admin_page_wpo_cache_lcp', array($this, 'output_page_cache_lcp'), 20);
+
 		/**
 		 * SUPPORT
 		 */
@@ -294,20 +298,17 @@ class WP_Optimize_Admin {
 	 * Dashboard settings
 	 */
 	public function output_dashboard_settings_tab() {
-		$options = WP_Optimize()->get_options();
-		
 		if (isset($_SERVER['REQUEST_METHOD']) && 'POST' === $_SERVER['REQUEST_METHOD']) {
 			// Nonce check.
 			check_admin_referer('wpo_settings');
-			
-			$output = $options->save_settings($_POST);
-			
+
 			if (isset($_POST['wp-optimize-settings'])) {
+				$options = WP_Optimize()->get_options();
 				// save settings request sent.
 				$output = $options->save_settings($_POST);
+
+				$this->wpo_render_output_messages($output);
 			}
-			
-			$this->wpo_render_output_messages($output);
 		}
 		
 		if (WP_Optimize()->can_manage_options()) {
@@ -424,6 +425,7 @@ class WP_Optimize_Admin {
 		WP_Optimize()->include_template('cache/page-cache-advanced.php', false, array(
 			'wpo_cache' => $wpo_cache,
 			'wpo_cache_options' => $wpo_cache_options,
+			'show_avatars' => (bool) get_option('show_avatars'),
 			'cache_include_urls' => $cache_include_urls,
 			'cache_exception_urls' => $cache_exception_urls,
 			'cache_ignore_query_variables' => $cache_ignore_query_variables,
@@ -475,7 +477,18 @@ class WP_Optimize_Admin {
 			'faq_link' => 'https://www.digitalocean.com/community/tutorials/how-to-implement-browser-caching-with-nginx-s-header-module-on-ubuntu-16-04',
 		));
 	}
-	
+
+	/**
+	 * Cache: Auto LCP tab
+	 */
+	public function output_page_cache_lcp() {
+		$lcp_options = array();
+		if (WP_Optimize::is_premium()) {
+			$lcp_options['lcp_preload_enable'] = (bool) WPO_Cache_Config::instance()->get_option('lcp_preload_enable');
+		}
+		WP_Optimize()->include_template('cache/page-cache-lcp-settings.php', false, $lcp_options);
+	}
+
 	/**
 	 * Check if is the current site handled with Cloudflare.
 	 *
@@ -518,6 +531,7 @@ class WP_Optimize_Admin {
 	public function output_database_optimize_tab() {
 		$optimizer = WP_Optimize()->get_optimizer();
 		$options = WP_Optimize()->get_options();
+		$optimization_results = false;
 
 		$nonce_passed = TeamUpdraft\WP_Optimize\Includes\Fragments\verify_nonce('_wpnonce', 'wpo_optimization');
 		
@@ -535,7 +549,14 @@ class WP_Optimize_Admin {
 			$wp_optimize_commands = new WP_Optimize_Commands();
 			$status_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('all_status')));
 			$optimizations_table_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize')));
-			WP_Optimize()->include_template('database/optimize-table.php', false, array('optimize_db' => $optimize_db, 'optimization_results' => $optimization_results, 'load_data' => false, 'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization(), 'optimizations_table_data' => $optimizations_table_data['data']['wp_optimize'], 'status_data' => $status_data['data']['all_status']));
+			WP_Optimize()->include_template('database/optimize-table.php', false, array(
+				'optimize_db' => $optimize_db,
+				'optimization_results' => $optimization_results,
+				'load_data' => false,
+				'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization(),
+				'optimizations_table_data' => $optimizations_table_data['data']['wp_optimize'],
+				'status_data' => $status_data['data']['all_status']
+			));
 		} else {
 			$this->prevent_run_optimizations_message();
 		}
@@ -736,7 +757,7 @@ class WP_Optimize_Admin {
 		$can_run_optimizations = WP_Optimize()->can_run_optimizations();
 		$can_manage_options = WP_Optimize()->can_manage_options();
 		
-		if (!current_user_can($capability_required) || (!$can_run_optimizations && !$can_manage_options)) return;
+		if (!WP_Optimize()->current_user_can() || (!$can_run_optimizations && !$can_manage_options)) return;
 		
 		$icon_svg = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgdmlld0JveD0iMCAwIDE2IDE2IgogICB2ZXJzaW9uPSIxLjEiCiAgIGlkPSJzdmc0MzE2IgogICBoZWlnaHQ9IjE2IgogICB3aWR0aD0iMTYiPgogIDxkZWZzCiAgICAgaWQ9ImRlZnM0MzE4IiAvPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTQzMjEiPgogICAgPHJkZjpSREY+CiAgICAgIDxjYzpXb3JrCiAgICAgICAgIHJkZjphYm91dD0iIj4KICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3N2Zyt4bWw8L2RjOmZvcm1hdD4KICAgICAgICA8ZGM6dHlwZQogICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+CiAgICAgICAgPGRjOnRpdGxlPjwvZGM6dGl0bGU+CiAgICAgIDwvY2M6V29yaz4KICAgIDwvcmRmOlJERj4KICA8L21ldGFkYXRhPgogIDxnCiAgICAgaWQ9ImxheWVyMSI+CiAgICA8cGF0aAogICAgICAgc3R5bGU9ImZpbGw6I2EwYTVhYTtmaWxsLW9wYWNpdHk6MSIKICAgICAgIGlkPSJwYXRoNTciCiAgICAgICBkPSJtIDEwLjc2ODgwOSw2Ljc2MTYwNTEgMCwwIGMgLTAuMDE2ODgsLTAuMDE2ODc4IC0wLjAyNTMxLC0wLjA0MjE4MSAtMC4wMzM3NCwtMC4wNjc0OTkgLTAuMDA4NCwtMC4wMDgzOSAtMC4wMDg0LC0wLjAxNjg3OCAtMC4wMTY4OCwtMC4wMzM3NDMgQyA5Ljk5MjYxMTIsNS4xOTIzMzY2IDguMjIwODU1Nyw0LjU4NDg3ODEgNi43NDQzOTEyLDUuMjkzNTc5NyA1LjY3MjkwMDUsNS44MDgyMzI4IDUuMDU3MDA0Myw2Ljg4ODE2MTMgNS4wNjU0NDIsOC4wMDE4MzY1IDQuNDU3OTgyMiw3LjMxMDAwNzYgMy42OTg2NTg0LDYuNzk1MzU0NSAyLjg1NDk2NDIsNi40OTE2MjUzIDMuMjY4Mzc0Myw1LjA2NTc4MzEgNC4yNTU0OTYsMy44MTcxMTY2IDUuNjg5Nzc0NiwzLjEyNTI4NzggOC4zNjQyODMyLDEuODM0NDM2OCAxMS41NzAzMTksMi45Mzk2NzQ0IDEyLjg4NjQ4MSw1LjU4ODg3MjYgMTMuNDUxNzU1LDYuNzI3ODU5NiAxNC42NDk4MDEsNy4zNTIxOTIxIDE1Ljg0Nzg0Niw3LjIzNDA3NSAxNS43NjM0ODIsNi4zMzk3NiAxNS41MTg4MDUsNS40MzcwMDg2IDE1LjEwNTM5Niw0LjU3NjQ0MDQgMTMuMjE1NTIxLDAuNjg3MDEzNCA4LjUzMzAyMjYsLTAuOTQxMzE2MjcgNC42NDM1OTQzLDAuOTQwMTIxNzkgMi4zMjM0MzcsMi4wNjIyMzM0IDAuODA0Nzg4MTQsNC4xNzk5MDQ0IDAuMzU3NjMxMzIsNi41MzM4MDk4IDIuNDE2MjQzOCw2LjQyNDEyOSA0LjQzMjY3MTcsNy41MDQwNTc0IDUuNDM2NjY2Miw5LjQzNjExNjcgbCAwLjAwODM5LDAgYyAwLjc1OTMxOTIsMS4zNzUyMjAzIDIuNDcyMDE3OCwxLjk0MDQ5NTMgMy45MDYyOTYsMS4yNDg2NjczIDEuMDQ2MTc5OCwtMC41MDYyMTggMS42NTM2NDA4LC0xLjUzNTUyMzggMS42Nzg5NTA4LC0yLjYxNTQ1MTIgMC41ODIxNDgsMC43MDg3MDE4IDEuMzMzMDM1LDEuMjQ4NjY2OCAyLjE1OTg1NiwxLjU3NzcwNjQgLTAuNDM4NzIxLDEuMzU4MzQ3OCAtMS40MDA1MzMsMi41NDc5NTQ4IC0yLjc5MjYyNywzLjIxNDQ3ODggLTIuNTkwMTM4NywxLjI0ODY1OCAtNS42NzgwNTc0LDAuMjUzMTA0IC03LjA2MTcxNTEsLTIuMjI3MzU3IGwgMCwwIEMgMi43NjIxMDQ4LDkuNDUyOTg5NCAxLjUxMzQzODMsOC44MjAyMTkxIDAuMjgxNjQ1OTIsOC45NzIwODQ0IDAuMzgyODg3NjUsOS43OTg5MDQ2IDAuNjE5MTIzMzEsMTAuNjE3Mjg3IDAuOTk4Nzg1MiwxMS40MDE5MjIgYyAxLjg4MTQzNjgsMy44OTc4NjQgNi41NjM5MzcsNS41MjYxOTggMTAuNDYxODAwOCwzLjY0NDc2IDIuMjQ0MjI2LC0xLjA4ODM2OSAzLjczNzU2MiwtMy4xMDQ3OTYgNC4yMzUzNDIsLTUuMzc0MzMyMyAtMS45OTk1NTQsMC4wNDIxODEgLTMuOTQ4NDg2LC0xLjAyOTMwNjMgLTQuOTI3MTcsLTIuOTEwNzQzMyB6IgogICAgICAgY2xhc3M9InN0MTciIC8+CiAgPC9nPgo8L3N2Zz4K';
 		

@@ -285,6 +285,11 @@ class WP_Optimize_Browser_Cache {
 
 		return array(
 			array(
+				'<IfModule mod_setenvif.c>',
+				'SetEnvIf Request_URI "/wp-admin/" WPO_NO_CACHE',
+				'</IfModule>',
+			),
+			array(
 				'<IfModule mod_expires.c>',
 				'ExpiresActive On',
 				'ExpiresByType text/css "access '.$expire.'"',
@@ -308,25 +313,35 @@ class WP_Optimize_Browser_Cache {
 			array(
 				'<IfModule mod_headers.c>',
 				array(
-					'<filesMatch "\.(ico|jpe?g|png|gif|webp|swf)$">',
-					'Header set Cache-Control "public, max-age='.$max_age.'"',
-					'</filesMatch>',
+					'<FilesMatch "\.(ico|jpe?g|png|gif|webp|swf)$">',
+					'Header set Cache-Control "public, max-age='.$max_age.'" env=!WPO_NO_CACHE',
+					'</FilesMatch>',
 				),
 				array(
-					'<filesMatch "\.(css)$">',
-					'Header set Cache-Control "public, max-age='.$max_age.'"',
-					'</filesMatch>',
+					'<FilesMatch "\.(css)$">',
+					'Header set Cache-Control "public, max-age='.$max_age.'" env=!WPO_NO_CACHE',
+					'</FilesMatch>',
 				),
 				array(
-					'<filesMatch "\.(js)$">',
-					'Header set Cache-Control "private, max-age='.$max_age.'"',
-					'</filesMatch>',
+					'<FilesMatch "\.(js)$">',
+					'Header set Cache-Control "private, max-age='.$max_age.'" env=!WPO_NO_CACHE',
+					'</FilesMatch>',
 				),
 				array(
-					'<filesMatch "\.(x?html?|php)$">',
-					'Header set Cache-Control "private, must-revalidate, max-age='.$max_age.'"',
-					'</filesMatch>',
+					'<FilesMatch "\.(x?html?)$">',
+					'Header set Cache-Control "private, must-revalidate, max-age='.$max_age.'" env=!WPO_NO_CACHE',
+					'</FilesMatch>',
 				),
+				array(
+					'<FilesMatch "\.php$">',
+					'Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"',
+					'</FilesMatch>',
+				),
+				'</IfModule>',
+			),
+			array(
+				'<IfModule mod_headers.c>',
+				'Header unset Expires env=WPO_NO_CACHE',
 				'</IfModule>',
 			),
 			'',

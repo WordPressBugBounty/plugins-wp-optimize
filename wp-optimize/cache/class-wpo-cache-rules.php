@@ -53,6 +53,8 @@ class WPO_Cache_Rules {
 		add_action('woocommerce_variation_set_stock', array($this, 'purge_product_page'), 10, 1);
 		add_action('woocommerce_product_set_stock', array($this, 'purge_product_page'), 10, 1);
 
+		add_filter('wpo_page_cache_preloader_dont_close_browser_connection', array($this, 'preloader_dont_close_browser_connection'), 10, 1);
+
 		/**
 		 * List of hooks for which when executed, the cache will be purged
 		 *
@@ -433,6 +435,24 @@ class WPO_Cache_Rules {
 			wpo_cache_flush();
 			WPO_Page_Cache::instance()->file_log("Full Cache Purge triggered by action: " . current_filter());
 		}
+	}
+
+	/**
+	 * Filter to set the flag to not close the browser connection when running via AJAX in the preloader.
+	 *
+	 * @param bool $dont_close_browser_connection The current value of the flag to not close the browser connection. Default is false.
+	 *
+	 * @return bool
+	 */
+	public function preloader_dont_close_browser_connection($dont_close_browser_connection) {
+		if ($dont_close_browser_connection) return $dont_close_browser_connection;
+
+		// In WooCommerce, when the stock is updated for a product or a variation, it triggers an AJAX request in the background.
+		// In this case, we want to avoid closing the browser connection in the preloader, to allow the product edit page to receive the response.
+		if (did_action('woocommerce_variation_set_stock') || did_action('woocommerce_product_set_stock')) {
+			return true;
+		}
+		return false;
 	}
 
 	/**

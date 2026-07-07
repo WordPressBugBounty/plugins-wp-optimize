@@ -1,5 +1,31 @@
 == Changelog ==
 
+= 4.6.0 - 06/Jul/2026 =
+
+* FEATURE: Premium - Automatically preloads the page’s Largest Contentful Paint (LCP) element to improve initial load speed and perceived performance
+* FIX: Cache - Fixed an issue related to cache setting saving
+* FIX: Fixed a UI issue in WooCommerce variation products when Automatically preload content after it is purged is enabled
+* FIX: Fixed browser caching issue where admin pages were cached
+* FIX: Mobile UI issue
+* FIX: Notice Dismissal issue
+* FIX: Usage of htmlspecialchars()
+* REFACTOR: Code from can_purge_cache() method moved to WP_Optimize_Utils::current_user_can_purge_cache()
+* REFACTOR: Fix WordPress Security check errors and warnings on admin page
+* REFACTOR: Make `is_edit_mode` a static method and avoid duplication
+* REFACTOR: Optimized WP_Optimize_Database_Information::get_table_plugin() method
+* TWEAK: Added method to check current user has the capability
+* TWEAK: Added methods to retrieve and save essential WP-Optimize toggleable settings for UpdraftCentral
+* TWEAK: Disable and hide the "Speed up WooCommerce 'Get total spent' query" Power Tweak when it's no longer relevant
+* TWEAK: Handle race conditions in font downloading and optimize cache stats storage 
+* TWEAK: Improved image grid action button visibility to accommodate WordPress 7.0 button styling changes
+* TWEAK: Matched response styles when purging via the admin bar
+* TWEAK: Premium - Handle empty orders in WooCommerce Total Spent Power Tweak feature
+* TWEAK: Premium - Improved hash logic for the Unused CSS Removal feature
+* TWEAK: Prevent unwanted cache growth caused by crawlers or preload bots
+* TWEAK: UI changes to match WordPress 7.0 
+* TWEAK: Unschedule all WP-Optimize cron jobs on deactivation in multisite
+* TWEAK: WP_Optimize_Power_Tweaks class method deactivate bug fixed related to the array_diff function
+
 = 4.5.5 - 05/Jun/2026 =
 
 * TWEAK: Update the bundled common-libs version
@@ -31,7 +57,6 @@
 * TWEAK: Precheck for existing WebP format of file before running WebP conversion
 * TWEAK: Remove redundant code that is not reachable.
 * TWEAK: Resolved edge cases in CapoJS
-
 
 = 4.5.3 - 29/Apr/2026 =
 * SECURITY: Prevented path traversal security risk. Thanks to Wordfence for the responsible disclosure

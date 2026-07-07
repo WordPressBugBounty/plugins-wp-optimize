@@ -9,6 +9,13 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	protected $options;
 
 	/**
+	 * If set to true, the preloader will not close the browser connection when running via AJAX.
+	 *
+	 * @var bool
+	 */
+	protected $dont_close_browser_connection = false;
+
+	/**
 	 * WP_Optimize_Page_Cache_Preloader constructor.
 	 */
 	public function __construct() {
@@ -118,7 +125,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		$is_wp_cli = defined('WP_CLI') && WP_CLI;
 
 		// close browser connection and continue work for ajax actions.
-		if (defined('DOING_AJAX') && DOING_AJAX) {
+		if (defined('DOING_AJAX') && DOING_AJAX && !$this->dont_close_browser_connection) {
 			if (true === $silent) {
 				$output = '';
 			} else {
@@ -127,6 +134,9 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 			WP_Optimize()->close_browser_connection($output);
 		}
+
+		// Reset the flag to not close the browser connection for the next runs.
+		$this->dont_close_browser_connection = false;
 
 		// trying to change time limit.
 		WP_Optimize()->change_time_limit();
@@ -154,6 +164,22 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		// return $response in WP-CLI mode
 		if ($is_wp_cli) {
 			return $response;
+		}
+	}
+
+	/**
+	 * Set the flag to not close the browser connection when running via AJAX.
+	 *
+	 * @return void
+	 */
+	public function maybe_dont_close_browser_connection() {
+
+		if ($this->dont_close_browser_connection) return;
+
+		$dont_close_browser_connection = apply_filters('wpo_' . $this->preload_type . '_preloader_dont_close_browser_connection', $this->dont_close_browser_connection);
+	
+		if ($dont_close_browser_connection) {
+			$this->dont_close_browser_connection = true;
 		}
 	}
 

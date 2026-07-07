@@ -83,7 +83,7 @@ class WP_Optimize_Bypass {
 	 * Add admin bar notice when bypass is active
 	 */
 	public function maybe_add_admin_notice() {
-		if (current_user_can('manage_options')) {
+		if (WP_Optimize()->current_user_can('manage_options')) {
 			add_action('admin_bar_menu', array($this, 'add_bypass_notice_to_admin_bar'), 999);
 		}
 	}

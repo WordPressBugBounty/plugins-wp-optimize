@@ -413,17 +413,23 @@ class WP_Optimizer {
 	 *
 	 * @return object
 	 */
-	public function join_plugin_information($table_name, $table_obj) {
+	private function join_plugin_information($table_name, $table_obj) {
 		// set can be removed flag.
 		$can_be_removed = false;
 		// set WP core table flag.
 		$wp_core_table = false;
 		// set WP actionscheduler table flag.
 		$wp_actionscheduler_table = (false !== stripos($table_name, 'actionscheduler_'));
-		// add information about using table by any of installed plugins.
-		$table_obj->is_using = WP_Optimize()->get_db_info()->is_table_using_by_plugin($table_name);
 		// if table belongs to any plugin then add plugins status.
 		$plugins = WP_Optimize()->get_db_info()->get_table_plugin($table_name);
+
+		if (false === $plugins) {
+			// if we can't determine which plugin use $table then mark table as used.
+			$table_obj->is_using = true;
+		} else {
+			// if any plugin is installed which use table - $table_name then mark table as used.
+			$table_obj->is_using = WP_Optimize()->get_db_info()->is_any_plugin_installed($plugins);
+		}
 
 		$plugin_status = array();
 

@@ -1176,6 +1176,9 @@ var WP_Optimize = function () {
 
 			if (resp && resp.hasOwnProperty('settings_auto_cleanup_contents')) {
 				$('#wpo_auto_cleanup').replaceWith(resp.settings_auto_cleanup_contents);
+				if ('function' === typeof $.fn.select2) {
+					$(".wpo-select2").not('.select2-hidden-accessible').select2();
+				}
 			}
 
 			if (resp && resp.hasOwnProperty('logging_settings_contents')) {
@@ -1895,7 +1898,7 @@ var WP_Optimize = function () {
 	/**
 	 * Hide introduction notice
 	 */
-	$('.wpo-introduction-notice .notice-dismiss, .wpo-introduction-notice .close').on('click', function(e) {
+	$('#wp-optimize-wrap').on('click', '.wpo-introduction-notice .notice-dismiss, .wpo-introduction-notice .close', function(e) {
 		$('.wpo-introduction-notice').remove();
 		send_command('dismiss_install_or_update_notice', null, function (resp) {
 			if (resp && resp.hasOwnProperty('error')) {

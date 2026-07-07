@@ -50,19 +50,20 @@ class WPO_Page_Builder_Compatibility {
 	}
 
 	/**
-	 * Checks if current page is in Page Builder edit mode.
+	 * Determines whether the page is in edit mode using page builders
+	 * Beaver Builder, Divi Theme, Elementor, and Oxygen Builder
 	 *
 	 * @return bool
 	 */
-	public function is_edit_mode() {
-		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['ct_builder']); // phpcs:ignore WordPress.Security.NonceVerification -- We are not using $_GET value, just checking its existence
+	public static function is_edit_mode(): bool {
+		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['ct_builder']) || isset($_GET['elementor-preview']) || isset($_GET['oxygen']); // phpcs:ignore WordPress.Security.NonceVerification -- We are not using any global values, only checking for existence
 	}
 
 	/**
 	 * Disables altering HTML for WebP when current page is in edit mode.
 	 */
 	private function disable_webp_alter_html_in_edit_mode() {
-		if ($this->is_edit_mode()) {
+		if (self::is_edit_mode()) {
 			add_filter('wpo_disable_webp_alter_html', '__return_true');
 		}
 	}

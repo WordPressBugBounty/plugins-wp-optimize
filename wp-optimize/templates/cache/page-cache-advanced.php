@@ -5,10 +5,19 @@
 <div class="wpo-fieldgroup cache-options">
 	<div class="wpo-fieldgroup__subgroup">
 		<label for="wpo-show-avatars">
-			<input type="checkbox" value="true" disabled <?php checked(get_option('show_avatars'), 1); ?>>
-			<?php esc_html_e('Show avatars.', 'wp-optimize'); ?>
+			<input type="checkbox" value="true" disabled <?php checked($show_avatars, 1); ?>>
+			<?php esc_html_e('Show avatars (WordPress core setting).', 'wp-optimize'); ?>
 		</label>
-		<span tabindex="0" data-tooltip="<?php esc_attr_e('Disable or enable avatars for users.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+		<span tabindex="0" data-tooltip="<?php esc_attr_e('This option controls the WordPress core avatar display setting.', 'wp-optimize'); ?> <?php esc_attr_e('WP-Optimize does not manage avatars directly.', 'wp-optimize'); ?> <?php esc_attr_e('You can also change this setting in Settings → Discussion.', 'wp-optimize'); ?> <?php esc_attr_e('When disabled, locally hosted gravatars will also be disabled.', 'wp-optimize'); ?>">
+			<span class="dashicons dashicons-editor-help"></span>
+		</span>
+		<p class="description">
+			<?php esc_html_e('This is a WordPress core setting.', 'wp-optimize'); ?>
+			<?php
+				/* translators: %s: Link to WordPress Discussion Settings page */
+				printf(esc_html__('For more avatar options, visit %s.', 'wp-optimize'), '<a href="' . esc_url(admin_url('options-discussion.php')) . '" target="_blank">' . esc_html__('Settings → Discussion', 'wp-optimize') . '</a>');
+			?>
+		</p>
 	</div>
 	<div class="wpo-fieldgroup__subgroup" id="wpo-host-gravatars-locally-container">
 		<label for="wpo-host-gravatars-locally">

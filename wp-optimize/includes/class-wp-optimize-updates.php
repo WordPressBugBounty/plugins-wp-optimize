@@ -45,6 +45,9 @@ class WP_Optimize_Updates {
 		'4.4.0' => array(
 			'update_440_change_plugin_json_permissions',
 		),
+		'4.6.0' => array(
+			'update_460_update_browser_cache_htaccess_config',
+		),
 	);
 
 	/**
@@ -374,6 +377,16 @@ class WP_Optimize_Updates {
 		if (self::is_new_install()) return;
 
 		WP_Optimize()->get_db_info()->change_plugin_json_permissions();
+	}
+
+	/**
+	 * Update the browser cache htaccess config file with fix disabling cache for php files and /wp-admin/ dir
+	 */
+	private static function update_460_update_browser_cache_htaccess_config() {
+		if (self::is_new_install()) return;
+		if (!WP_Optimize()->get_options()->get_option('enable_browser_cache')) return;
+
+		WP_Optimize()->get_browser_cache()->restore();
 	}
 }
 

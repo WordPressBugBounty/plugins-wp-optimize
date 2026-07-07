@@ -48,7 +48,7 @@ class WPO_WebP_Alter_HTML {
 		}
 
 		// MAX_FILE_SIZE is defined in simple_html_dom — ensure it has a safe default.
-		defined('MAX_FILE_SIZE') || define('MAX_FILE_SIZE', 600000);
+		WP_Optimize_Utils::define_maxfile_size_constant();
 
 		$dom = WP_Optimize_Utils::get_simple_html_dom_object($html);
 

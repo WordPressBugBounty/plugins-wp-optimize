@@ -106,7 +106,7 @@ class WPO_Cache_Config {
 
 		$config['wpo_cache_cookies'] = $wpo_cache_cookies;
 		$config['wpo_cache_query_variables'] = $wpo_query_variables;
-		
+
 		$config = apply_filters('wpo_cache_update_config', $config);
 
 		if (is_multisite()) {
@@ -247,10 +247,10 @@ class WPO_Cache_Config {
 			'date_format'                      => get_option('date_format'),
 			'time_format'                      => get_option('time_format'),
 			'use_webp_images'                  => false,
-			'show_avatars'                     => 0,
 			'host_gravatars_locally'           => 0,
 			'auto_preload_purged_contents'     => true,
 			'enable_rest_caching'              => false,
+			'lcp_preload_enable'               => false,
 		);
 
 		return apply_filters('wpo_cache_defaults', $defaults);

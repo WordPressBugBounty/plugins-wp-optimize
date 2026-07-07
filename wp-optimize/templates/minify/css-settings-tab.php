@@ -32,10 +32,16 @@
 								id="enable_unused_css"
 								value="1"
 							<?php checked($wpo_minify_options['enable_unused_css']); ?>
+							<?php disabled($show_unused_css_advertise); ?>
 						>
 						<?php esc_html_e('Enable removal of unused rules from CSS files (Experimental)', 'wp-optimize'); ?>
 					</label>
 					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling removal of unused CSS rules might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<?php if ($show_unused_css_advertise) : ?>
+					<div class="wpo-inline-advertise">
+						<a class="" href="https://teamupdraft.com/wp-optimize/pricing/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_creative_format=overlay&utm_content=remove-unused-css" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a>
+					</div>
+					<?php endif; ?>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="enable_merging_of_css">

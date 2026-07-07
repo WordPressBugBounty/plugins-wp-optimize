@@ -428,17 +428,15 @@ class WP_Optimize_Database_Information {
 	}
 
 	/**
-	 * Check if $table using by any of installed plugins.
+	 * Check if any of plugins from $plugin_names is installed.
 	 *
-	 * @param string $table
+	 * @param array $plugin_names
 	 * @return bool
 	 */
-	public function is_table_using_by_plugin($table) {
-		$plugin_names = $this->get_table_plugin($table);
+	public function is_any_plugin_installed($plugin_names) {
 
-		// if we can't determine which plugin use $table then return true.
-		if (!$plugin_names) {
-			return true;
+		if (empty($plugin_names)) {
+			return false;
 		}
 
 		// is WordPress core table or using by any of installed plugins then return true.
@@ -537,8 +535,6 @@ class WP_Optimize_Database_Information {
 		if (!in_array($wpo, $plugin_tables['tm_tasks'], true)) {
 			$plugin_tables['tm_tasks'][] = $wpo;
 		}
-		
-		$plugin_tables = array_merge($plugin_tables, $this->get_learndash_tables());
 
 		return $plugin_tables;
 	}
@@ -563,17 +559,12 @@ class WP_Optimize_Database_Information {
 			$plugins = $plugins_tables[$table];
 		}
 
-		// special handling for tables when plugins use custom prefix.
-		foreach ($plugins_tables as $plugin_table => $plugin_names) {
-			if (false === strpos($plugin_table, '*')) {
-				continue;
-			}
-
-			// support for wildcard * in table names.
-			$pattern = '/^'.str_replace('\*', '.*', preg_quote($plugin_table, '/')).'$/';
-
-			if (preg_match($pattern, $original_table)) {
-				$plugins = array_merge($plugins, $plugin_names);
+		// if has pro_quiz in name then try to match with learndash tables.
+		if (false !== stripos($original_table, 'pro_quiz')) {
+			$match_learndash_tables_plugin = $this->match_learndash_tables_plugin($original_table);
+			
+			if (!empty($match_learndash_tables_plugin)) {
+				$plugins = array_merge($plugins, $match_learndash_tables_plugin);
 			}
 		}
 
@@ -714,23 +705,35 @@ class WP_Optimize_Database_Information {
 	}
 
 	/**
-	 * Get a list of LearnDash tables with plugin slug for each of them.
+	 * Check if the give table name belongs to a LearnDash plugin table and return the plugin slug.
 	 *
+	 * @param string $table_name The original table name with prefix to check if it belongs to LearnDash plugin.
 	 * @return array
 	 */
-	private function get_learndash_tables() {
+	private function match_learndash_tables_plugin($table_name) {
+
 		$table_names = array(
-			'*pro_quiz_category',
-			'*pro_quiz_form',
-			'*pro_quiz_lock',
-			'*pro_quiz_prerequisite',
-			'*pro_quiz_question',
-			'*pro_quiz_statistic',
-			'*pro_quiz_statistic_ref',
-			'*pro_quiz_template',
-			'*pro_quiz_toplist',
+			'pro_quiz_category',
+			'pro_quiz_form',
+			'pro_quiz_lock',
+			'pro_quiz_prerequisite',
+			'pro_quiz_question',
+			'pro_quiz_statistic',
+			'pro_quiz_statistic_ref',
+			'pro_quiz_template',
+			'pro_quiz_toplist',
 		);
 
-		return array_fill_keys($table_names, array('sfwd-lms'));
+		$learndash_slug = 'sfwd-lms';
+
+		foreach ($table_names as $learndash_table) {
+			$table_suffix = substr($table_name, -strlen($learndash_table));
+
+			if ($table_suffix === $learndash_table) {
+				return array($learndash_slug);
+			}
+		}
+
+		return array();
 	}
 }

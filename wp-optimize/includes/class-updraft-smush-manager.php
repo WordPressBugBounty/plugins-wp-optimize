@@ -225,7 +225,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 			die('Security check failed');
 		}
 
-		if (!current_user_can(WP_Optimize()->capability_required())) {
+		if (!WP_Optimize()->current_user_can()) {
 			die('You are not allowed to run this command.');
 		}
 
@@ -370,7 +370,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	public function restore_single_image($image_id, $blog_id) {
 
 		$switched_blog = false;
-		if (is_multisite() && current_user_can('manage_network_options')) {
+		if (is_multisite() && WP_Optimize()->current_user_can('manage_network_options')) {
 			switch_to_blog($blog_id);
 			$switched_blog = true;
 		} elseif (is_multisite() && get_current_blog_id() != $blog_id) {

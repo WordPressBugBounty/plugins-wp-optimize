@@ -75,7 +75,7 @@
 						<?php esc_html_e('Host Google Fonts locally', 'wp-optimize'); ?>
 					</label>
 					<span tabindex="0" data-tooltip="<?php esc_attr_e('If enabled, stylesheet and font files from Google Fonts will be hosted locally.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
-					<div id="wpo_fonts_cache_size_information">
+					<div class="wpo-inline-advertise">
 						<a class="" href="https://teamupdraft.com/wp-optimize/pricing/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_creative_format=overlay&utm_content=host-local-google-fonts" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock Host Google Fonts feature.', 'wp-optimize'); ?></a>
 					</div>
 				</div>

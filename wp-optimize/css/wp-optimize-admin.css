@@ -555,12 +555,9 @@ a.loading.wpo-refresh-gzip-status img.wpo_spinner.display-none {
   display: inline-block;
 }
 
-#wpo_browser_cache_expire_days {
-  width: 50px;
-}
-
-#wpo_browser_cache_expire_hours {
-  width: 50px;
+input.wpo_browser_cache_input {
+  width: 60px;
+  padding: 0 8px;
 }
 
 .wpo-enabled .wpo-disabled {
@@ -648,6 +645,7 @@ th.wpo-thin-header-2 {
   position: relative;
   top: 1px;
   height: 27px;
+  padding-bottom: 3px;
 }
 
 hr.wpo-thin-bar {
@@ -1096,6 +1094,11 @@ body.rtl .wpo-page {
 .wpo-first-child {
   margin-top: 0;
 }
+.wpo-first-child span {
+  font-size: 10px;
+  color: #3c434a;
+  font-weight: normal;
+}
 
 .save-done {
   color: #009B24;
@@ -1238,8 +1241,8 @@ p.wpo-take-a-backup {
   border-radius: 50%;
 }
 #wp-optimize-wrap .switch input:checked + .slider {
-  background: #0272AA;
-  border-color: #0272AA;
+  background: var(--wp-admin-theme-color, #0272AA);
+  border-color: var(--wp-admin-theme-color, #0272AA);
 }
 #wp-optimize-wrap .switch input:checked + .slider::before {
   background: #FFF;
@@ -1421,7 +1424,7 @@ p.wpo-description-show-links {
   margin: 0;
   border-top: 3px solid transparent;
   padding: 7px 15px;
-  color: #0272AA;
+  color: var(--wp-admin-theme-color, #0272AA);
 }
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab .dashicons,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab:hover .dashicons,
@@ -1452,7 +1455,7 @@ p.wpo-description-show-links {
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab:hover span.menu-pill.premium-only,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab:focus span.menu-pill.premium-only,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab:focus:active span.menu-pill.premium-only {
-  background: #0272AA;
+  background: var(--wp-admin-theme-color, #0272AA);
   color: #FFF;
 }
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab span.menu-pill.disabled,
@@ -1474,13 +1477,13 @@ p.wpo-description-show-links {
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab-active:focus:active {
   background: #FFF;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.04);
-  border-top-color: #0272AA;
+  border-top-color: var(--wp-admin-theme-color, #0272AA);
 }
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab-active .dashicons,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab-active:hover .dashicons,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab-active:focus .dashicons,
 #wp-optimize-wrap h2.nav-tab-wrapper .nav-tab-active:focus:active .dashicons {
-  color: #0272AA;
+  color: var(--wp-admin-theme-color, #0272AA);
 }
 #wp-optimize-wrap h2.nav-tab-wrapper .wpo-feedback {
   display: block;
@@ -2007,35 +2010,65 @@ h4.updraft_advert_heading {
   }
 }
 /* Unused images / wpo_smush_image / image grid*/
-.wpo_unused_image, .wpo_smush_image {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image,
+.wpo_smush_image {
   position: relative;
   margin: 4px;
   width: calc(50% - 8px);
   text-align: center;
 }
 @media (min-width: 500px) {
-  .wpo_unused_image, .wpo_smush_image {
+  #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  #wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  .wpo_smush_image {
     width: calc(25% - 8px);
   }
 }
 @media (min-width: 782px) {
-  .wpo_unused_image, .wpo_smush_image {
+  #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  #wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  .wpo_smush_image {
     width: calc(16.6666% - 8px);
   }
 }
 @media (min-width: 1100px) {
-  .wpo_unused_image, .wpo_smush_image {
+  #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  #wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image,
+  .wpo_smush_image {
     width: calc(12.5% - 8px);
   }
 }
-.wpo_unused_image .wpo_unused_image__input, .wpo_smush_image .wpo_unused_image__input {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .wpo_unused_image__input,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .wpo_unused_image__input,
+.wpo_smush_image .wpo_unused_image__input {
   position: absolute;
   top: 10px;
   opacity: 0;
   width: 0;
   height: 0;
 }
-.wpo_unused_image label, .wpo_smush_image label {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .button,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .button,
+.wpo_smush_image .button {
+  background: #f6f7f7;
+  border-radius: 3px;
+}
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .button:focus, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .button:active,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .button:focus,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .button:active,
+.wpo_smush_image .button:focus,
+.wpo_smush_image .button:active {
+  background: #f6f7f7;
+}
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .button:hover,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .button:hover,
+.wpo_smush_image .button:hover {
+  background: #f0f0f1;
+}
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image label,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image label,
+.wpo_smush_image label {
   display: block;
   width: 100%;
   position: relative;
@@ -2043,12 +2076,16 @@ h4.updraft_advert_heading {
   border: 3px solid #F2F4F5;
   box-sizing: border-box;
 }
-.wpo_unused_image label::before, .wpo_smush_image label::before {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image label::before,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image label::before,
+.wpo_smush_image label::before {
   content: "";
   display: block;
   padding-top: 100%;
 }
-.wpo_unused_image label .thumbnail, .wpo_smush_image label .thumbnail {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image label .thumbnail,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image label .thumbnail,
+.wpo_smush_image label .thumbnail {
   position: absolute;
   top: 1px;
   left: 1px;
@@ -2060,7 +2097,9 @@ h4.updraft_advert_heading {
   overflow: hidden;
   background: rgba(220, 220, 220, 0.2);
 }
-.wpo_unused_image label .thumbnail img, .wpo_smush_image label .thumbnail img {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image label .thumbnail img,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image label .thumbnail img,
+.wpo_smush_image label .thumbnail img {
   display: block;
   margin: 0;
   max-height: 100%;
@@ -2072,7 +2111,9 @@ h4.updraft_advert_heading {
       -ms-user-select: none;
           user-select: none;
 }
-.wpo_unused_image label span.dashicons, .wpo_smush_image label span.dashicons {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image label span.dashicons,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image label span.dashicons,
+.wpo_smush_image label span.dashicons {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -2081,13 +2122,25 @@ h4.updraft_advert_heading {
   width: 25px;
   opacity: 0.2;
 }
-.wpo_unused_image .wpo_unused_image__input:checked + label, .wpo_unused_image.selected label, .wpo_smush_image .wpo_unused_image__input:checked + label, .wpo_smush_image.selected label {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image .wpo_unused_image__input:checked + label, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image.selected label,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image .wpo_unused_image__input:checked + label,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image.selected label,
+.wpo_smush_image .wpo_unused_image__input:checked + label,
+.wpo_smush_image.selected label {
   border-color: #0272AA;
 }
-.wpo_unused_image:focus-within label, .wpo_smush_image:focus-within label {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image:focus-within label,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image:focus-within label,
+.wpo_smush_image:focus-within label {
   box-shadow: 0 0 4px #0272AA;
 }
-.wpo_unused_image a, .wpo_unused_image a.button, .wpo_unused_image a.button:active, .wpo_smush_image a, .wpo_smush_image a.button, .wpo_smush_image a.button:active {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image a, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image a.button, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image a.button:active,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image a,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image a.button,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image a.button:active,
+.wpo_smush_image a,
+.wpo_smush_image a.button,
+.wpo_smush_image a.button:active {
   position: absolute;
   z-index: 2;
   bottom: 13px;
@@ -2095,7 +2148,13 @@ h4.updraft_advert_heading {
   transform: translateX(-50%);
   display: none;
 }
-.wpo_unused_image:hover a, .wpo_unused_image:hover a.button, .wpo_unused_image:hover a.button:active, .wpo_smush_image:hover a, .wpo_smush_image:hover a.button, .wpo_smush_image:hover a.button:active {
+#wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a.button, #wpo_unused_images:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a.button:active,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a.button,
+#wpo_unused_images_trash:not(.wpo_unused_image_list_view) .wpo_unused_image:hover a.button:active,
+.wpo_smush_image:hover a,
+.wpo_smush_image:hover a.button,
+.wpo_smush_image:hover a.button:active {
   display: inline-block;
 }
 
@@ -2157,6 +2216,13 @@ a.wpo-images-dimensions__premium-link {
 p.wpo-images-dimension-show-links {
   z-index: 999;
   position: relative;
+}
+
+.wpo_unused_image_list_view .wpo_unused_images_remove_single.button-link,
+.wpo_unused_image_list_view .wpo_unused_images_remove_single.button-link:hover {
+  background: none;
+  border: none;
+  color: #F00;
 }
 
 /* More Plugins page */
@@ -2582,8 +2648,13 @@ textarea.cache-settings {
   border-left: 2px solid #E2E2E2;
   margin-left: 0.5em;
 }
+#wp-optimize-wrap .wpo-fieldgroup .wpo-inline-advertise {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 20px;
+}
 #wp-optimize-wrap {
-  /*
+  /* 
   	Asset preload table
   */
 }

@@ -116,7 +116,7 @@ class WPO_Page_Optimizer {
 	private function should_initialise() {
 
 		// Skip admin, AJAX, WP-CLI, cron, static assets and page builder edit modes.
-		if (is_admin() || $this->is_ajax() || $this->is_wp_cli() || $this->is_cron_job() || $this->is_static_asset_request() || WPO_Page_Builder_Compatibility::instance()->is_edit_mode()) {
+		if (is_admin() || $this->is_ajax() || $this->is_wp_cli() || $this->is_cron_job() || $this->is_static_asset_request() || WPO_Page_Builder_Compatibility::is_edit_mode()) {
 			return false;
 		}
 

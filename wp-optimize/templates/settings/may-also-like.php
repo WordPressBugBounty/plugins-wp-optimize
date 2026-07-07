@@ -258,6 +258,18 @@
 		</tr>
 		<tr>
 			<td>
+				<h4><?php esc_html_e('Speed up visible content (LCP)', 'wp-optimize');?></h4>
+				<p><?php esc_html_e('Optimize how large elements load, so users see content faster.', 'wp-optimize');?></p>
+			</td>
+			<td>
+				<p><span class="dashicons dashicons-no-alt" aria-label="<?php esc_attr_e('No', 'wp-optimize');?>"></span></p>
+			</td>
+			<td>
+				<p><span class="dashicons dashicons-yes" aria-label="<?php esc_attr_e('Yes', 'wp-optimize');?>"></span></p>
+			</td>
+		</tr>
+		<tr>
+			<td>
 				<!-- <img src="<?php echo esc_url(WPO_PLUGIN_URL.'images/features/premium-support.png');?>" alt="<?php esc_attr_e('Premium support', 'wp-optimize');?>" class="wpo-premium-image"> -->
 				<h4><?php esc_html_e('Premium support', 'wp-optimize');?></h4>
 				<p><?php esc_html_e('Get your specific queries addressed directly by our experts', 'wp-optimize');?></p>

@@ -104,8 +104,7 @@ class WP_Optimize_Cache_Commands {
 			// Override enabled setting value
 			$data['cache-settings']['enable_page_caching'] = ($enabled && !is_wp_error($enabled)) || ($previous_settings['enable_page_caching'] && is_wp_error($disabled));
 		} else {
-			$data['cache-settings']['enable_page_caching'] = $previous_settings['enable_page_caching'];
-			$enabled = $previous_settings['enable_page_caching'];
+			$enabled = isset($data['cache-settings']['enable_page_caching']) ? (bool) $data['cache-settings']['enable_page_caching'] : false;
 		}
 
 		$data['cache-settings']['use_webp_images'] = (bool) WP_Optimize()->get_options()->get_option('webp_conversion');
@@ -145,7 +144,6 @@ class WP_Optimize_Cache_Commands {
 				'enable_per_role_cache',
 				'enable_user_specific_cache',
 				'enable_rest_caching',
-				'show_avatars',
 				'host_gravatars_locally',
 				'cache_exception_urls',
 				'cache_ignore_query_variables',
