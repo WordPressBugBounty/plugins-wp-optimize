@@ -7,20 +7,31 @@ import {get_website_url} from "@/utils/lib.js";
 // @ts-ignore
 import useOnboardingStore from "@/store/useOnboardingStore";
 import Icon from "../../utils/Icon";
-interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
-    type?: string;
+import { SettingField } from "../../types"; // Import SettingField
+
+interface PasswordProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
+    field: SettingField;
+    onChange: (value: string) => void;
+    value: string;
+    fieldStatus?: (id: string, success: boolean) => void;
 }
+
 const Password = ({
                    field,
                    onChange,
                    value,
-               }) => {
+                   fieldStatus,
+                   ...props
+               }: PasswordProps) => {
     const [showPassword, setShowPassword] = useState(false);
     const {
         onboardingData,
         responseCode,
         responseMessage,
     } = useOnboardingStore();
+
+    // Check field.show_forgot_password, defaulting to true if undefined
+    const showForgotPassword = field.show_forgot_password !== undefined ? field.show_forgot_password : true;
 
     const forgot_password = get_website_url(onboardingData.forgot_password_url, {
         utm_source: onboardingData.prefix + '_onboarding',
@@ -43,10 +54,16 @@ const Password = ({
 
     return (
         <>
-            <FieldWrapper inputId={field.id} label={field.label}>
+            <FieldWrapper
+                inputId={field.id}
+                label={field.label}
+                context={field.context}
+                {...(field.context_html && { contextHtml: field.context_html })}
+            >
                 <div className="relative w-full group">
                     <TextInput
-                        placeholder={__("Enter your password", "ONBOARDING_WIZARD_TEXT_DOMAIN")}
+                        id={field.id}
+                        placeholder={field.placeholder || __("Enter your password", "ONBOARDING_WIZARD_TEXT_DOMAIN")}
                         type={showPassword ? "text" : "password"}
                         onChange={handleChange}
                         value={value}
@@ -55,6 +72,7 @@ const Password = ({
                                 ? "border border-[#B40000] bg-[#B40000]/10 pr-10"
                                 : "pr-10"
                         }
+                        {...props}
                     />
 
                     {/* Toggle Eye Icon */}
@@ -72,11 +90,13 @@ const Password = ({
                         />
                     </button>
                 </div>
-                <div className="flex flex-row-reverse items-start gap-3 mt-1">
-                    <a className="underline text-[var(--teamupdraft-grey-600)] focus:outline-none focus:ring-0 w-auto" target="_blank" href={forgot_password}>
-                        {__("Forgot your password?", "ONBOARDING_WIZARD_TEXT_DOMAIN") }
-                    </a>
-                    {isBadAuthError && (
+                {showForgotPassword && ( // Conditional rendering for the block
+
+                    <div className="flex flex-row-reverse items-start gap-3 mt-1">
+                        <a className="underline text-[var(--teamupdraft-grey-600)] focus:outline-none focus:ring-0 w-auto" target="_blank" href={forgot_password}>
+                            {__("Forgot your password?", "ONBOARDING_WIZARD_TEXT_DOMAIN") }
+                        </a>
+                        {isBadAuthError && (
                             <div className="flex items-start gap-2 text-sm flex-1">
                                 <Icon
                                     name='warning'
@@ -88,8 +108,9 @@ const Password = ({
                                 />
                                 <p className="text-[#B40000] break-words whitespace-normal">{responseMessage}</p>
                             </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </FieldWrapper>
         </>
     )

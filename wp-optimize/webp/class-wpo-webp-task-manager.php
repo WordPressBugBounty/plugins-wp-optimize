@@ -164,7 +164,7 @@ class WPO_Webp_Task_Manager extends Updraft_Task_Manager_1_4 {
 	 * @return void
 	 */
 	private function backfill_webp_conversion_meta($post_id): void {
-		update_post_meta($post_id, 'wpo-webp-conversion-complete', true);
+		update_post_meta($post_id, '_wpo-webp-conversion-complete', true);
 	}
 
 	/**
@@ -176,23 +176,23 @@ class WPO_Webp_Task_Manager extends Updraft_Task_Manager_1_4 {
 		return array(
 			'relation' => 'AND',
 			array(
-				'key'     => 'smush-complete',
+				'key'     => '_wpo-smush-complete',
 				'compare' => '=',
 				'value'   => '1',
 			),
 			array(
 				'relation' => 'OR',
 				array(
-					'key'     => 'wpo-webp-conversion-complete',
+					'key'     => '_wpo-webp-conversion-complete',
 					'compare' => 'NOT EXISTS',
 					'value'   => '',
 				),
 				array(
-					'key'     => 'wpo-webp-conversion-complete',
+					'key'     => '_wpo-webp-conversion-complete',
 					'compare' => '!=',
 					'value'   => '1',
 				)
-			),
+			)
 		);
 	}
 

@@ -39,6 +39,10 @@ export interface Step {
     groups?: Array<{
         id: string;
         title: string;
+        showConfirmButton?: boolean;
+        hidden?: boolean;
+        controllerFieldId?: string;
+        resetOnOpen?: boolean;
     }>;
     icon?: string;
     title: string;
@@ -70,7 +74,10 @@ export interface Step {
         id: string;
         label: string;
         icon?: string;
+        externalAction?: string;
+        group_id?: string;
     };
+    onContinueExternalAction?: string;
     visible?: boolean;
 }
 
@@ -81,12 +88,15 @@ export interface SettingField {
     label?: string;
     default?: string | boolean;
     group_id?: string;
+    show_confirm_button?: boolean;
+    actionType?: string;
     [key: string]: any;
     options?: Array<{
         id: string;
         value: string;
         label: string;
     }>;
+    context_html?: string;
 }
 
 export interface OnboardingState {
@@ -98,6 +108,8 @@ export interface OnboardingState {
     setCurrentStepIndex: (index: number) => void;
     addSuccessStep: (stepId: string) => void;
     setSteps: (steps: Step[]) => void;
+    isUpdating: boolean;
+    setIsUpdating: (status: boolean) => void;
 }
 
 export type DependencyList = ReadonlyArray<any>;

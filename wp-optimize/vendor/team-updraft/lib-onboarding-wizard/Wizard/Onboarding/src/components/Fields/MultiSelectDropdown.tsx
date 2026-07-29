@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef } from '@wordpress/element';
 import FieldWrapper from './FieldWrapper';
 import { __ } from '@wordpress/i18n';
 import {
@@ -30,9 +30,10 @@ interface MultiSelectFieldProps {
     };
     value: string[];
     onChange: (value: string[]) => void;
+    fieldStatus?: (id: string, success: boolean) => void;
 }
 
-const MultiSelect = ({ field, value, onChange } : MultiSelectFieldProps ) => {
+const MultiSelect = ({ field, value, onChange, fieldStatus } : MultiSelectFieldProps ) => {
     const [open, setOpen] = useState(false);
     const selectedValues = Array.isArray(value) ? value : [];
     const removeButtonRefs = useRef<Record<string, HTMLSpanElement | null>>({});
@@ -40,6 +41,13 @@ const MultiSelect = ({ field, value, onChange } : MultiSelectFieldProps ) => {
     const selectedOptions = selectedValues
         .map(val => field.options.find(opt => opt.value === val))
         .filter((opt): opt is MultiSelectOption => opt !== undefined);
+
+    useEffect(() => {
+        if (fieldStatus) {
+            const isValid = selectedValues.length > 0;
+            fieldStatus(field.id, isValid);
+        }
+    }, [selectedValues, field.id, fieldStatus]);
 
     const handleValueChange = (newValue: string) => {
         const isSelected = selectedValues.includes(newValue);
@@ -74,23 +82,10 @@ const MultiSelect = ({ field, value, onChange } : MultiSelectFieldProps ) => {
     return (
         <FieldWrapper
             inputId={field.id}
-            label={
-                <div className="flex items-center gap-2">
-                    <span>{field.label}</span>
-                    {field.tooltip && (
-                        <Icon
-                            name={field.tooltip.icon ?? 'info'}
-                            color="gray500"
-                            fill="gray500"
-                            size={16}
-                            tooltip={field.tooltip}
-                            className="ml-[-4px]"
-                        />
-                    )}
-                </div>
-            }
+            label={field.label}
+            tooltip={field.tooltip}
         >
-            <Select onValueChange={handleValueChange} value="" open={open} onOpenChange={handleSelectOpenChange} disabled={field.is_lock}>
+            <Select onValueChange={handleValueChange} value="" open={open} onOpenChange={handleSelectOpenChange} disabled={!!field.is_lock}>
                 <SelectTrigger className="flex w-full items-center border border-gray-400 rounded-md min-h-[40px] flex-wrap p-2 pr-8">
                     <div className="flex flex-wrap flex-1 items-center gap-1">
                         {selectedOptions.map((opt) => (

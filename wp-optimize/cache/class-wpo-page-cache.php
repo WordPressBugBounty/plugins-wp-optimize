@@ -319,7 +319,7 @@ class WPO_Page_Cache {
 		global $pagenow;
 		if (!$this->can_purge_cache()) return $menu_items;
 
-		$act_url = remove_query_arg(array('wpo_single_page_cache_purged', 'wpo_all_pages_cache_purged'));
+		$act_url = WP_Optimize_Utils::get_url_without_cache_purge_params();
 
 		$cache_size = $this->get_cache_size();
 		$cache_size_info = '<h4>'.__('Page cache', 'wp-optimize').'</h4>';

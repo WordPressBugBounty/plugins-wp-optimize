@@ -6,6 +6,7 @@ import { __ } from "@wordpress/i18n";
 import {get_website_url} from "@/utils/lib.js";
 import useOnboardingStore from "@/store/useOnboardingStore";
 import Icon from '@/utils/Icon';
+import Tooltip from "../../utils/Tooltip/Tooltip";
 
 const Checkbox = ({
     field,
@@ -33,8 +34,36 @@ const Checkbox = ({
         }
     }, [disabled]);
 
+    const tooltipContent = field.tooltip && (
+        typeof field.tooltip.text === 'string' && field.tooltip.text.trim() !== ''
+    ) ? field.tooltip : null;
+
+    // Define the label element
+    const labelElement = (
+        <label htmlFor={field.id}
+            className={`font-normal text-md flex items-center gap-1 ${
+                disabled ? "text-[#9FA4A7]" : "text-gray-1000"
+            }`}
+        >
+            <span className="text-gray-1000 font-normal flex">
+                {field.label}
+            </span>
+        </label>
+    );
+
+    // Define the icon element (always rendered if tooltipContent exists)
+    const iconElement = tooltipContent ? (
+        <Icon
+            name={tooltipContent?.icon ?? 'info'}
+            color="gray500"
+            fill="gray500"
+            size={16}
+            className="ml-[-4px]"
+        />
+    ) : null;
+
     return (
-        <FieldWrapper label={''} inputId={field.id} tooltip={disabled ? field.tooltip : null}>
+        <FieldWrapper label={''} inputId={field.id}>
             <div className="flex flex-col space-y-1">
                 <div className={`flex ${field.show_privacy_link ? "items-start" : "items-center"} gap-2`}>
                     {field.subtype === 'switch'
@@ -53,27 +82,22 @@ const Checkbox = ({
                             disabled={disabled}
                         />
                     }
-                    <label htmlFor={field.id}
-                        className={`font-normal text-md flex items-center gap-1 ${
-                            disabled ? "text-[#9FA4A7]" : "text-gray-1000"
-                        }`}
-                    >
-                        <span className="text-gray-1000 font-normal flex">
-                            {field.label}
-                        </span>
-                    </label>
-                    {field.tooltip && (
-                        typeof field.tooltip.text === 'string' &&
-                        field.tooltip.text.trim() !== ''
-                    ) && (
-                        <Icon
-                            name={field.tooltip?.icon ?? 'info'}
-                            color="gray500"
-                            fill="gray500"
-                            size={16}
-                            tooltip={disabled ? undefined : field.tooltip}
-                            className="ml-[-4px]"
-                        />
+                    {window.innerWidth > 768 && tooltipContent && disabled ? ( // If disabled and has tooltip, wrap both label and icon in Tooltip
+                        <Tooltip tooltip={tooltipContent} triggerClassName="flex items-center gap-2">
+                            {labelElement}
+                            {iconElement}
+                        </Tooltip>
+                    ) : (
+                        // Otherwise (not disabled, or disabled without tooltip), render label and icon separately,
+                        // with tooltip only on the icon if it exists and is not disabled.
+                        <>
+                            {labelElement}
+                            {tooltipContent && ( // Icon always rendered if tooltipContent exists
+                                <Tooltip tooltip={tooltipContent}>
+                                    {iconElement}
+                                </Tooltip>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

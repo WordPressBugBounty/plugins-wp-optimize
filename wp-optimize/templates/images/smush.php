@@ -24,7 +24,7 @@
 			</label>
 			<label for="smush-automatically"><?php esc_html_e('Automatically compress newly-added images', 'wp-optimize');?>
 			</label>
-			<span tabindex="0" data-tooltip="<?php echo esc_attr__('The images will be added to a background queue, which will start automatically within the next hour.', 'wp-optimize').' '.esc_attr__('This prevents the site from being slowed down during media uploads.', 'wp-optimize').' '.esc_attr__('The time taken to complete the compression will depend upon the size and quantity of the images.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+			<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr__('The images will be added to a background queue, which will start automatically within the next hour.', 'wp-optimize').' '.esc_attr__('This prevents the site from being slowed down during media uploads.', 'wp-optimize').' '.esc_attr__('The time taken to complete the compression will depend upon the size and quantity of the images.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 		</div>
 
 		<div class="wpo-fieldgroup__subgroup">
@@ -40,7 +40,7 @@
 					$message .= __('But if you are using a solution other than WP-Optimize to compress your images, you can hide these metaboxes by disabling this switch.', 'wp-optimize')
 				?>
 			</label>
-			<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
+			<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 		</div>
 
 		<div class="compression_options">
@@ -53,11 +53,11 @@
 				$message .= ' ';
 				$message .= __('The resulting images are of a slightly lower quality', 'wp-optimize');
 			?>
-			<span tabindex="0" data-tooltip="<?php echo esc_attr($message); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
+			<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr($message); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			<br>
 			<input type="radio" id="enable_lossless_compression" <?php checked($smush_options['image_quality'], 92); ?>name="compression_level" class="smush-options compression_level">
 			<label for="enable_lossless_compression"><?php esc_html_e('Prioritize retention of detail', 'wp-optimize');?></label>
-			<span tabindex="0" data-tooltip="<?php esc_attr_e('Uses lossless compression, which results in much better image quality but lower file size savings per image', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+			<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Uses lossless compression, which results in much better image quality but lower file size savings per image', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			<br>
 			<input id="enable_custom_compression" <?php checked($custom); ?> type="radio" name="compression_level" class="smush-options compression_level"> 
 			<label for="enable_custom_compression"><?php esc_html_e('Custom', 'wp-optimize');?></label>
@@ -83,7 +83,7 @@
 				<?php if ($does_server_allow_local_webp_conversion) : ?>
 					<input type="checkbox" id="enable_webp_conversion" name="webp_conversion" <?php checked($smush_options['webp_conversion']); ?> class="smush-options webp_conversion">
 					<label for="enable_webp_conversion"><?php esc_html_e('Create WebP version of image', 'wp-optimize');?></label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Creates WebP image format and serves it whenever possible.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Creates WebP image format and serves it whenever possible.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					<br>
 
 					<?php
@@ -122,7 +122,7 @@
 				<br>
 				<input type="checkbox" id="smush-backup-original" class="smush-options" <?php checked($smush_options['back_up_original']); ?> > 
 				<label for="smush-backup-original"><?php esc_html_e('Backup original images', 'wp-optimize');?></label>
-				<span tabindex="0" data-tooltip="<?php esc_attr_e('The original images are stored alongside the compressed images, you can visit the edit screen of the individual images in the Media Library to restore them.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('The original images are stored alongside the compressed images, you can visit the edit screen of the individual images in the Media Library to restore them.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				<br>
 				<input type="checkbox" id="smush-backup-delete" class="smush-options" <?php checked($smush_options['back_up_delete_after']); ?> >
 				<label for="smush-backup-delete-days"><?php esc_html_e('Automatically delete image backups after', 'wp-optimize');?><input id="smush-backup-delete-days" type="number" min="1" value="<?php echo (0 !== intval($smush_options['back_up_delete_after_days'])) ? intval($smush_options['back_up_delete_after_days']) : 50; ?>"><?php esc_html_e('days', 'wp-optimize');?></label><label> — <?php esc_html_e('or', 'wp-optimize'); ?></label> <button type="button" id="wpo_smush_delete_backup_btn" class="wpo_primary_small button"><?php esc_html_e('Delete all backup images now', 'wp-optimize'); ?></button>
@@ -138,7 +138,7 @@
 					$message .= ' ';
 					$message .= __('In order to restore the other sizes, you should use a plugin such as "Regenerate Thumbnails".', 'wp-optimize');
 				?>
-					<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			</div>
 		</div>
 		<div class="save-options">
@@ -153,7 +153,7 @@
 		<?php if (is_multisite()) : ?>
 			<div id="wpo_uncompressed_images_sites_select_container">
 				<label for="wpo_uncompressed_images_sites_select"><?php esc_html_e('Select site', 'wp-optimize');?> </label>
-				<select id="wpo_uncompressed_images_sites_select">
+				<select id="wpo_uncompressed_images_sites_select" class="wpo-select2">
 					<?php foreach ($sites as $site) : ?>
 					<option value="<?php echo esc_attr($site->blog_id); ?>"><?php echo esc_html($site->domain . $site->path); ?></option>
 					<?php endforeach; ?>

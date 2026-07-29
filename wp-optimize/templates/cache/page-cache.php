@@ -52,11 +52,11 @@
 
 <h3 class="purge-cache" style="<?php echo esc_attr($display); ?>"> <?php esc_html_e('Purge the cache', 'wp-optimize'); ?></h3>
 <div class="wpo-fieldgroup cache-options purge-cache" style="<?php echo esc_attr($display); ?>" >
-	<p class="wpo-button-wrap">
+	<div class="wpo-save-btn-container wpo-button-wrap">
 		<input id="wp-optimize-purge-cache" class="button button-primary <?php echo $can_purge_the_cache ? '' : 'disabled'; ?>" type="submit" value="<?php esc_attr_e('Purge cache', 'wp-optimize'); ?>" <?php echo $can_purge_the_cache ? '' : 'disabled'; ?>>
 		<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 		<span class="save-done dashicons dashicons-yes display-none"></span>
-	</p>
+	</div>
 	<p>
 		<?php esc_html_e('Deletes the entire cache contents but keeps the page cache enabled.', 'wp-optimize'); ?>
 	</p>
@@ -64,15 +64,15 @@
 		<span id="wpo_current_cache_size_information"><?php esc_html_e('Current cache size:', 'wp-optimize'); ?> <?php echo esc_html(WP_Optimize()->format_size($cache_size['size'])); ?></span>
 		<br><span id="wpo_current_cache_file_count"><?php esc_html_e('Number of files:', 'wp-optimize'); ?> <?php echo esc_html($cache_size['file_count']); ?></span>
 	</p>
-	<div class="wpo-fieldgroup__subgroup" style="padding-bottom: 15px;">
-		<div style="float: left;">
+	<div class="wpo-fieldgroup__subgroup" style="display: flex;">
+		<div class="wpo-fieldgroup__subgroup">
 			<label for="wpo-auto-preload-after-purge">
 				<input type="checkbox" id="wpo-auto-preload-after-purge" class="cache-settings" name="auto_preload_purged_contents"  <?php checked($auto_preload_purged_contents); ?>>
 				<?php esc_html_e('Automatically preload content after it is purged', 'wp-optimize'); ?>
 			</label>
-			<span tabindex="0" data-tooltip="<?php echo esc_attr__('Automatically preload pages when a post or page is purged or updated.', 'wp-optimize') . ' ' . esc_attr__('Note that enabling this feature may extend the time it takes to save a post due to background preloading.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+			<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr__('Automatically preload pages when a post or page is purged or updated.', 'wp-optimize') . ' ' . esc_attr__('Note that enabling this feature may extend the time it takes to save a post due to background preloading.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 		</div>
-		<span class="dashicons dashicons-yes display-none save-done" style="line-height: 20px; float: left;"></span>
+		<span class="dashicons dashicons-yes display-none save-done" style="line-height: 20px;"></span>
 	</div>
 
 </div>
@@ -86,7 +86,7 @@
 			<input name="enable_mobile_caching" id="enable_mobile_caching" class="cache-settings" type="checkbox" value="true" <?php checked($wpo_cache_options['enable_mobile_caching'], 1); ?>>
 			<?php esc_html_e('Generate separate files for mobile devices', 'wp-optimize'); ?>
 		</label>
-		<span tabindex="0" data-tooltip="<?php esc_attr_e('Useful if your website has mobile-specific content.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+		<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Useful if your website has mobile-specific content.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 	</div>
 
 	<div class="wpo-fieldgroup__subgroup">
@@ -94,7 +94,7 @@
 			<input name="enable_user_caching" id="enable_user_caching" class="cache-settings wpo-select-group" type="checkbox" value="true" <?php checked($wpo_cache_options['enable_user_caching']); ?>>
 			<?php esc_html_e('Serve cached pages to logged in users', 'wp-optimize'); ?>
 		</label>
-		<span tabindex="0" data-tooltip="<?php esc_attr_e('Enable this option if you do not have user-specific or restricted content on your website (this works only when the cache is preloaded).', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+		<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Enable this option if you do not have user-specific or restricted content on your website (this works only when the cache is preloaded).', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 	</div>
 
 	<?php do_action('wpo_after_cache_settings'); ?>
@@ -103,7 +103,7 @@
 		<label for="page_cache_length_value"><?php esc_html_e('Cache lifespan', 'wp-optimize'); ?></label>
 		<p>
 			<input name="page_cache_length_value" id="page_cache_length_value" class="cache-settings" type="number" value="<?php echo esc_attr($wpo_cache_options['page_cache_length_value']); ?>">
-			<select name="page_cache_length_unit" id="page_cache_length_unit" class="cache-settings">
+			<select name="page_cache_length_unit" id="page_cache_length_unit" class="cache-settings wpo-select2">
 				<option value="hours" <?php selected('hours', $wpo_cache_options['page_cache_length_unit']); ?>><?php esc_html_e('Hours', 'wp-optimize'); ?></option>
 				<option value="days" <?php selected('days', $wpo_cache_options['page_cache_length_unit']); ?>><?php esc_html_e('Days', 'wp-optimize'); ?></option>
 				<option value="months" <?php selected('months', $wpo_cache_options['page_cache_length_unit']); ?>><?php esc_html_e('Months', 'wp-optimize'); ?></option>
@@ -118,9 +118,11 @@
 
 </div>
 
-<input id="wp-optimize-save-cache-settings" class="button button-primary" type="submit" name="wp-optimize-save-cache-settings" value="<?php esc_attr_e('Save changes', 'wp-optimize'); ?>">
+<div class="wpo-save-btn-container">
+	<input id="wp-optimize-save-cache-settings" class="button button-primary" type="submit" name="wp-optimize-save-cache-settings" value="<?php esc_attr_e('Save changes', 'wp-optimize'); ?>">
 
-<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="....">
+	<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="....">
 
-<span class="save-done dashicons dashicons-yes display-none"></span>
+	<span class="save-done dashicons dashicons-yes display-none"></span>
+</div>
 <?php endif;

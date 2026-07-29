@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.6.0
+Version: 4.6.1
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.6.0');
+define('WPO_VERSION', '4.6.1');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -121,7 +121,7 @@ class WP_Optimize {
 		 */
 		add_action('wp_optimize_admin_page_wpo_images_smush', array($this, 'admin_page_wpo_images_smush'));
 
-		include_once(WPO_PLUGIN_MAIN_PATH.'includes/updraftcentral.php');
+		include_once(WPO_PLUGIN_MAIN_PATH.'includes/updraftcentral/updraftcentral.php');
 
 		include_once(WPO_PLUGIN_MAIN_PATH.'includes/backward-compatibility-functions.php');
 				
@@ -270,6 +270,7 @@ class WP_Optimize {
 			'minify',
 			'optimizations',
 			'webp',
+			'includes/updraftcentral',
 		);
 	}
 
@@ -550,6 +551,15 @@ class WP_Optimize {
 
 		// load scripts and styles only on WP-Optimize pages.
 		if (!$this->is_wpo_page()) return;
+
+		wp_enqueue_script( 'jquery-ui-tooltip' );
+		// Defeat other plugins/themes which dump their jQuery UI CSS onto our settings page
+		wp_deregister_style('jquery-ui');
+		wp_enqueue_style('jquery-ui', WPO_PLUGIN_URL.'css/jquery-ui.custom' . $min_or_not_internal . '.css', array(), $enqueue_version);
+
+
+		wp_enqueue_script('select2', WPO_PLUGIN_URL . 'js/select2/select2' . $min_or_not . '.js', array('jquery'), $enqueue_version);
+		wp_enqueue_style('select2', WPO_PLUGIN_URL . 'css/select2/select2' . $min_or_not . '.css', array(), $enqueue_version);
 				
 		wp_enqueue_script('jquery-serialize-json', WPO_PLUGIN_URL.'js/serialize-json/jquery.serializejson'.$min_or_not.'.js', array('jquery'), $enqueue_version);
 

@@ -69,6 +69,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
+import DevicesRoundedIcon from '@mui/icons-material/DevicesRounded';
+import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
 
 const materialIcons = {
     home: HomeIcon,
@@ -146,7 +149,11 @@ const materialIcons = {
     info: InfoOutlinedIcon,
     expand: ExpandMoreIcon,
     success: CheckCircleOutlineRoundedIcon,
-    lock:LockOutlinedIcon
+    lock:LockOutlinedIcon,
+    close: CloseIcon,
+    speed: SpeedRoundedIcon,
+    devices: DevicesRoundedIcon,
+    images: PermMediaOutlinedIcon
 };
 
 export default materialIcons;

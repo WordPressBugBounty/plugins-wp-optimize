@@ -484,127 +484,6 @@
             "install-path": "../mrclay/props-dic"
         },
         {
-            "name": "phpseclib/phpseclib",
-            "version": "1.0.30",
-            "version_normalized": "1.0.30.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "fa867e50b0a523a042800efe3f80f32651d36705"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/fa867e50b0a523a042800efe3f80f32651d36705",
-                "reference": "fa867e50b0a523a042800efe3f80f32651d36705",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.0.0"
-            },
-            "require-dev": {
-                "phing/phing": "~2.7",
-                "phpunit/phpunit": "^4.8.35|^5.7|^6.0|^8.5|^9.4",
-                "squizlabs/php_codesniffer": "~2.0"
-            },
-            "suggest": {
-                "ext-gmp": "Install the GMP (GNU Multiple Precision) extension in order to speed up arbitrary precision integer arithmetic operations.",
-                "ext-mcrypt": "Install the Mcrypt extension in order to speed up a wide variety of cryptographic operations.",
-                "ext-openssl": "Install the OpenSSL extension in order to speed up a wide variety of cryptographic operations.",
-                "ext-xml": "Install the XML extension to load XML formatted public keys.",
-                "pear-pear/PHP_Compat": "Install PHP_Compat to get phpseclib working on PHP < 5.0.0."
-            },
-            "time": "2026-06-14T19:51:32+00:00",
-            "type": "library",
-            "installation-source": "dist",
-            "autoload": {
-                "files": [
-                    "phpseclib/bootstrap.php",
-                    "phpseclib/Crypt/Random.php"
-                ],
-                "psr-0": {
-                    "Net": "phpseclib/",
-                    "File": "phpseclib/",
-                    "Math": "phpseclib/",
-                    "Crypt": "phpseclib/",
-                    "System": "phpseclib/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "include-path": [
-                "phpseclib/"
-            ],
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jim Wigginton",
-                    "email": "terrafrost@php.net",
-                    "role": "Lead Developer"
-                },
-                {
-                    "name": "Patrick Monnerat",
-                    "email": "pm@datasphere.ch",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Andreas Fischer",
-                    "email": "bantu@phpbb.com",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Hans-Jürgen Petrich",
-                    "email": "petrich@tronic-media.com",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Graham Campbell",
-                    "email": "graham@alt-three.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP Secure Communications Library - Pure-PHP implementations of RSA, AES, SSH2, SFTP, X.509 etc.",
-            "homepage": "http://phpseclib.sourceforge.net",
-            "keywords": [
-                "BigInteger",
-                "aes",
-                "asn.1",
-                "asn1",
-                "blowfish",
-                "crypto",
-                "cryptography",
-                "encryption",
-                "rsa",
-                "security",
-                "sftp",
-                "signature",
-                "signing",
-                "ssh",
-                "twofish",
-                "x.509",
-                "x509"
-            ],
-            "support": {
-                "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.30"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/terrafrost",
-                    "type": "github"
-                },
-                {
-                    "url": "https://www.patreon.com/phpseclib",
-                    "type": "patreon"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpseclib/phpseclib",
-                    "type": "tidelift"
-                }
-            ],
-            "install-path": "../phpseclib/phpseclib"
-        },
-        {
             "name": "pimple/pimple",
             "version": "v3.6.2",
             "version_normalized": "3.6.2.0",
@@ -1165,12 +1044,12 @@
             "version_normalized": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/DavidAnderson684/webp-convert.git",
+                "url": "ssh://git@source.updraftplus.com:20022/team-updraft/mirrors/webp-convert.git",
                 "reference": "15120a3379aa7043f8f557d91cc4e07c5c36e43b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DavidAnderson684/webp-convert/zipball/15120a3379aa7043f8f557d91cc4e07c5c36e43b",
+                "url": "https://source.updraftplus.com/api/v4/projects/189/packages/composer/archives/rosell-dk/webp-convert.zip?sha=15120a3379aa7043f8f557d91cc4e07c5c36e43b",
                 "reference": "15120a3379aa7043f8f557d91cc4e07c5c36e43b",
                 "shasum": ""
             },
@@ -1191,17 +1070,15 @@
                 "ext-imagick": "to use Imagick extension for converting. Note: Gd must be compiled with webp support",
                 "ext-vips": "to use Vips extension for converting."
             },
-            "time": "2026-04-01T14:30:21+00:00",
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "scripts-descriptions": {
                     "ci": "Run tests before CI",
+                    "test": "Launches the preconfigured PHPUnit",
                     "phpcs": "Checks coding styles (PSR2) of file/dir, which you must supply. To check all, supply 'src'",
-                    "phpcbf": "Fix coding styles (PSR2) of file/dir, which you must supply. To fix all, supply 'src'",
-                    "cs-fix-all": "Fix the coding style of all the source files, to comply with the PSR-2 coding standard",
                     "cs-fix": "Fix the coding style of a PHP file or directory, which you must specify.",
-                    "test": "Launches the preconfigured PHPUnit"
+                    "phpcbf": "Fix coding styles (PSR2) of file/dir, which you must supply. To fix all, supply 'src'",
+                    "cs-fix-all": "Fix the coding style of all the source files, to comply with the PSR-2 coding standard"
                 }
             },
             "installation-source": "dist",
@@ -1222,38 +1099,17 @@
                     "@composer validate --no-check-all --strict",
                     "@phpstan"
                 ],
-                "phpunit": [
-                    "phpunit --coverage-text"
-                ],
                 "test": [
                     "phpunit --coverage-text=build/coverage.txt --coverage-clover=build/coverage.clover --coverage-html=build/coverage --whitelist=src tests"
-                ],
-                "test-41": [
-                    "phpunit --no-coverage --configuration 'phpunit-41.xml.dist'"
-                ],
-                "test-with-coverage": [
-                    "phpunit --coverage-text --configuration 'phpunit-with-coverage.xml.dist'"
-                ],
-                "test-41-with-coverage": [
-                    "phpunit --coverage-text --configuration 'phpunit-41.xml.dist'"
-                ],
-                "test-no-cov": [
-                    "phpunit --no-coverage tests"
-                ],
-                "cs-fix-all": [
-                    "php-cs-fixer fix src"
-                ],
-                "cs-fix": [
-                    "php-cs-fixer fix"
-                ],
-                "cs-dry": [
-                    "php-cs-fixer fix --dry-run --diff"
                 ],
                 "phpcs": [
                     "phpcs --standard=phpcs-ruleset.xml"
                 ],
-                "phpcs-all": [
-                    "phpcs --standard=phpcs-ruleset.xml src"
+                "cs-dry": [
+                    "php-cs-fixer fix --dry-run --diff"
+                ],
+                "cs-fix": [
+                    "php-cs-fixer fix"
                 ],
                 "phpcbf": [
                     "phpcbf --standard=PSR2"
@@ -1261,11 +1117,32 @@
                 "phpstan": [
                     "vendor/bin/phpstan analyse src --level=4"
                 ],
-                "phpstan-global-old": [
-                    "~/.composer/vendor/bin/phpstan analyse src --level=4"
+                "phpunit": [
+                    "phpunit --coverage-text"
+                ],
+                "test-41": [
+                    "phpunit --no-coverage --configuration 'phpunit-41.xml.dist'"
+                ],
+                "phpcs-all": [
+                    "phpcs --standard=phpcs-ruleset.xml src"
+                ],
+                "cs-fix-all": [
+                    "php-cs-fixer fix src"
+                ],
+                "test-no-cov": [
+                    "phpunit --no-coverage tests"
                 ],
                 "phpstan-global": [
                     "~/.config/composer/vendor/bin/phpstan analyse src --level=4"
+                ],
+                "phpstan-global-old": [
+                    "~/.composer/vendor/bin/phpstan analyse src --level=4"
+                ],
+                "test-with-coverage": [
+                    "phpunit --coverage-text --configuration 'phpunit-with-coverage.xml.dist'"
+                ],
+                "test-41-with-coverage": [
+                    "phpunit --coverage-text --configuration 'phpunit-41.xml.dist'"
                 ]
             },
             "license": [
@@ -1274,13 +1151,13 @@
             "authors": [
                 {
                     "name": "Bjørn Rosell",
-                    "homepage": "https://www.bitwise-it.dk/contact",
-                    "role": "Project Author"
+                    "role": "Project Author",
+                    "homepage": "https://www.bitwise-it.dk/contact"
                 },
                 {
                     "name": "Martin Folkers",
-                    "homepage": "https://twobrain.io",
-                    "role": "Collaborator"
+                    "role": "Collaborator",
+                    "homepage": "https://twobrain.io"
                 }
             ],
             "description": "Convert JPEG & PNG to WebP with PHP",
@@ -1296,19 +1173,6 @@
                 "png2webp",
                 "webp"
             ],
-            "support": {
-                "source": "https://github.com/DavidAnderson684/webp-convert/tree/master"
-            },
-            "funding": [
-                {
-                    "type": "github",
-                    "url": "https://github.com/rosell-dk"
-                },
-                {
-                    "type": "ko_fi",
-                    "url": "https://ko-fi.com/rosell"
-                }
-            ],
             "install-path": "../rosell-dk/webp-convert"
         },
         {
@@ -1317,12 +1181,12 @@
             "version_normalized": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/DavidAnderson684/simplehtmldom.git",
+                "url": "ssh://git@source.updraftplus.com:20022/team-updraft/mirrors/simplehtmldom.git",
                 "reference": "56496c8ced3bfcf3518c98d89cdcd40404ea5ba5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DavidAnderson684/simplehtmldom/zipball/56496c8ced3bfcf3518c98d89cdcd40404ea5ba5",
+                "url": "https://source.updraftplus.com/api/v4/projects/188/packages/composer/archives/simplehtmldom/simplehtmldom.zip?sha=56496c8ced3bfcf3518c98d89cdcd40404ea5ba5",
                 "reference": "56496c8ced3bfcf3518c98d89cdcd40404ea5ba5",
                 "shasum": ""
             },
@@ -1341,8 +1205,6 @@
                 "ext-mbstring": "Allows better decoding for multi-byte documents",
                 "ext-openssl": "Allows loading HTTPS pages when using cURL"
             },
-            "time": "2023-03-08T10:06:37+00:00",
-            "default-branch": true,
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1384,10 +1246,10 @@
                 "simplehtmldom"
             ],
             "support": {
-                "issues": "https://sourceforge.net/p/simplehtmldom/bugs/",
+                "rss": "https://sourceforge.net/p/simplehtmldom/news/feed.rss",
                 "wiki": "https://simplehtmldom.sourceforge.io/docs/",
-                "source": "https://sourceforge.net/p/simplehtmldom/repository/",
-                "rss": "https://sourceforge.net/p/simplehtmldom/news/feed.rss"
+                "issues": "https://sourceforge.net/p/simplehtmldom/bugs/",
+                "source": "https://sourceforge.net/p/simplehtmldom/repository/"
             },
             "install-path": "../simplehtmldom/simplehtmldom"
         },
@@ -1448,17 +1310,17 @@
         },
         {
             "name": "team-updraft/lib-onboarding-wizard",
-            "version": "0.1.2",
-            "version_normalized": "0.1.2.0",
+            "version": "1.0.7",
+            "version_normalized": "1.0.7.0",
             "source": {
                 "type": "git",
                 "url": "ssh://git@source.updraftplus.com:20022/team-updraft/lib-onboarding-wizard.git",
-                "reference": "e49f14b4b49591ebf11d215f6c596c1cf335ac18"
+                "reference": "94525ec371ad61e6502113429f0cdc4e9e640e48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://source.updraftplus.com/api/v4/projects/140/packages/composer/archives/team-updraft/lib-onboarding-wizard.zip?sha=e49f14b4b49591ebf11d215f6c596c1cf335ac18",
-                "reference": "e49f14b4b49591ebf11d215f6c596c1cf335ac18",
+                "url": "https://source.updraftplus.com/api/v4/projects/140/packages/composer/archives/team-updraft/lib-onboarding-wizard.zip?sha=94525ec371ad61e6502113429f0cdc4e9e640e48",
+                "reference": "94525ec371ad61e6502113429f0cdc4e9e640e48",
                 "shasum": ""
             },
             "require": {

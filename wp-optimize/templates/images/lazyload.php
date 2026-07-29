@@ -32,7 +32,7 @@ $read_more_link = 'https://developers.google.com/web/fundamentals/performance/la
 			<li>
 				<label> <input type="checkbox" name="lazyload[youtube_preview]" <?php checked($lazyload_options['youtube_preview']); ?> disabled /><?php esc_html_e('Replace YouTube iframe with thumbnail image', 'wp-optimize'); ?>
 				</label>
-				<span tabindex="0" data-tooltip="<?php esc_attr_e('Improves page loading time when YouTube videos are present on the page.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Improves page loading time when YouTube videos are present on the page.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			</li>
 		</ul>
 

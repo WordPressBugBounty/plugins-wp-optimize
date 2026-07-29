@@ -1246,7 +1246,7 @@ var WP_Optimize_Smush = function() {
 		if (0 == selected_image.length) return;
 		
 		block_ui(wposmush.please_wait);
-		var data = { 'blog_id': blog_id, 'selected_image': selected_image };
+		var data = { 'blog_id': blog_id, 'selected_image': selected_image, skip_notice: true };
 		
 		smush_manager_send_command.apply({unique: false}, ['restore_single_image', data, function(resp) {
 			var done = function(resp_summary_alt) {

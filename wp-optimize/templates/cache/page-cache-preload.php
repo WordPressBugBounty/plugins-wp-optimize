@@ -28,9 +28,9 @@
 		</p>
 	</p>
 
-	<label for="preload_schedule_type"><?php esc_html_e('Select schedule type', 'wp-optimize'); ?></label><br>
+	<label for="preload_schedule_type"><?php esc_html_e('Select schedule type', 'wp-optimize'); ?></label>
 
-	<select id="preload_schedule_type" class="cache-settings" name="preload_schedule_type" disabled>
+	<select id="preload_schedule_type" class="cache-settings wpo-select2" name="preload_schedule_type" disabled>
 
 		<?php
 
@@ -46,8 +46,10 @@
 
 </div>
 
-<input id="wp-optimize-save-cache-preload-settings" class="button button-primary" type="submit" name="wp-optimize-save-cache-preload-settings" value="<?php esc_attr_e('Save changes', 'wp-optimize');?>">
+<div class="wpo-save-btn-container">
+	<input id="wp-optimize-save-cache-preload-settings" class="button button-primary" type="submit" name="wp-optimize-save-cache-preload-settings" value="<?php esc_attr_e('Save changes', 'wp-optimize');?>">
 
-<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
+	<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 
-<span class="save-done dashicons dashicons-yes display-none"></span>
+	<span class="save-done dashicons dashicons-yes display-none"></span>
+</div>

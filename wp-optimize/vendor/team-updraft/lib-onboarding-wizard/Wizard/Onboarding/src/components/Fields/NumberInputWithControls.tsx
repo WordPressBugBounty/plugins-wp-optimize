@@ -63,24 +63,19 @@ const NumberInputWithControls = ({ field, value, onChange }: NumberInputWithCont
         const pasteData = e.clipboardData.getData('text');
         const sanitizedPasteData = pasteData.replace(/[^0-9]/g, '');
         
-        const currentTarget = e.target as HTMLInputElement;
-        const start = currentTarget.selectionStart ?? 0;
-        const end = currentTarget.selectionEnd ?? 0;
-        const currentValue = currentTarget.value;
-
-        const newValueString = currentValue.substring(0, start) + sanitizedPasteData + currentValue.substring(end);
-        const finalSanitizedValue = newValueString.replace(/[^0-9]/g, '');
+        const newValueString = sanitizedPasteData;
         
-        const newValue = finalSanitizedValue === '' ? min : parseInt(finalSanitizedValue, 10);
+        const newValue = newValueString === '' ? min : parseInt(newValueString, 10);
         const clampedValue = Math.max(min, Math.min(max, newValue));
 
         setInternalValue(clampedValue);
         onChange(clampedValue);
 
+        // After pasting, set the cursor to the end of the new value.
         setTimeout(() => {
-            const newCursorPosition = start + sanitizedPasteData.length;
+            const currentTarget = e.target as HTMLInputElement;
             currentTarget.value = String(clampedValue);
-            currentTarget.setSelectionRange(newCursorPosition, newCursorPosition);
+            currentTarget.setSelectionRange(currentTarget.value.length, currentTarget.value.length);
         }, 0);
     };
 
@@ -103,21 +98,8 @@ const NumberInputWithControls = ({ field, value, onChange }: NumberInputWithCont
     return (
         <FieldWrapper
             inputId={field.id}
-            label={
-                <div className="flex items-center gap-2">
-                    <span>{field.label}</span>
-                    {field.tooltip && (
-                        <Icon
-                            name={field.tooltip.icon ?? 'info'}
-                            color="gray500"
-                            fill="gray500"
-                            size={16}
-                            tooltip={field.tooltip}
-                            className="ml-[-4px]"
-                        />
-                    )}
-                </div>
-            }
+            label={field.label}
+            tooltip={field.tooltip}
         >
             <div className="flex w-full items-center border border-gray-400 rounded-md overflow-hidden">
                 <TextInput

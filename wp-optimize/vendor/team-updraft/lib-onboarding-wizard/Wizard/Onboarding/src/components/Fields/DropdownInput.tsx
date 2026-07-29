@@ -52,9 +52,12 @@ const SelectContent = React.forwardRef<
     >
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          // Make the options list scrollable and prevent it from exceeding the view.
+          // 60 = 240px (~5 items). When options exceed this, the list scrolls.
+          "p-1 max-h-60 overflow-y-auto custom-scrollbar [scrollbar-gutter:stable]", // show scrollbar gutter + styled scrollbar
+
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+            "w-full min-w-[var(--radix-select-trigger-width)]"
         )}
       >
         {children}
@@ -76,19 +79,30 @@ const SelectLabel = React.forwardRef<
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName
 
+interface SelectItemProps extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> {
+  premiumLabel?: React.ReactNode; // New prop for the premium label
+}
+
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  SelectItemProps // Use the new interface
+>(({ className, children, premiumLabel, ...props }, ref) => ( // Destructure premiumLabel
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-3 pr-8 text-md outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-3 pr-8 text-md outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 flex-nowrap justify-between", // Added flex-nowrap and justify-between here
       className
     )}
     {...props}
   >
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemText>
+        {children}
+    </SelectPrimitive.ItemText>
+    {premiumLabel && ( // Render premiumLabel as a sibling
+        <span className="text-orange-dark text-sm font-medium flex-shrink-0 ml-2">
+            {premiumLabel}
+        </span>
+    )}
     <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
         <Icon name="CheckRoundedIcon" size={16} color="blue" />

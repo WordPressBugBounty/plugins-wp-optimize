@@ -8,6 +8,15 @@ if (!class_exists('WP_Optimize_Server_Compatibility')) :
 class WP_Optimize_Server_Compatibility {
 
 	/**
+	 * Cached result of the Kinsta server detection.
+	 *
+	 * Null until first evaluation, then bool for subsequent calls.
+	 *
+	 * @var bool|null
+	 */
+	private $is_kinsta_server = null;
+
+	/**
 	 * Returns singleton instance
 	 *
 	 * @return WP_Optimize_Server_Compatibility
@@ -32,10 +41,9 @@ class WP_Optimize_Server_Compatibility {
 	/**
 	 * Detects whether the server supports table optimization.
 	 *
-	 * Some servers prevent table optimization
-	 * because InnoDB engine does not optimize table
-	 * instead it drops tables and recreates them,
-	 * which results in elevated disk write operations
+	 * Some servers prevent table optimization because the InnoDB engine
+	 * does not optimize tables — instead it drops and recreates them,
+	 * resulting in elevated disk write operations.
 	 *
 	 * @return bool
 	 */
@@ -53,11 +61,18 @@ class WP_Optimize_Server_Compatibility {
 	}
 
 	/**
-	 * Detects if the platform is Kinsta or not
+	 * Detects if the platform is Kinsta or not.
+	 *
+	 * Results are cached after the first call to ensure consistency
+	 * and avoid redundant filter applications within a single request.
 	 *
 	 * @return bool Returns true if it is a Kinsta platform, otherwise returns false
 	 */
 	private function is_kinsta(): bool {
+		if (null !== $this->is_kinsta_server) {
+			return $this->is_kinsta_server;
+		}
+
 		$is_kinsta = isset($_SERVER['KINSTA_CACHE_ZONE']);
 
 		/**
@@ -68,11 +83,17 @@ class WP_Optimize_Server_Compatibility {
 		 *
 		 * @param bool $is_kinsta Detected Kinsta status.
 		 */
-		return (bool) apply_filters('wpo_is_kinsta_server', $is_kinsta);
+		$this->is_kinsta_server = (bool) apply_filters('wpo_is_kinsta_server', $is_kinsta);
+
+		return $this->is_kinsta_server;
 	}
 
 	/**
-	 * Disable table optimization if the server does not allow it.
+	 * Disables automatic table optimization when the server does not allow it.
+	 *
+	 * Checks the current server capabilities and, if table optimization is
+	 * unsupported, updates the "auto" option to disable it. This prevents
+	 * scheduled or automatic optimizations from running on incompatible hosts.
 	 *
 	 * @return void
 	 */
@@ -89,7 +110,7 @@ class WP_Optimize_Server_Compatibility {
 			return;
 		}
 
-		if (!empty($auto_options['optimize']) && 'true' === $auto_options['optimize']) {
+		if (isset($auto_options['optimize']) && 'true' === $auto_options['optimize']) {
 			$auto_options['optimize'] = 'false';
 			$options->update_option('auto', $auto_options);
 		}

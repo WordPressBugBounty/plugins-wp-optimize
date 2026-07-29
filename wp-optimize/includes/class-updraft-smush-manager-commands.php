@@ -129,7 +129,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$success = $this->task_manager->compress_single_image($image, $options, $server);
 
 		if (!$success) {
-			return new WP_Error('compress_failed', get_post_meta($image, 'smush-info', true));
+			return new WP_Error('compress_failed', get_post_meta($image, '_wpo-smush-info', true));
 		}
 
 		$response = array();
@@ -139,9 +139,9 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$response['server'] = $server;
 		$response['success'] = $success;
 		$response['restore_possible'] = $backup;
-		$response['summary'] = get_post_meta($image, 'smush-info', true);
+		$response['summary'] = get_post_meta($image, '_wpo-smush-info', true);
 
-		$smush_stats = get_post_meta($image, 'smush-stats', true);
+		$smush_stats = get_post_meta($image, '_wpo-smush-stats', true);
 		if (isset($smush_stats['sizes-info'])) {
 			$response['sizes-info'] = WP_Optimize()->include_template('images/smush-details.php', true, array('sizes_info' => $smush_stats['sizes-info']));
 		}
@@ -427,13 +427,13 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 
 			foreach ($selected_images[$blog_id] as $attachment_id) {
 				if ($unmark) {
-					delete_post_meta($attachment_id, 'smush-complete');
-					delete_post_meta($attachment_id, 'smush-marked');
-					delete_post_meta($attachment_id, 'smush-info');
+					delete_post_meta($attachment_id, '_wpo-smush-complete');
+					delete_post_meta($attachment_id, '_wpo-smush-marked');
+					delete_post_meta($attachment_id, '_wpo-smush-info');
 				} else {
-					update_post_meta($attachment_id, 'smush-complete', true);
-					update_post_meta($attachment_id, 'smush-marked', true);
-					update_post_meta($attachment_id, 'smush-info', $info);
+					update_post_meta($attachment_id, '_wpo-smush-complete', true);
+					update_post_meta($attachment_id, '_wpo-smush-marked', true);
+					update_post_meta($attachment_id, '_wpo-smush-info', $info);
 				}
 			}
 
@@ -635,7 +635,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$attachment_id = isset($data['attachment_id']) ? absint($data['attachment_id']) : 0;
 		if (0 === $attachment_id) return $this->image_not_found_response();
 
-		$compressed = (bool) get_post_meta($attachment_id, 'smush-complete', true);
+		$compressed = (bool) get_post_meta($attachment_id, '_wpo-smush-complete', true);
 
 		$smush_options = Updraft_Smush_Manager()->get_smush_options();
 

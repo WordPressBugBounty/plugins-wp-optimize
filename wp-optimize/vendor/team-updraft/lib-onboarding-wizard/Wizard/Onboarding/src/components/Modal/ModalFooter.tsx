@@ -1,6 +1,6 @@
 import ButtonInput from "../Inputs/ButtonInput";
-// @ts-ignore
-import Icon from '@/utils/Icon';
+import Icon from "../../utils/Icon";
+import Tooltip from "../../utils/Tooltip/Tooltip";
 import { __ } from "@wordpress/i18n";
 import useOnboardingStore from "../../store/useOnboardingStore";
 import {get_website_url} from "../../utils/lib.js";
@@ -19,6 +19,7 @@ export const ModalFooter = ({
         isLastStep,
         isInstalling,
         licenseStatus,
+        settings
     } = useOnboardingStore();
 
     const upgradeUrl = get_website_url(onboardingData.upgrade, {
@@ -28,11 +29,28 @@ export const ModalFooter = ({
 
     // Decide disabled state once to reuse below
     const continueDisabled = isContinueDisabled();
-    const isLicenseAndUpdating = currentStep?.type === 'license' && licenseStatus === 'activating'
-    const isLicenseAndValid = currentStep?.type === 'license' && licenseStatus === 'activated'
+    const isLicenseStep = currentStep?.type === 'license';
+    const isLicenseAndUpdating = isLicenseStep && licenseStatus === 'activating'
+    const isLicenseAndValid = isLicenseStep && licenseStatus === 'activated'
 
     const allInstalled = onboardingData.is_all_plugins_installed;
     const isPluginStepAndAllInstalled = currentStep?.type === 'plugins' && allInstalled
+
+    const tfaField = currentStep?.fields?.find(f => f.id === 'tfa') ?? null;
+    const tfaValue = settings?.find(s => s.id === 'tfa')?.value ?? null;
+
+    const finalDisabled = isLicenseStep
+        ? (
+            continueDisabled ||
+            (tfaField && (!tfaValue || String(tfaValue).trim() === ''))
+        )
+        : continueDisabled;
+
+    const showSkipStep =  (currentStep.skip_step !== undefined ? currentStep.skip_step !== false : currentStepIndex > 0)
+                                    && !isLastStep()
+                                    && !isLicenseAndUpdating
+                                    && !isLicenseAndValid
+                                    && !isPluginStepAndAllInstalled;
 
     return (<>
             {currentStep.enable_premium_btn === true && !onboardingData.is_pro && (
@@ -50,7 +68,6 @@ export const ModalFooter = ({
                         size={24}
                         color="white"
                         fill="white"
-                        type=""
                         className="ml-2"
                     />
                 </ButtonInput>
@@ -58,7 +75,7 @@ export const ModalFooter = ({
             )}
 
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center min-w-[32ch] pt-2">
-                {(currentStepIndex > 0 && !isLastStep() && !isLicenseAndUpdating && !isLicenseAndValid && !isPluginStepAndAllInstalled) && (
+                { showSkipStep && (
                     <div className="flex flex-row justify-center items-center w-full order-last md:order-first">
                         <ButtonInput
                             className="burst-skip !text-[#C4511C] !font-semibold hover:!text-orange-darkish hover:underline hover:decoration-2 hover:underline-offset-4"
@@ -66,26 +83,32 @@ export const ModalFooter = ({
                             size="sm"
                             onClick={(e) => handleContinue(e)}
                         >
-                            {__('Skip this step', 'ONBOARDING_WIZARD_TEXT_DOMAIN')}
+                            {currentStep.skip_step?.label ?? __('Skip this step', 'ONBOARDING_WIZARD_TEXT_DOMAIN')}
                         </ButtonInput>
                         {/* Skip Step Button Icon - Only render if the icon is provided */}
-                        {currentStep.skip_step && (
-                            <Icon
-                                name={currentStep.skip_step?.icon ?? 'info'}
-                                color="#C4511C"
-                                fill="#C4511C"
-                                size={16}
-                                tooltip={
-                                    currentStep.skip_step?.tooltip
-                                        ? {
+                        {currentStep.skip_step?.icon && (
+                            (() => {
+                                const skipIcon = (
+                                    <Icon
+                                        name={currentStep.skip_step.icon}
+                                        color="#C4511C"
+                                        fill="#C4511C"
+                                        size={16}
+                                        className="ml-2"
+                                    />
+                                );
+                                return currentStep.skip_step?.tooltip ? (
+                                    <Tooltip
+                                        tooltip={{
                                             ...currentStep.skip_step.tooltip,
                                             side: "bottom",
                                             align: "center",
-                                        }
-                                        : ''
-                                }
-                                className="ml-2"
-                            />
+                                        }}
+                                    >
+                                        {skipIcon}
+                                    </Tooltip>
+                                ) : skipIcon;
+                            })()
                         )}
                     </div>
                 )}
@@ -93,9 +116,9 @@ export const ModalFooter = ({
                 {!isLicenseAndUpdating && currentStep.button && (
                 <ButtonInput
                     className="burst-continue flex justify-center items-center outline-none px-2 py-[5px] relative w-full"
-                    btnVariant={continueDisabled ? "transparent-disabled" : "secondary"}
+                    btnVariant={finalDisabled ? "transparent-disabled" : "secondary"}
                     size="lg"
-                    disabled={continueDisabled}
+                    disabled={finalDisabled}
                     onClick={(e) => validateAndContinue(e)}
                     key={currentStep.id + "continue"}
                 >
@@ -114,10 +137,9 @@ export const ModalFooter = ({
                         {currentStep.button.icon && (
                             <Icon
                                 name={currentStep.button.icon}
-                                size={currentStepIndex === 0 ? 26 : 18}
+                                size={18}
                                 color={isLastStep() ? "black" : "white"}
                                 fill={isLastStep() ? "black" : "white"}
-                                type=""
                                 className="ml-2"
                             />
                         )}

@@ -3,6 +3,7 @@ import {__} from "@wordpress/i18n";
 import CheckboxInput from "@/components/Fields/CheckboxInput";
 import Icon from "@/utils/Icon";
 import useOnboardingStore from "@/store/useOnboardingStore";
+import Tooltip from "../../utils/Tooltip/Tooltip";
 
 const Plugins = ({
     field,
@@ -84,15 +85,16 @@ const Plugins = ({
                                             <div className="text-md font-medium text-black mr-2">{}{label}</div>
                                         </label>
                                         {isInstalled
-                                            ? <Icon
-                                                name="circle-check"
-                                                color="green"
-                                                size="18"
-                                                strokeWidth={2.5}
-                                                tooltip={{
-                                                    'text': __('Already installed', 'ONBOARDING_WIZARD_TEXT_DOMAIN')
-                                                }}
-                                            />
+                                            ? <Tooltip tooltip={{
+                                                text: __('Already installed', 'ONBOARDING_WIZARD_TEXT_DOMAIN')
+                                            }}>
+                                                <Icon
+                                                    name="circle-check"
+                                                    color="green"
+                                                    size="18"
+                                                    strokeWidth={2.5}
+                                                />
+                                            </Tooltip>
                                             : <Icon
                                                 name="link-arrow"
                                                 fill="#888D91"

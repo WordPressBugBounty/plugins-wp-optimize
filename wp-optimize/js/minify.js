@@ -323,26 +323,6 @@
 			});
 		});
 
-		// Handle js excludes
-		$('#wpo_min_jsprocessed').on('click', '.exclude', function(e) {
-			e.preventDefault();
-			var el = $(this);
-			var excluded_file = get_excluded_file(el);
-			add_excluded_js_file(excluded_file);
-			tab_need_saving('js');
-			highlight_excluded_item(el);
-		});
-
-		// Handle css excludes
-		$('#wpo_min_cssprocessed').on('click', '.exclude', function(e) {
-			e.preventDefault();
-			var el = $(this);
-			var excluded_file = get_excluded_file(el);
-			add_excluded_css_file(excluded_file);
-			tab_need_saving('css');
-			highlight_excluded_item(el);
-		});
-
 		// Trigger combined meta.json file download
 		$('.wpo-minify-download-metas-button').on('click', function(e) {
 			e.preventDefault();
@@ -361,81 +341,66 @@
 			})
 		});
 
-		/**
-		 * Get excluded file url
-		 *
-		 * @param {HTMLElement} el
-		 *
-		 * @return {string}
-		 */
-		function get_excluded_file(el) {
-			return el.data('url');
-		}
+		// Handle js excludes
+		$('#wpo_min_jsprocessed').on('click', '.exclude', function(e) {
+			e.preventDefault();
+			get_url_and_tab_saving($(this), '#exclude_js', 'js');
+		});
 
-		/**
-		 * Exclude js file
-		 *
-		 * @param {string} excluded_file File url
-		 */
-		function add_excluded_js_file(excluded_file) {
-			var $js_textarea = $('#exclude_js');
-			var list_of_excluded_files = $js_textarea.val();
-			list_of_excluded_files += excluded_file + '\n';
-			$js_textarea.val(list_of_excluded_files);
-		}
-
-		/**
-		 * Exclude css file
-		 *
-		 * @param {string} excluded_file File url
-		 */
-		function add_excluded_css_file(excluded_file) {
-			var $css_textarea = $('#exclude_css');
-			var list_of_excluded_files = $css_textarea.val();
-			list_of_excluded_files += excluded_file + '\n';
-			$css_textarea.val(list_of_excluded_files);
-		}
+		// Handle css excludes
+		$('#wpo_min_cssprocessed').on('click', '.exclude', function(e) {
+			e.preventDefault();
+			get_url_and_tab_saving($(this), '#exclude_css', 'css');
+		});
 
 		// Handle defer
 		$('#wpo_min_jsprocessed').on('click', '.defer', function(e) {
 			e.preventDefault();
-			add_deferred_file($(this));
+			get_url_and_tab_saving($(this), '#async_js', 'js');
 		});
 
 		// Handle async loading
 		$('#wpo_min_cssprocessed').on('click', '.async', function(e) {
 			e.preventDefault();
-			add_async_file($(this));
+			get_url_and_tab_saving($(this), '#async_css', 'css');
 		});
-
+		
 		/**
-		 * Add deferred file
+		 * Get url from an element and then save it
 		 *
-		 * @param {HTMLElement} el target element
+		 * @param {HTMLElement} el
+		 * @param {string} target_el_id
+		 * @param {string} tab_name
+		 *
+		 * @return void
 		 */
-		function add_deferred_file(el) {
-			var deferred_file = el.data('url');
-			var $async_js_textarea = $('#async_js');
-			var list_of_deferred_files = $async_js_textarea.val();
-			list_of_deferred_files += deferred_file + '\n';
-			$async_js_textarea.val(list_of_deferred_files);
-			tab_need_saving('js');
+		function get_url_and_tab_saving(el, target_el_id, tab_name) {
+			var file_url = el.data('url');
+			if ('' === file_url || undefined === file_url) {
+				return;
+			}
+			
+			add_url_to_next_line(target_el_id, file_url);
+			tab_need_saving(tab_name);
 			highlight_excluded_item(el);
 		}
-
+		
 		/**
-		 * Add asynchronously loading file
+		 * Add url to the next line of the element textarea
 		 *
-		 * @param {HTMLElement} el target element
+		 * @param {string} target_el_id
+		 * @param {string} file_url
+		 *
+		 * @return void
 		 */
-		function add_async_file(el) {
-			var async_file = el.data('url');
-			var $async_css_textarea = $('#async_css');
-			var list_of_async_files = $async_css_textarea.val();
-			list_of_async_files += async_file + '\n';
-			$async_css_textarea.val(list_of_async_files);
-			tab_need_saving('css');
-			highlight_excluded_item(el);
+		function add_url_to_next_line(target_el_id, file_url) {
+			var $textarea = $(target_el_id);
+			var list_of_files = $textarea.val().trim();
+			if ('' !== list_of_files) {
+				list_of_files += '\n';
+			}
+			list_of_files += file_url;
+			$textarea.val(list_of_files);
 		}
 		
 		/**

@@ -36,7 +36,7 @@
 						>
 						<?php esc_html_e('Enable removal of unused rules from CSS files (Experimental)', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling removal of unused CSS rules might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling removal of unused CSS rules might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					<?php if ($show_unused_css_advertise) : ?>
 					<div class="wpo-inline-advertise">
 						<a class="" href="https://teamupdraft.com/wp-optimize/pricing/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_creative_format=overlay&utm_content=remove-unused-css" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a>
@@ -54,7 +54,7 @@
 						>
 						<?php esc_html_e('Enable merging of CSS files', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php echo esc_attr($tooltip); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php echo esc_attr($tooltip); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="inline_css" class="label-with-tooltip">
@@ -67,7 +67,7 @@
 						>
 						<?php esc_html_e('Inline CSS', 'wp-optimize'); ?> - <?php esc_html_e('Recommended if the CSS files are small enough.', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('When enabled, small CSS files will be inlined.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('When enabled, small CSS files will be inlined.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="remove_print_mediatypes" class="label-with-tooltip">
@@ -80,7 +80,7 @@
 						>
 						<?php esc_html_e('Strip the "print" related stylesheets', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip='<?php esc_attr_e('When selected, any CSS files with the media type "print" will be removed.', 'wp-optimize');?> <?php esc_html_e('Enable if your site does not need specific print styles.', 'wp-optimize');?>'><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip='<?php esc_attr_e('When selected, any CSS files with the media type "print" will be removed.', 'wp-optimize');?> <?php esc_html_e('Enable if your site does not need specific print styles.', 'wp-optimize');?>'><span class="dashicons dashicons-editor-help"></span> </span>
 				</div>		
 				<?php if (WP_OPTIMIZE_SHOW_MINIFY_ADVANCED) : ?>
 					<div class="wpo-fieldgroup__subgroup">
@@ -94,7 +94,7 @@
 							>
 							<?php esc_html_e('Dequeue all CSS files', 'wp-optimize'); ?>
 						</label>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('This is useful if you want to test your critical path CSS', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('This is useful if you want to test your critical path CSS', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					</div>
 				<?php endif; ?>
 			</fieldset>
@@ -103,39 +103,43 @@
 		<h3><?php esc_html_e('Exclude the following CSS files from processing', 'wp-optimize'); ?></h3>
 		<div class="wpo-fieldgroup">
 			<fieldset>
-				<label class="wpo-label__bold" for="exclude_css">
-					<?php esc_html_e('Any CSS files that match the paths below will be completely ignored.', 'wp-optimize'); ?>
-					<br><?php esc_html_e('Use this if you are having issues with a specific CSS file', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Any file present here will be loaded normally by WordPress', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
-				</label>
-				<textarea
-					name="exclude_css"
-					rows="7" cols="50"
-					id="exclude_css"
-					class="large-text code"
-					placeholder="<?php esc_attr_e('e.g.: /bootstrap.css', 'wp-optimize'); ?>"
-				><?php echo esc_textarea($wpo_minify_options['exclude_css']);?></textarea>
-				<br>
-				<?php esc_html_e('Some files known for causing issues when combined / minified are excluded by default.', 'wp-optimize'); ?> <?php esc_html_e('You can see / edit them in the Advanced tab.', 'wp-optimize'); ?>
+				<div class="wpo-fieldgroup__subgroup">
+					<label class="wpo-label__bold" for="exclude_css">
+						<?php esc_html_e('Any CSS files that match the paths below will be completely ignored.', 'wp-optimize'); ?>
+						<br><?php esc_html_e('Use this if you are having issues with a specific CSS file', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Any file present here will be loaded normally by WordPress', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
+					<textarea
+						name="exclude_css"
+						rows="7" cols="50"
+						id="exclude_css"
+						class="large-text code"
+						placeholder="<?php esc_attr_e('e.g.: /bootstrap.css', 'wp-optimize'); ?>"
+					><?php echo esc_textarea($wpo_minify_options['exclude_css']);?></textarea>
+					<br>
+					<?php esc_html_e('Some files known for causing issues when combined / minified are excluded by default.', 'wp-optimize'); ?> <?php esc_html_e('You can see / edit them in the Advanced tab.', 'wp-optimize'); ?>
+				</div>
 			</fieldset>
 		</div>
 
 		<h3><?php esc_html_e('Load the following CSS files asynchronously', 'wp-optimize'); ?></h3>
 		<div class="wpo-fieldgroup">
 			<fieldset>
-				<label class="wpo-label__bold" for="async_css">
-					<?php esc_html_e('Any CSS files that match the paths below will be loaded asynchronously.', 'wp-optimize'); ?><br>
-					<?php esc_html_e('Use this if you have a completely independent stylesheet', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e("e.g. You may want to exclude 'fontawesome' or other libraries from the initial load", 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
-				</label>
-				<textarea
-					name="async_css"
-					rows="7"
-					cols="50"
-					id="async_css"
-					class="large-text code"
-					placeholder="<?php esc_attr_e('e.g.: /wp-content/themes/my-theme/css/custom-font.css', 'wp-optimize'); ?>"
-				><?php echo esc_textarea($wpo_minify_options['async_css']); ?></textarea>
+				<div class="wpo-fieldgroup__subgroup">
+					<label class="wpo-label__bold" for="async_css">
+						<?php esc_html_e('Any CSS files that match the paths below will be loaded asynchronously.', 'wp-optimize'); ?><br>
+						<?php esc_html_e('Use this if you have a completely independent stylesheet', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e("e.g. You may want to exclude 'fontawesome' or other libraries from the initial load", 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
+					<textarea
+						name="async_css"
+						rows="7"
+						cols="50"
+						id="async_css"
+						class="large-text code"
+						placeholder="<?php esc_attr_e('e.g.: /wp-content/themes/my-theme/css/custom-font.css', 'wp-optimize'); ?>"
+					><?php echo esc_textarea($wpo_minify_options['async_css']); ?></textarea>
+				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="exclude_css_from_page_speed_tools">
 						<input
@@ -147,7 +151,7 @@
 						>
 						<?php esc_html_e('Exclude stylesheets from page speed tests (PageSpeed Insights, GTMetrix...)', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Use this only for testing purpose to find out which stylesheets are slowing down your site.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Use this only for testing purpose to find out which stylesheets are slowing down your site.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
 				</div>
 			</fieldset>
 		</div>
@@ -156,20 +160,22 @@
 			<h3><?php esc_html_e('Enable asynchronous CSS', 'wp-optimize'); ?></h3>
 			<div class="wpo-fieldgroup">
 				<fieldset>
-					<label for="loadcss">
-						<input
-							name="loadcss"
-							type="checkbox"
-							id="loadcss"
-							value="1"
-							<?php echo checked($wpo_minify_options['loadcss']); ?>
-						>
-						<?php esc_html_e('Load all CSS files asynchronously', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('Note that inline CSS won\'t work if this is active', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-					</label>
-					<p>
-						<?php esc_html_e('If you have multiple css files per media type, they may load out of order and break your design when loaded asynchronously.', 'wp-optimize'); ?>
-					</p>
+					<div class="wpo-fieldgroup__subgroup">
+						<label for="loadcss">
+							<input
+								name="loadcss"
+								type="checkbox"
+								id="loadcss"
+								value="1"
+								<?php echo checked($wpo_minify_options['loadcss']); ?>
+							>
+							<?php esc_html_e('Load all CSS files asynchronously', 'wp-optimize'); ?>
+						</label>
+						<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Note that inline CSS won\'t work if this is active', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<p>
+							<?php esc_html_e('If you have multiple css files per media type, they may load out of order and break your design when loaded asynchronously.', 'wp-optimize'); ?>
+						</p>
+					</div>
 				</fieldset>
 			</div>
 		<?php endif; ?>
@@ -191,27 +197,26 @@
 				</fieldset>
 
 				<fieldset>
-					<label class="wpo-label__bold" for="critical_path_css_is_front_page"><?php esc_html_e('is_front_page (conditional)', 'wp-optimize'); ?> <span tabindex="0" data-tooltip="<?php esc_attr_e('This will be inlined after the above if your page matches the WP conditional is_front_page()', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span></label>
-					<textarea
-						name="critical_path_css_is_front_page"
-						rows="7"
-						cols="50"
-						id="critical_path_css_is_front_page"
-						class="large-text code" 
-						placeholder=".css-code { display: block; }"
-					><?php echo esc_textarea($wpo_minify_options['critical_path_css_is_front_page']); ?></textarea>
+					<div class="wpo-fieldgroup__subgroup">
+						<label class="wpo-label__bold" for="critical_path_css_is_front_page"><?php esc_html_e('is_front_page (conditional)', 'wp-optimize'); ?></label>
+						<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('This will be inlined after the above if your page matches the WP conditional is_front_page()', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
+						<textarea
+							name="critical_path_css_is_front_page"
+							rows="7"
+							cols="50"
+							id="critical_path_css_is_front_page"
+							class="large-text code" 
+							placeholder=".css-code { display: block; }"
+						><?php echo esc_textarea($wpo_minify_options['critical_path_css_is_front_page']); ?></textarea>
+					</div>
 				</fieldset>
 			</div>
 		<?php endif; ?>
-		
-		<p class="submit">
-			<input
-				class="wp-optimize-save-minify-settings button button-primary"
-				type="submit"
-				value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>"
-			>
+
+		<div class="wpo-save-btn-container">
+			<input class="wp-optimize-save-minify-settings button button-primary" type="submit" value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>">
 			<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 			<span class="save-done dashicons dashicons-yes display-none"></span>
-		</p>
+		</div>
 	</form>
 </div>

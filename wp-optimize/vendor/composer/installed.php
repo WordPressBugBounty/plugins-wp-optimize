@@ -3,7 +3,7 @@
         'name' => 'updraftplus/wp-optimize',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'ee40ef921c21dfb8ac866153f3bb0a5d4075c5ab',
+        'reference' => '8cdb157660ed002b65b968926406c76664385800',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -76,15 +76,6 @@
             'reference' => '63fae3035770feee1836f57c7dd52c0a9b7e5b4d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../mrclay/props-dic',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
-        'phpseclib/phpseclib' => array(
-            'pretty_version' => '1.0.30',
-            'version' => '1.0.30.0',
-            'reference' => 'fa867e50b0a523a042800efe3f80f32651d36705',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../phpseclib/phpseclib',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
@@ -172,9 +163,7 @@
             'reference' => '15120a3379aa7043f8f557d91cc4e07c5c36e43b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../rosell-dk/webp-convert',
-            'aliases' => array(
-                0 => '9999999-dev',
-            ),
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
         'simplehtmldom/simplehtmldom' => array(
@@ -183,9 +172,7 @@
             'reference' => '56496c8ced3bfcf3518c98d89cdcd40404ea5ba5',
             'type' => 'library',
             'install_path' => __DIR__ . '/../simplehtmldom/simplehtmldom',
-            'aliases' => array(
-                0 => '9999999-dev',
-            ),
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
         'team-updraft/common-libs' => array(
@@ -207,9 +194,9 @@
             'dev_requirement' => false,
         ),
         'team-updraft/lib-onboarding-wizard' => array(
-            'pretty_version' => '0.1.2',
-            'version' => '0.1.2.0',
-            'reference' => 'e49f14b4b49591ebf11d215f6c596c1cf335ac18',
+            'pretty_version' => '1.0.7',
+            'version' => '1.0.7.0',
+            'reference' => '94525ec371ad61e6502113429f0cdc4e9e640e48',
             'type' => 'composer-plugin',
             'install_path' => __DIR__ . '/../team-updraft/lib-onboarding-wizard',
             'aliases' => array(),
@@ -227,7 +214,7 @@
         'updraftplus/wp-optimize' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'ee40ef921c21dfb8ac866153f3bb0a5d4075c5ab',
+            'reference' => '8cdb157660ed002b65b968926406c76664385800',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

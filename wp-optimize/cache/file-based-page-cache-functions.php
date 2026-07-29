@@ -13,6 +13,11 @@ if (!defined('WPO_CACHE_EXT_DIR')) define('WPO_CACHE_EXT_DIR', dirname(__FILE__)
 if (!defined('WPO_CACHE_FILES_DIR')) define('WPO_CACHE_FILES_DIR', untrailingslashit(WP_CONTENT_DIR).'/cache/wpo-cache');
 
 /**
+ * Minimum Firefox version for WebP support
+ */
+if (!defined('WPO_MIN_FIREFOX_VERSION_FOR_WEBP')) define('WPO_MIN_FIREFOX_VERSION_FOR_WEBP', '65.0.0');
+
+/**
  * Holds utility functions used by file based cache
  */
 
@@ -90,8 +95,12 @@ if (!function_exists('wpo_cache')) :
 			}
 		}
 		
+		if (wpo_restricted_cache_page_with_cart_items()) {
+			$no_cache_because[] = __('User has items in WooCommerce cart.', 'wp-optimize');
+		}
+
 		$can_cache_page = true;
-		
+
 		if (defined('DONOTCACHEPAGE') && DONOTCACHEPAGE) {
 			$can_cache_page = false;
 		}
@@ -444,8 +453,8 @@ if (!function_exists('wpo_cache_filename')) :
 		if (wpo_cache_mobile_caching_enabled() && wpo_is_mobile()) {
 			$filename = 'mobile.' . $filename;
 		}
-		
-		if (wpo_webp_images_enabled() && !wpo_is_using_webp_images_redirection() && wpo_is_using_alter_html()) {
+
+		if (wpo_webp_images_enabled() && !wpo_is_using_webp_images_redirection() && wpo_is_browser_supports_webp()) {
 			$filename = $filename . '.webp';
 		}
 		
@@ -727,13 +736,25 @@ if (!function_exists('wpo_webp_images_enabled')) :
 endif;
 
 /**
- * Check whether webp images using alter html method or not
+ * Check whether the requesting browser supports WebP images
  *
  * @return bool
  */
-if (!function_exists('wpo_is_using_alter_html')) :
-	function wpo_is_using_alter_html() {
-		return (isset($_SERVER['HTTP_ACCEPT']) && false !== strpos($_SERVER['HTTP_ACCEPT'], 'image/webp')); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only doing string comparison
+if (!function_exists('wpo_is_browser_supports_webp')) :
+	function wpo_is_browser_supports_webp() {
+		// Direct Accept header check (works for image sub-resource requests)
+		if (isset($_SERVER['HTTP_ACCEPT']) && false !== strpos($_SERVER['HTTP_ACCEPT'], 'image/webp')) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only doing string comparison
+			return true;
+		}
+
+		// Fallback for older Firefox versions, which support WebP but don't send 'image/webp' in the Accept header.
+		$user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only extracting a version number via regex for a version_compare, not used for output or storage
+
+		if (!empty($user_agent) && preg_match('/Firefox\/([\d\.]+[a-z\d]*)/', $user_agent, $matches)) {
+			return version_compare(WPO_MIN_FIREFOX_VERSION_FOR_WEBP, $matches[1], '<=');
+		}
+
+		return false;
 	}
 endif;
 
@@ -829,7 +850,9 @@ if (!function_exists('wpo_serve_cache')) :
 		if ($use_gzip) $path .= '.gz';
 		
 		$modified_time = file_exists($path) ? (int) filemtime($path) : time();
-		
+
+		$modified_time = apply_filters('wpo_cache_modified_time', $modified_time, $path);
+
 		// Cache has expired, purge and exit.
 		if (!empty($GLOBALS['wpo_cache_config']['page_cache_length'])) {
 			if (time() > ($GLOBALS['wpo_cache_config']['page_cache_length'] + $modified_time)) {
@@ -1021,6 +1044,10 @@ function wpo_can_serve_from_cache() {
 		}
 	}
 
+	if (wpo_restricted_cache_page_with_cart_items()) {
+		$no_cache_because[] = 'User has items in WooCommerce cart.';
+	}
+
 	$restricted_page_type_cache = wpo_restricted_cache_page_type('');
 	if (!empty($restricted_page_type_cache)) {
 		$no_cache_because[] = $restricted_page_type_cache;
@@ -1063,6 +1090,17 @@ function wpo_can_serve_from_cache() {
 	
 	return true;
 }
+endif;
+
+/**
+ * Checks if the current request has WooCommerce cart items.
+ *
+ * @return bool Returns true if the user has items in the WooCommerce cart, false otherwise.
+ */
+if (!function_exists('wpo_restricted_cache_page_with_cart_items')) :
+	function wpo_restricted_cache_page_with_cart_items(): bool {
+		return !empty($_COOKIE['woocommerce_items_in_cart']) || !empty($_COOKIE['woocommerce_cart_hash']);
+	}
 endif;
 
 /**

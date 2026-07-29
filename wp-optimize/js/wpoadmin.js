@@ -55,7 +55,7 @@ var WP_Optimize = function () {
 	 * Enable select all checkbox for optimizations list.
 	 */
 	define_select_all_checkbox($('#select_all_optimizations'), $('#optimizations_list .optimization_checkbox'));
-	
+
 	/**
 	 * Either display normally, or grey-out, the scheduling options, depending on whether any schedule has been selected.
 	 *
@@ -1176,9 +1176,7 @@ var WP_Optimize = function () {
 
 			if (resp && resp.hasOwnProperty('settings_auto_cleanup_contents')) {
 				$('#wpo_auto_cleanup').replaceWith(resp.settings_auto_cleanup_contents);
-				if ('function' === typeof $.fn.select2) {
-					$(".wpo-select2").not('.select2-hidden-accessible').select2();
-				}
+				WPO_Select2();
 			}
 
 			if (resp && resp.hasOwnProperty('logging_settings_contents')) {
@@ -2197,7 +2195,55 @@ var WP_Optimize = function () {
 	}
 }; // END function WP_Optimize()
 
+/**
+ * Init Select2 Library
+ */
+var WPO_Select2 = function () {
+	if ('function' === typeof jQuery.fn.select2) {
+		jQuery(".wpo-select2").not('.select2-hidden-accessible').select2();
+	}
+}
+
+/**
+ * Init Tooltip Library
+ */
+var WPO_Tooltip = function () {
+	if ('function' === typeof jQuery.fn.tooltip) {
+		jQuery(".wpo-tooltip").tooltip({
+			items: "[data-tooltip]",
+			content: function() {
+				return jQuery('<span>').text(jQuery(this).attr("data-tooltip"));
+			},
+			position: {
+				my: "center bottom",
+				at: "center top",
+				collision: "flipfit"
+			},
+			open: function(event, ui) {
+				jQuery(".wpo-tooltip").not(this).tooltip("close");
+			}
+		});
+
+		// New: explicit outside-tap/click close, since jQuery UI has no touch equivalent of mouseleave/focusout
+		jQuery(document).on("touchstart click", function(e) {
+			if (!jQuery(e.target).closest("[data-tooltip], .ui-tooltip").length) {
+				jQuery(".wpo-tooltip").each(function() {
+					var $el = jQuery(this);
+					if ($el.data("ui-tooltip")) {
+						$el.tooltip("close");
+					}
+				});
+			}
+		});
+	}
+}
+
 jQuery(function ($) {
+
+	WPO_Tooltip();
+
+	WPO_Select2();
+
 	/**
 	 * Show additional options section if optimization enabled
 	 *
@@ -2234,6 +2280,8 @@ jQuery(function ($) {
 		$('#wp-optimize-logger-settings .save_settings_reminder').after(get_add_logging_form_html());
 
 		filter_select_destinations($('.wpo_logger_type').first());
+
+		WPO_Select2();
 	});
 
 	/**
@@ -2409,7 +2457,7 @@ jQuery(function ($) {
 
 		return [
 			'<div class="wpo_add_logger_form">',
-				'<select class="wpo_logger_type" name="wpo-logger-type[]">',
+				'<select class="wpo_logger_type wpo-select2" name="wpo-logger-type[]">',
 					select_options.join(''),
 				'</select>',
 				'<div class="wpo_logging_edit_row" style="display:block;"><span class="wpo_delete_logger button button-secondary" title="'+wpoptimize.cancel+'">'+wpoptimize.cancel+'</span>',

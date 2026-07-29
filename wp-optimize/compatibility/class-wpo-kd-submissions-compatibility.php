@@ -5,9 +5,27 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 if (!class_exists('WPO_KD_Submissions_Compatibility')) :
 
 /**
- * Class to handle compatibility with KD Submissions plugin
+ * Handles compatibility with the KD Submissions plugin.
+ *
+ * Ensures KD Submissions database tables are associated with Elementor Pro
+ * when both plugins are present, allowing them to be optimized alongside
+ * Elementor tables.
  */
 class WPO_KD_Submissions_Compatibility {
+
+	/**
+	 * Elementor Pro plugin identifier.
+	 *
+	 * @var string
+	 */
+	const ELEMENTOR_PRO_PLUGIN = 'elementor-pro';
+
+	/**
+	 * KD Submissions plugin identifier.
+	 *
+	 * @var string
+	 */
+	const KD_SUBMISSIONS_PLUGIN = 'kd-submissions';
 
 	/**
 	 * Constructor
@@ -17,23 +35,25 @@ class WPO_KD_Submissions_Compatibility {
 	}
 
 	/**
-	 * Checks if KD Submissions tables should be marked as Elementor tables. If Elementor Pro is installed or active and KD Submissions tables are not marked as Elementor tables, then mark them as Elementor tables. This is needed to make sure that if Elementor Pro is installed, then KD Submissions tables are optimized with Elementor tables.
+	 * Associates KD Submissions tables with Elementor Pro when it is present.
 	 *
-	 * @param array $tables
-	 * @return array
+	 * @param array<int, stdClass> $tables List of database table objects.
+	 * @return array<int, stdClass> Updated list with corrected plugin associations.
 	 */
 	public function check_kd_submissions_tables($tables) {
-		$is_elementor_pro_installed_or_active = $this->is_elementor_pro_installed_or_active();
 		$elementor_pro_status = $this->get_elementor_pro_status();
+		$is_elementor_pro_available = $elementor_pro_status['installed'] || $elementor_pro_status['active'];
 
 		foreach ($tables as $key => $table) {
-			if (preg_match('/e_submissions_actions_log$/', $table->Name) || (false !== strpos($table->Name, '_e_') && $this->has_plugin_in_list('kd-submissions', $table->plugin_status))) {
-				if ($is_elementor_pro_installed_or_active && !$this->has_plugin_in_list('elementor-pro', $table->plugin_status)) {
-					$tables[$key]->plugin_status[] = array(
-						'plugin' => 'elementor-pro',
-						'status' => $elementor_pro_status,
-					);
-				}
+			if (!$this->is_kd_submissions_table($table)) {
+				continue;
+			}
+
+			if ($is_elementor_pro_available && !$this->has_plugin_in_list(self::ELEMENTOR_PRO_PLUGIN, $table->plugin_status)) {
+				$tables[$key]->plugin_status[] = array(
+					'plugin' => self::ELEMENTOR_PRO_PLUGIN,
+					'status' => $elementor_pro_status,
+				);
 			}
 		}
 
@@ -41,18 +61,29 @@ class WPO_KD_Submissions_Compatibility {
 	}
 
 	/**
-	 * Checks plugin status array and checks if selected plugin is already in the list.
+	 * Determines whether the given table belongs to KD Submissions.
 	 *
-	 * @param string $plugin
-	 * @param array $plugin_status
-	 * [
-	 * 	[
-	 *  	[plugin] => woocommerce
-	 *      [status] => Array
-	 *                        (
-	 *                        	[installed] => (bool)
-	 *                        	[active] => (bool)
-	 *                        )
+	 * A table is identified as a KD Submissions table if its name matches
+	 * the Elementor submissions actions log pattern, or if it contains the
+	 * '_e_' infix and is already tagged with the KD Submissions plugin.
+	 *
+	 * @param stdClass $table A database table object with a Name property and plugin_status array.
+	 * @return bool
+	 */
+	private function is_kd_submissions_table($table) {
+		if (preg_match('/e_submissions_actions_log$/', $table->Name)) {
+			return true;
+		}
+
+		return false !== strpos($table->Name, '_e_')
+			&& $this->has_plugin_in_list(self::KD_SUBMISSIONS_PLUGIN, $table->plugin_status);
+	}
+
+	/**
+	 * Checks whether a given plugin is already present in the plugin status list.
+	 *
+	 * @param string $plugin        The plugin slug to search for.
+	 * @param array<int, array{plugin: string, status: array{installed: bool, active: bool}}> $plugin_status The list of plugin status entries.
 	 * @return bool
 	 */
 	private function has_plugin_in_list($plugin, $plugin_status) {
@@ -64,27 +95,16 @@ class WPO_KD_Submissions_Compatibility {
 	}
 
 	/**
-	 * Checks if Elementor Pro is installed or active. This is needed to check if KD Submissions tables should be marked as Elementor tables.
+	 * Retrieves the installation and activation status of Elementor Pro.
 	 *
-	 * @return boolean
-	 */
-	private function is_elementor_pro_installed_or_active() {
-		$status = $this->get_elementor_pro_status();
-
-		return $status['installed'] || $status['active'];
-	}
-
-	/**
-	 * Get Elementor Pro status
-	 *
-	 * @return array
+	 * @return array{installed: bool, active: bool}
 	 */
 	private function get_elementor_pro_status() {
-		return WP_Optimize_Database_Information::instance()->get_plugin_status('elementor-pro');
+		return WP_Optimize()->get_db_info()->get_plugin_status(self::ELEMENTOR_PRO_PLUGIN);
 	}
 
 	/**
-	 * Returns singleton instance
+	 * Returns the singleton instance of this class.
 	 *
 	 * @return WPO_KD_Submissions_Compatibility
 	 */

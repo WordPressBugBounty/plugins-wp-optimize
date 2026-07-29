@@ -3,7 +3,12 @@ import Icon from '@/utils/Icon';
 import useOnboardingStore from "../../store/useOnboardingStore";
 import {renderPossiblyHtml} from '../../utils/html';
 
-export const ModalHeader = ({ currentStep }) => {
+export const ModalHeader = ({
+currentStep,
+logo,
+logo_class,
+currentStepIndex
+}) => {
     const {
         isInstalling,
         isUpdating,
@@ -21,6 +26,13 @@ export const ModalHeader = ({ currentStep }) => {
 
     return (
         <div className="flex flex-col gap-2 justify-center items-center">
+            {(currentStepIndex === 0) && (
+                <div>
+                    {logo && (
+                        <img src={logo} alt="Logo" className={`h-[54px] w-auto mx-auto ${logo_class || ''}`} />
+                    )}
+                </div>
+            )}
             {/* Step Icon - Only render if an icon is provided */}
             {currentStep.icon && (
                 <Icon

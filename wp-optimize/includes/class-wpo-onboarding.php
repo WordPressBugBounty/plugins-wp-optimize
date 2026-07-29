@@ -93,46 +93,132 @@ class WPO_Onboarding {
 			$id = (string) $setting['id'];
 			$value = isset($setting['value']) ? (bool) $setting['value'] : false;
 
-			if ('enable_caching_onboarding' === $id) {
-				$wpo_page_cache = WP_Optimize()->get_page_cache();
-
-				if (true === $value) {
-					$wpo_page_cache->enable(true);
-				} else {
-					$wpo_page_cache->disable();
-				}
-			}
-
-			if ('enable_minify_onboarding' === $id) {
-				wp_optimize_minify_config()->update(array('enabled' => $value));
-			}
-
-			if ('enable_image_compression_onboarding' === $id) {
-				Updraft_Smush_Manager()->update_smush_options(array('autosmush' => $value));
-			}
-
-			if ('enable_webp_conversion_onboarding' === $id) {
-				$webp_data = array();
-				$webp_data['webp_conversion'] = $value;
-				WP_Optimize()->get_webp_instance()->save_webp_settings($webp_data);
-			}
-
-			if ('enable_lazy_load_onboarding' === $id) {
-				$lazy_settings = array();
-				$lazy_settings['lazyload'] = array(
-					'images'          =>  $value,
-					'iframes'         =>  $value,
-					'backgrounds'     =>  $value,
-					'youtube_preview' =>  $value,
-					'skip_classes'    => '',
-				);
-				WP_Optimize()->get_options()->save_lazy_load_settings($lazy_settings);
-			}
-
-			if ('enable_image_dimensions_onboarding' === $id) {
-				WP_Optimize()->get_options()->update_option('image_dimensions', (int) $value);
-			}
+			$this->apply_setting($id, $value);
 		}
+	}
+
+	/**
+	 * Dispatch a setting change to its handler.
+	 *
+	 * @param string $id    Setting identifier.
+	 * @param bool   $value Whether to enable or disable the setting.
+	 * @return void
+	 */
+	private function apply_setting(string $id, bool $value): void {
+		$handlers = array(
+			'enable_caching_onboarding'            => array($this, 'apply_caching_setting'),
+			'enable_minify_onboarding'             => array($this, 'apply_minify_setting'),
+			'enable_image_optimization_onboarding' => array($this, 'apply_image_setting'),
+		);
+
+		if (isset($handlers[$id])) {
+			call_user_func($handlers[$id], $value);
+		}
+	}
+
+	/**
+	 * Enable or disable page caching.
+	 *
+	 * Some related handling is intentionally commented out pending further work.
+	 *
+	 * @param bool $value True to enable, false to disable.
+	 * @return void
+	 */
+	private function apply_caching_setting(bool $value): void {
+		$page_cache = WP_Optimize()->get_page_cache();
+
+		if ($value) {
+			$page_cache->enable(true);
+			// $this->enable_gzip();
+			// $this->enable_browser_cache();
+		} else {
+			$page_cache->disable();
+			// WP_Optimize()->get_gzip_compression()->disable();
+			// WP_Optimize()->get_browser_cache()->disable();
+		}
+
+		if ($this->is_premium) {
+			// $this->set_show_avatars($value);
+			WP_Optimize_LCP_Settings::instance()->update_setting($value);
+		}
+	}
+
+	/**
+	 * Enable gzip compression.
+	 *
+	 * @return void
+	 */
+	private function enable_gzip(): void {
+		WP_Optimize()->get_gzip_compression()->enable_gzip_command_handler(array('enable' => true));
+	}
+
+	/**
+	 * Enable browser cache using saved expiry options.
+	 *
+	 * @return void
+	 */
+	private function enable_browser_cache(): void {
+		$options = WP_Optimize()->get_options();
+		WP_Optimize()->get_browser_cache()->enable_browser_cache_command_handler(array(
+			'browser_cache_expire_days'  => $options->get_option('browser_cache_expire_days', '28'),
+			'browser_cache_expire_hours' => $options->get_option('browser_cache_expire_hours', '0'),
+		));
+	}
+
+	/**
+	 * Enable or disable avatar display (premium only).
+	 *
+	 * @param bool $value True to show avatars, false to hide.
+	 * @return void
+	 */
+	private function set_show_avatars(bool $value): void {
+		$commands = new WP_Optimize_Cache_Commands_Premium();
+		if (is_callable(array($commands, 'change_show_avatars'))) {
+			$commands->change_show_avatars(array('show_avatars' => $value));
+		}
+	}
+
+	/**
+	 * Enable or disable CSS/JS minification.
+	 *
+	 * @param bool $value True to enable, false to disable.
+	 * @return void
+	 */
+	private function apply_minify_setting(bool $value): void {
+		$params = array('enabled' => $value);
+
+		if ($this->is_premium) {
+			$params['enable_capo_js']           = $value;
+			$params['host_local_google_fonts']  = $value;
+		}
+
+		wp_optimize_minify_config()->update($params);
+	}
+
+	/**
+	 * Enable or disable image optimization and related premium features like lazy load and image dimensions.
+	 *
+	 * @param bool $value True to enable, false to disable.
+	 * @return void
+	 */
+	private function apply_image_setting(bool $value): void {
+		Updraft_Smush_Manager()->update_smush_options(array('autosmush' => $value));
+
+		WP_Optimize()->get_webp_instance()->save_webp_settings(array('webp_conversion' => $value));
+
+		if (!$this->is_premium) return;
+
+		WP_Optimize()->get_options()->save_lazy_load_settings(array(
+			'lazyload' => array(
+				'images'          => $value,
+				'iframes'         => $value,
+				'backgrounds'     => $value,
+				'youtube_preview' => $value,
+				'skip_classes'    => '',
+			),
+		));
+
+		WP_Optimize()->get_options()->update_option('image_dimensions', (int) $value);
 	}
 
 	/**
@@ -149,29 +235,26 @@ class WPO_Onboarding {
 		// Build steps
 		$steps = array(); // To override all previous steps.
 
-		// Step 1: Intro
-		$steps[] = $this->intro_step();
+		// Step 1: Feature settings
+		$steps[] = $this->features_step();
 
 		// Step 2: License step (only for premium users without a connected license)
 		if ($this->should_add_license_step()) {
 			$steps[] = $this->license_step();
 		}
 
-		// Step 3: Feature settings
-		$steps[] = $this->features_step();
-
-		// Step 4: Newsletter signup
+		// Step 3: Newsletter signup
 		$steps[] = $this->newsletter_step();
 
-		// Step 5: Recommended plugins
+		// Step 4: Recommended plugins
 		$steps[] = $this->plugins_install_step();
 
-		// Step 6: Go Premium step (only for non-premium users)
+		// Step 5: Go Premium step (only for non-premium users)
 		if (!$this->is_premium) {
 			$steps[] = $this->go_premium_step();
 		}
 
-		// Step 7: Final step
+		// Step 6: Final step
 		$steps[] = $this->last_step();
 
 		return $steps;
@@ -184,36 +267,6 @@ class WPO_Onboarding {
 	 */
 	private function should_add_license_step(): bool {
 		return $this->is_premium && !$this->is_license_connected();
-	}
-
-	/**
-	 * Build the intro step for the onboarding wizard.
-	 *
-	 * This step introduces the plugin to the user, displays key
-	 * benefits as bullet points, and includes a start button.
-	 *
-	 * @return array Step configuration including ID, type, title, subtitle, intro bullets, button info, and note.
-	 */
-	private function intro_step(): array {
-		$intro_bullets = $this->get_intro_bullets();
-
-		$note_1 = $this->is_premium ? __("Premium plugin", 'wp-optimize') : __("Free plugin", 'wp-optimize');
-		$note_2 = __("Quick setup", 'wp-optimize');
-		$note_3 = __("No tech skills needed", 'wp-optimize');
-		$bottom_note = $note_1 . '   •   ' . $note_2 . '   •   ' . $note_3;
-		return array(
-			'id'            => 'intro',
-			'type'          => 'intro',
-			'title'         => __('Let\'s get started!', 'wp-optimize'),
-			'subtitle'      => __("Speed up and optimize your WordPress site with ease, trusted by over 1 million sites.", 'wp-optimize'),
-			'intro_bullets' => $intro_bullets,
-			'button' => array(
-				'id'    => 'start',
-				'label' => __('Start', 'wp-optimize'),
-				'icon'  => 'magic-wand',
-			),
-			'note' => $bottom_note,
-		);
 	}
 
 	/**
@@ -256,7 +309,8 @@ class WPO_Onboarding {
 				'id'   => 'activate',
 				'label'=> __('Confirm and activate', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
-			)
+			),
+			'skip_step' => true
 		);
 	}
 
@@ -270,9 +324,8 @@ class WPO_Onboarding {
 		return array(
 			'id'       => 'page_features',
 			'type'     => 'settings',
-			'icon'     => 'settings',
-			'title'    => __('Enable best-practice settings', 'wp-optimize'),
-			'subtitle' => __('We\'ve pre-selected core settings to speed up and optimize your site.', 'wp-optimize').' '.__('You can tweak them anytime.', 'wp-optimize'),
+			'title'    => __('Your site is already faster!', 'wp-optimize'),
+			'subtitle' => __('We enabled these settings optimised for your site.', 'wp-optimize').' '.__('Turn off anything you don\'t need.', 'wp-optimize'),
 			'fields'   => $features,
 			'button'   => array(
 				'id'   => 'save',
@@ -280,11 +333,11 @@ class WPO_Onboarding {
 				'icon' => 'EastRoundedIcon',
 			),
 			'skip_step' => array(
-				'icon' => 'info',
+				'icon'    => 'info',
 				'tooltip' => array(
 					'text' => __('All above features will be disabled if you skip.', 'wp-optimize'),
 				),
-			)
+			),
 		);
 	}
 
@@ -307,6 +360,7 @@ class WPO_Onboarding {
 				'label'=> __('Save and continue', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			),
+			'skip_step' => true
 		);
 	}
 
@@ -340,6 +394,7 @@ class WPO_Onboarding {
 				'label' => __('Install and continue', 'wp-optimize'),
 				'icon' => 'EastRoundedIcon',
 			),
+			'skip_step' => true
 		);
 	}
 
@@ -359,6 +414,7 @@ class WPO_Onboarding {
 			'bullets'   => $go_premium_step_bullets,
 			'enable_premium_btn' => true,
 			'premium_btn_text' => __('Upgrade to Premium', 'wp-optimize'),
+			'skip_step' => true
 		);
 	}
 
@@ -442,9 +498,9 @@ class WPO_Onboarding {
 	 */
 	private function get_last_step_subtitles(): array {
 
-		$subtitle = __('WP-Optimize is ready to help your site run faster.', 'wp-optimize');
+		$subtitle = __('WP-Optimize is running.', 'wp-optimize');
 		$subtitle .= ' ';
-		$subtitle .= __('You can review or customize settings whenever you like.', 'wp-optimize');
+		$subtitle .= __('You can review and adjust any settings anytime from the settings page.', 'wp-optimize');
 
 		$installing = __('Setting things up in the background...', 'wp-optimize') . '<br>';
 		$installing .= __('This will only take a moment.', 'wp-optimize');
@@ -476,7 +532,7 @@ class WPO_Onboarding {
 			),
 			array(
 				__('User and role-based cache', 'wp-optimize'),
-				__('Premium support and  more', 'wp-optimize'),
+				__('Premium support and more', 'wp-optimize'),
 			),
 		);
 	}
@@ -512,150 +568,106 @@ class WPO_Onboarding {
 	 * Get the list of feature settings for the onboarding wizard.
 	 *
 	 * Generates an array of feature configuration options, including
-	 * labels, types, defaults, and premium-locked items.
+	 * labels, types, defaults, and details.
 	 *
 	 * @return array List of feature setting definitions.
 	 */
 	private function get_feature_settings(): array {
-		$premium_heading = '';
-		$premium_text    = '';
-		$is_lock = !$this->is_premium;
-		if ($is_lock) {
-			list($premium_heading, $premium_text) = $this->get_premium_tooltip();
-		}
+		$label_details = __('Details', 'wp-optimize');
 
-		$webp_instance = WP_Optimize()->get_webp_instance();
-		$webp_tooltip  = __('Serve modern WebP images for smaller downloads.', 'wp-optimize');
-		$is_lock_webp  = false;
-
-		$webp_result = $webp_instance->evaluate_webp_capability();
-		if (!$webp_result['is_available']) {
-			$is_lock_webp = true;
-			$webp_tooltip = $webp_result['message'];
-		}
+		$default_config = array(
+			'type'    => 'checkbox',
+			'subtype' => 'switch',
+			'layout'  => 'card',
+			'show_details_label' => $label_details,
+			'hide_details_label' => $label_details,
+			'default' => true,
+		);
 
 		return array(
-			array(
-				'id'      => 'enable_caching_onboarding',
-				'key'     => 'enable_caching_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'label'   => __('Page caching', 'wp-optimize'),
-				'tooltip' => array(
-					'text' => __('Cache full pages for faster repeat visits.', 'wp-optimize'),
-				),
-				'default' => true,
-			),
-			array(
-				'id'      => 'enable_minify_onboarding',
-				'key'     => 'enable_minify_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'label'   => __('Minify static assets', 'wp-optimize'),
-				'tooltip' => array(
-					'text' => __('Shrink HTML, CSS and JavaScript files for quicker loads.', 'wp-optimize'),
-				),
-				'default' => true,
-			),
-			array(
-				'id'      => 'enable_image_compression_onboarding',
-				'key'     => 'enable_image_compression_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'label'   => __('Image compression', 'wp-optimize'),
-				'tooltip' => array(
-					'text' => __('Automatically reduce image file sizes on upload to improve page load speed.', 'wp-optimize').' '.__('In settings, you can adjust compression quality as well as manually compress existing images.', 'wp-optimize'),
-				),
-				'default' => true,
-			),
-			array(
-				'id'      => 'enable_webp_conversion_onboarding',
-				'key'     => 'enable_webp_conversion_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'is_lock' => $is_lock_webp,
-				'label'   => __('WebP conversion', 'wp-optimize'),
-				'tooltip' => array(
-					'text' => $webp_tooltip,
-				),
-				'default' => !$is_lock_webp,
-			),
-			array(
-				'id'      => 'enable_lazy_load_onboarding',
-				'key'     => 'enable_lazy_load_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'is_lock' => $is_lock,
-				'label'   => __('Lazy Loading', 'wp-optimize'),
-				'tooltip' => array(
-					'heading' => array(
-						'text' => $is_lock ? $premium_heading : ''
-					),
-					'text' => $is_lock ? $premium_text : __('Load images and videos only when they enter the viewport.', 'wp-optimize'),
-				),
-				'default' => !$is_lock,
-			),
-			array(
-				'id'      => 'enable_image_dimensions_onboarding',
-				'key'     => 'enable_image_dimensions_onboarding',
-				'type'    => 'checkbox',
-				'subtype' => 'switch',
-				'is_lock' => $is_lock,
-				'label'   => __('Image Dimensions', 'wp-optimize'),
-				'tooltip' => array(
-					'heading' => array(
-						'text' => $is_lock ? $premium_heading : ''
-					),
-					'text' => $is_lock ? $premium_text : __('Auto-add missing width and height to improve load speed and reduce layout shifts.', 'wp-optimize'),
-				),
-				'default' => !$is_lock,
-			),
+			array_merge($default_config, $this->get_cache_feature()),
+			array_merge($default_config, $this->get_minify_feature()),
+			array_merge($default_config, $this->get_image_feature()),
 		);
 	}
 
 	/**
-	 * Get the tooltip heading and text for premium-only features.
+	 * Build the cache feature definition for the onboarding wizard.
 	 *
-	 * @return array An array with two values: heading and tooltip text.
+	 * Covers page caching.
+	 * For premium users, it also includes the Auto LCP preload description.
+	 *
+	 * @return array Feature field definition array.
 	 */
-	private function get_premium_tooltip(): array {
-		$heading = __('Premium feature ⚡', 'wp-optimize');
+	private function get_cache_feature(): array {
+		$details = __('Enables page caching.', 'wp-optimize');
 
-		$upgrade_url_tooltip = WP_Optimize_Utils::add_utm_params($this->upgrade_url, $this->get_utm_params_to_override('upgrade-to-premium', 'tooltip'), true);
-		$text = sprintf(
-			// translators: %s: Text with Link
-			__('%s to unlock this and other advanced options.', 'wp-optimize'), '<a href="'.esc_url($upgrade_url_tooltip).'" class="underline" target="_blank">' . __('Upgrade to Premium', 'wp-optimize') . '</a>');
+		if ($this->is_premium) {
+			$details .= ' '.__('Automatically improves Largest Contentful Paint (LCP) when supported.', 'wp-optimize');
+		}
 
-		return array($heading, $text);
+		$details .= ' '.__('You can turn these off individually anytime.', 'wp-optimize');
+		return array(
+			'id'      => 'enable_caching_onboarding',
+			'key'     => 'enable_caching_onboarding',
+			'label'   => __('Faster pages', 'wp-optimize'),
+			'icon'    => 'speed',
+			'summary' => __('Pages refresh in the background, so return visits are always fast.', 'wp-optimize'),
+			'details' => $details,
+		);
 	}
 
 	/**
-	 * Get the introductory feature bullet points for 1st Step of Onboarding wizard.
+	 * Build the minification feature definition for the onboarding wizard.
 	 *
-	 * @return array List of bullets with icon, title, and description.
+	 * Covers CSS and JS minification and file bundling.
+	 * For premium users, it also includes Capo.js and local Google Fonts hosting.
+	 *
+	 * @return array Feature field definition array.
 	 */
-	private function get_intro_bullets(): array {
+	private function get_minify_feature(): array {
+		$details = __('Minifies CSS and JavaScript, and bundles related files together.', 'wp-optimize');
+		$details .= ' '.__('Payment provider scripts are excluded automatically.', 'wp-optimize');
+
+		if ($this->is_premium) {
+			$details .= ' '.__('Includes Capo.js for smarter script loading and hosts Google Fonts locally to reduce external requests.', 'wp-optimize');
+		}
+
 		return array(
-			array(
-				'icon'  => 'database',
-				'title' => __('Clean database', 'wp-optimize'),
-				'desc'  => __('Remove unnecessary data to keep your site fast.', 'wp-optimize'),
-			),
-			array(
-				'icon'  => 'compress',
-				'title' => __('Compress images', 'wp-optimize'),
-				'desc'  => __('Reduce image sizes for quicker page loads.', 'wp-optimize'),
-			),
-			array(
-				'icon'  => 'cache',
-				'title' => __('Cache pages', 'wp-optimize'),
-				'desc'  => __('Store pages for instant loading.', 'wp-optimize'),
-			),
-			array(
-				'icon'  => 'minify',
-				'title' => __('Minify code', 'wp-optimize'),
-				'desc'  => __('Shrink CSS, JavaScript, and HTML for better performance.', 'wp-optimize'),
-			),
+			'id'      => 'enable_minify_onboarding',
+			'key'     => 'enable_minify_onboarding',
+			'icon'    => 'devices',
+			'label'   => __('Lighter on every device', 'wp-optimize'),
+			'summary' => __('Smaller files reach browsers faster, especially on mobile.', 'wp-optimize'),
+			'details' => $details,
+		);
+	}
+
+	/**
+	 * Build the image optimization feature definition for the onboarding wizard.
+	 *
+	 * Covers image compression and WebP conversion.
+	 * For premium users, it also includes lazy loading and image dimensions.
+	 *
+	 * @return array Feature field definition array.
+	 */
+	private function get_image_feature(): array {
+		$details = __('Bundles image compression and WebP conversion.', 'wp-optimize');
+		$details .= ' '.__('New uploads are compressed automatically and originals are backed up.', 'wp-optimize');
+
+		if ($this->is_premium) {
+			$details .= ' '.__('Also adds image dimensions and lazy loading to improve perceived speed.', 'wp-optimize');
+		}
+
+		$details .= ' '.__('You can change this anytime.', 'wp-optimize');
+
+		return array(
+			'id'      => 'enable_image_optimization_onboarding',
+			'key'     => 'enable_image_optimization_onboarding',
+			'icon'    => 'images',
+			'label'   => __('Optimised media', 'wp-optimize'),
+			'summary' => __('We\'ll compress your images.', 'wp-optimize').' '.__('Same quality, faster load.', 'wp-optimize'),
+			'details' => $details,
 		);
 	}
 

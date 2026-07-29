@@ -3,7 +3,7 @@ import * as TooltipUI from '@radix-ui/react-tooltip';
 import Icon from '../Icon';
 import { useTooltipContainer } from './TooltipContainerContext';
 import {useState} from "@wordpress/element";
-import {renderPossiblyHtml} from '../html';
+import {renderPossiblyHtml, isLikelyHtml} from '../html';
 import { clsx } from 'clsx';
 export interface TooltipProps {
     heading?: string | {
@@ -59,7 +59,12 @@ const Tooltip = ({
                     )
                 )}
                 {typeof text === 'string' ? (
-                    <p className="text-md">{renderPossiblyHtml(text)}</p>
+                    // Conditional rendering based on whether text is likely HTML
+                    isLikelyHtml(text) ? (
+                        renderPossiblyHtml(text) // Render directly if it's HTML (will be a div)
+                    ) : (
+                        <p className="text-md">{renderPossiblyHtml(text)}</p> // Wrap in <p> if it's plain text
+                    )
                 ) : (
                     text && <p className="text-md">{text}</p>
                 )}

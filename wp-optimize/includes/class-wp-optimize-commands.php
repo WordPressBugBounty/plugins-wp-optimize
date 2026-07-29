@@ -506,7 +506,7 @@ class WP_Optimize_Commands {
 	 * @param array  $additional_data Any additional data to return
 	 * @return WP_Error
 	 */
-	private function request_error($code, $message_key = null, $additional_data = array()) {
+	public function request_error($code, $message_key = null, $additional_data = array()) {
 		global $updraftcentral_host_plugin;
 
 		$error_message = $updraftcentral_host_plugin->retrieve_show_message($code);
@@ -1413,158 +1413,6 @@ class WP_Optimize_Commands {
 	}
 
 	/**
-	 * [For UpdraftCentral] Returns selected WP-Optimize toggleable settings optimized for quick access
-	 *
-	 * @return WP_Error|array
-	 */
-	private function get_quick_settings_data() {
-		if (!WP_Optimize()->current_user_can()) {
-			return $this->request_error('insufficient_privilege');
-		}
-
-		$options = WP_Optimize()->get_options();
-		$default_lazyload_settings = array(
-			'images' => false,
-			'backgrounds' => false,
-			'iframes' => false,
-			'youtube_preview' => false,
-			'skip_classes' => '',
-		);
-
-		$lazyload = wp_parse_args($options->get_option('lazyload', array()), $default_lazyload_settings);
-		foreach ($lazyload as $key => $value) {
-			if ('skip_classes' !== $key) {
-				$lazyload[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-			}
-		}
-
-		$trackbacks = $options->get_option('trackbacks_action', array());
-		$comments = $options->get_option('comments_action', array());
-
-		$gzip_compression_enabled = WP_Optimize()->get_gzip_compression()->is_gzip_compression_enabled(true);
-
-		$settings = array(
-			'scheduled_cleanup' => 'true' === $options->get_option('schedule'),
-			'backup_enabled' => 'true' === $options->get_option('enable-auto-backup', 'false'),
-			'comments' => (!empty($comments) && $comments['action']) ? true : false,
-			'trackbacks' => (!empty($trackbacks) && $trackbacks['action']) ? true : false,
-			'autosmush' => $options->get_option('autosmush'),
-			'page_caching' => WP_Optimize()->get_page_cache()->is_enabled(),
-			'minify' => wp_optimize_minify_config()->get('enabled'),
-			'image_dimensions' => $options->get_option('image_dimensions'),
-			'404_detector' => $options->get_option('404_detector'),
-			'webp_conversion' => $options->get_option('webp_conversion'),
-			'gzip_compression' => (!is_wp_error($gzip_compression_enabled) && $gzip_compression_enabled) ? true : false,
-		);
-
-		$settings = array_map(function($value) {
-			return filter_var($value, FILTER_VALIDATE_BOOLEAN);
-		}, $settings);
-
-		return array_merge($settings, array('lazyload' => $lazyload));
-	}
-
-	/**
-	 * [For UpdraftCentral] Saves the selected WP-Optimize toggleable settings
-	 *
-	 * @param array $settings Parameters required for the requested action
-	 *
-	 * @return WP_Error|array
-	 */
-	public function save_quick_settings($settings) {
-		if (!WP_Optimize()->current_user_can()) {
-			return $this->request_error('insufficient_privilege');
-		}
-
-		if (!empty($settings) && is_array($settings)) {
-			$settings = array_map(function($value) {
-				return filter_var($value, FILTER_VALIDATE_BOOLEAN);
-			}, $settings);
-		}
-
-		try {
-
-			if (isset($settings['enable-404-detector'])) {
-				WP_Optimize()->get_options()->update_option('404_detector', (int) $settings['enable-404-detector']);
-			}
-
-			if (isset($settings['enable-auto-backup'])) {
-				WP_Optimize()->get_options()->update_option('enable-auto-backup', $settings['enable-auto-backup'] ? 'true' : 'false');
-
-				WP_Optimize()->get_options()->update_option('enable-auto-backup-scheduled', $settings['enable-auto-backup'] ? 'true' : 'false');
-			}
-
-			if (isset($settings['enable-auto-compression'])) {
-				Updraft_Smush_Manager()->update_smush_options(array('autosmush' => (int) $settings['enable-auto-compression']));
-			}
-
-			if (isset($settings['enable-comments'])) {
-				$this->enable_or_disable_feature(array(
-					'type' => 'comments',
-					'enable' => $settings['enable-comments'],
-				));
-			}
-
-			if (isset($settings['enable-trackbacks'])) {
-				$this->enable_or_disable_feature(array(
-					'type' => 'trackbacks',
-					'enable' => $settings['enable-trackbacks'],
-				));
-			}
-
-			if (isset($settings['enable-minify'])) {
-				wp_optimize_minify_config()->update(array('enabled' => $settings['enable-minify']));
-			}
-
-			if (isset($settings['enable-page-caching'])) {
-				$wpo_page_cache = WP_Optimize()->get_page_cache();
-
-				if ($settings['enable-page-caching']) {
-					$wpo_page_cache->enable(true);
-				} else {
-					$wpo_page_cache->disable();
-				}
-			}
-
-			if (isset($settings['enable-scheduled-cleanup'])) {
-				WP_Optimize()->get_options()->update_option('schedule', $settings['enable-scheduled-cleanup'] ? 'true' : 'false');
-			}
-
-			if (isset($settings['enable-webp-conversion'])) {
-				WP_Optimize()->get_webp_instance()->save_webp_settings(array('webp_conversion' => $settings['enable-webp-conversion']));
-			}
-
-			if (isset($settings['enable-images-dimensions'])) {
-				WP_Optimize()->get_options()->update_option('image_dimensions', (int) $settings['enable-images-dimensions']);
-			}
-
-			if (isset($settings['enable-lazy-loading'])) {
-				$value = (int) $settings['enable-lazy-loading'];
-				$options = WP_Optimize()->get_options();
-
-				$lazyload = $options->get_option('lazyload');
-				$lazy_settings = array(
-					'images'          =>  $value,
-					'iframes'         =>  $value,
-					'backgrounds'     =>  $value,
-					'youtube_preview' =>  $value,
-					'skip_classes'    => !empty($lazyload['skip_classes']) ? $lazyload['skip_classes'] : '',
-				);
-				$options->save_lazy_load_settings(array('lazyload' => $lazy_settings));
-			}
-
-			if (isset($settings['enable-gzip-compression'])) {
-				$this->enable_gzip_compression(array('enable' => $settings['enable-gzip-compression']));
-			}
-
-		} catch (Throwable $e) {
-			return $this->request_error('quick_settings_save_error', null, array('message' => $e->getMessage(), 'settings' => $this->get_quick_settings_data()));
-		}
-
-		return array('settings' => $this->get_quick_settings_data());
-	}
-
-	/**
 	 * Get the data of wp-optimize widget.
 	 *
 	 * @return array
@@ -2089,10 +1937,14 @@ class WP_Optimize_Commands {
 			'data' => array(),
 		);
 		$scheduled_optimizations_enabled = false;
+		$last_optimized_timestamp = (int) $this->options->get_option('last-optimized', 0);
+		$next_optimization_timestamp = 0;
 		$wp_optimize = WP_Optimize();
+		$is_udc_request = $wp_optimize->is_updraft_central_request();
 
 		if (!$is_premium) {
-			$enabled = 'true' === $this->options->get_option('schedule');
+			$schedule_enabled = $this->options->get_option('schedule');
+			$scheduled_optimizations_enabled = 'true' === $schedule_enabled;
 	
 			$schedule_type_saved_id = $this->options->get_option('schedule-type', 'wpo_weekly');
 	
@@ -2119,7 +1971,7 @@ class WP_Optimize_Commands {
 	
 			$optimizations_data = array();
 
-			$does_server_allow_table_optimization = WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization();
+			$does_server_allow_table_optimization = $wp_optimize->get_server_compatibility_instance()->does_server_allow_table_optimization();
 
 			foreach ($optimizations as $id => $optimization) {
 				if (empty($optimization->available_for_auto)) continue;
@@ -2140,34 +1992,17 @@ class WP_Optimize_Commands {
 				);
 			}
 
-			$next_optimization_timestamp = 0;
-
-			$scheduled_optimizations_enabled = $this->options->get_option('schedule', 'false') == 'true';
-
-			if ($scheduled_optimizations_enabled) {
-				$next_optimization_timestamp = apply_filters('wpo_cron_next_event', wp_next_scheduled('wpo_cron_event2'));
-
-				if ($next_optimization_timestamp) {
-
-					$next_optimization_timestamp = $next_optimization_timestamp + 60 * 60 * get_option('gmt_offset');
-				}
-			}
-
 			$return_data['data'] = array(
-				'enabled' => $enabled,
 				'schedule_options' => $schedule_options,
 				'schedule_type_saved_id' => $schedule_type_saved_id,
 				'optimizations' => $optimizations_data,
-				'next_optimization' => $next_optimization_timestamp ? esc_html(gmdate(get_option('date_format') . ' ' . get_option('time_format'), $next_optimization_timestamp)) : '',
 				'premium_version_link' => $wp_optimize->premium_version_link,
-				'enable_schedule' => $this->options->get_option('schedule'),
+				'enable_schedule' => $schedule_enabled,
 			);
 		} else {
 			$wp_optimize_premium = WP_Optimize_Premium();
 			$auto_options = $wp_optimize_premium->get_scheduled_optimizations();
 			$auto_optimizations = $wp_optimize_premium->get_auto_optimizations();
-
-			$next_optimization_timestamp = 0;
 
 			if (!empty($auto_options)) {
 				foreach ($auto_options as $optimization) {
@@ -2193,8 +2028,8 @@ class WP_Optimize_Commands {
 				if (!isset($event['optimization'])) {
 					$event['optimization'] = array();
 				}
-				foreach ($event as $key => $value) {
-					switch ($key) {
+				foreach ($event as $event_key => $value) {
+					switch ($event_key) {
 						case 'optimization':
 							$optimization['optimization'] = array();
 							foreach ($all_provided_optimizations as $this_optimization) {
@@ -2225,7 +2060,7 @@ class WP_Optimize_Commands {
 							foreach ($weeks as $key => $this_week_value) {
 								$this_week = array();
 								$this_week['label'] = $this_week_value;
-								$this_week['selected'] = $key === $value;
+								$this_week['selected'] = absint($key) === absint($value);
 								$this_week['value'] = $key;
 								$optimization['weeks'][] = $this_week;
 							}
@@ -2235,7 +2070,7 @@ class WP_Optimize_Commands {
 							foreach ($week_days as $key => $this_week_day_value) {
 								$this_week_day = array();
 								$this_week_day['label'] = $this_week_day_value;
-								$this_week_day['selected'] = $key === $value;
+								$this_week_day['selected'] = absint($key) === absint($value);
 								$this_week_day['value'] = $key;
 								$optimization['days'][] = $this_week_day;
 							}
@@ -2258,14 +2093,6 @@ class WP_Optimize_Commands {
 				$optimizations[] = $optimization;
 			}
 
-			if ($scheduled_optimizations_enabled) {
-				$next_optimization_timestamp = apply_filters('wpo_cron_next_event', wp_next_scheduled('wpo_cron_event2'));
-
-				if ($next_optimization_timestamp) {
-					$next_optimization_timestamp = $next_optimization_timestamp + 60 * 60 * get_option('gmt_offset');
-				}
-			}
-
 			$return_data['data'] = array(
 				'optimizations' => $optimizations,
 				'provided_optimizations' => $all_provided_optimizations,
@@ -2274,12 +2101,26 @@ class WP_Optimize_Commands {
 				'weeks' => $weeks,
 				'week_days' => $week_days,
 				'days' => $days,
-				'next_optimization' => $next_optimization_timestamp ? esc_html(gmdate(get_option('date_format') . ' ' . get_option('time_format'), $next_optimization_timestamp)) : '',
 				'is_auto_innodb' => $this->options->get_option('auto-innodb'),
 				'scheduled_optimizations' => $auto_options,
 				'auto_optimizations' => $auto_optimizations,
 				'warning_url' => $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/topics/database-optimization/faqs/', __('Warning: you should read the FAQ about the risks of this operation first.', 'wp-optimize'), '', '', true)
 			);
+		}
+
+		$return_data['data']['enabled'] = $scheduled_optimizations_enabled;
+		$return_data['data']['next_optimization'] = '';
+
+		if ($scheduled_optimizations_enabled) {
+			$next_optimization_timestamp = apply_filters('wpo_cron_next_event', wp_next_scheduled('wpo_cron_event2'));
+
+			if ($next_optimization_timestamp) {
+				$return_data['data']['next_optimization'] = $is_udc_request ? (int) $next_optimization_timestamp : esc_html(gmdate(get_option('date_format') . ' ' . get_option('time_format'), $next_optimization_timestamp + 60 * 60 * get_option('gmt_offset')));
+			}
+		}
+
+		if ($is_udc_request && $last_optimized_timestamp) {
+			$return_data['data']['last_optimized'] = (int) $last_optimized_timestamp;
 		}
 
 		// Add the translations.

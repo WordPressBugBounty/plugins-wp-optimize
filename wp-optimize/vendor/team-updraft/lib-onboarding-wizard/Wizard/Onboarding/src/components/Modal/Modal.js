@@ -1,12 +1,9 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import * as Screen from './Screen';
+import { __ } from "@wordpress/i18n";
 
 const Modal = ({
-    logo,
-    logo_class,
-    title,
-    currentStepIndex,
     content,
     footer,
     triggerClassName,
@@ -35,23 +32,14 @@ const Modal = ({
                     onEscapeKeyDown={(event) => event.preventDefault()}
                     className="fixed inset-0 z-[100002] py-[24px]"
                 >
+                    <VisuallyHidden.Root>
+                        <Dialog.Title>{__('Onboarding', 'wp-optimize')}</Dialog.Title>
+                        <Dialog.Description>{__('Onboarding step content', 'wp-optimize')}</Dialog.Description>
+                    </VisuallyHidden.Root>
                     <div className="flex h-full w-full flex-col justify-between overflow-y-auto custom-scrollbar">
                         <Screen.Top className="shrink-0 mx-auto" />
                         <div className="w-full my-6 py-2 md:my-8 md:p-4">
-                            <div className="mx-auto w-[94vw] sm:w-[70vw] max-w-[480px] p-6 rounded-2xl bg-white focus:outline-none data-[state=open]:animate-contentShow">
-                                {(currentStepIndex === 0) && (
-                                    <div className="mt-2">
-                                        {logo && (
-                                            <img src={logo} alt="Logo" className={`h-[54px] w-auto mx-auto ${logo_class || ''}`} />
-                                        )}
-                                        <Dialog.Title className="text-lg font-semibold text-black">
-                                            <VisuallyHidden.Root>Onboarding</VisuallyHidden.Root>
-                                        </Dialog.Title>
-                                    </div>
-                                )}
-                                <Dialog.Description className="sr-only">
-                                    {title} - {typeof content === 'string' ? content : 'Onboarding step content'}
-                                </Dialog.Description>
+                            <div className="mx-auto w-[94vw] sm:w-[70vw] max-w-[500px] p-6 rounded-2xl bg-white focus:outline-none data-[state=open]:animate-contentShow">
                                 <div className="text-base text-black mb-3">{content}</div>
                                 {footer && (
                                     <div className="flex flex-row justify-end gap-2">{footer}</div>

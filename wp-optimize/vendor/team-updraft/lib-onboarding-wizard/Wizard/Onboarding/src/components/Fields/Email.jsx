@@ -4,38 +4,44 @@ import FieldWrapper from "./FieldWrapper";
 import { __ } from "@wordpress/i18n";
 import { isValidEmail } from "@/utils/validators";
 
-const Email = ({ field, onChange, value }) => {
-    const [isValid, setIsValid] = useState(false); // null = untouched, true = valid, false = invalid
+const Email = ({ field, onChange, value, fieldStatus = () => {} }) => {
+    const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState(false);
 
-    // Reset validation when value becomes empty
+    // Validate and report status on value change.
+    // fieldStatus is intentionally omitted from deps: it originates from Accordion
+    // and uses functional updaters (setFailed) + synchronous Zustand reads,
+    // so a stale closure is safe. Adding it would cause re-fires on every Accordion render.
     useEffect(() => {
         if (!value) {
             setIsValid(false);
             setTouched(false);
+            // Only report failure if user has interacted with the field
+            // This prevents revoking backend-set _completed on initial render
+            if (touched) {
+                fieldStatus(false);
+            }
             return;
         }
 
-        // Only pre-validate if value is non-empty AND field just loaded (like a default value)
-        if (value && !touched) {
-            setIsValid(isValidEmail(value));
+        const valid = isValidEmail(value);
+        setIsValid(valid);
+        fieldStatus(valid);
+
+        if (!touched) {
             setTouched(true);
         }
     }, [value]);
 
     const handleBlur = () => {
         setTouched(true);
-        if (value) {
-            setIsValid(isValidEmail(value));
-        } else {
-            setIsValid(false);
-        }
     };
 
     return (
         <FieldWrapper inputId={field.id} label={field.label}>
             <div className="relative w-full">
                 <TextInput
+                    id={field.id}
                     placeholder={__("Enter your e-mail address", "ONBOARDING_WIZARD_TEXT_DOMAIN")}
                     type="email"
                     field={field}

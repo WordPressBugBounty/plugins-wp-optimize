@@ -1,10 +1,12 @@
+"use client";
+
 import * as React from "react";
 import { memo } from "react";
-import * as Label from "@radix-ui/react-label";
 import {__} from "@wordpress/i18n";
 import {clsx} from "clsx";
-import Tooltip from "../../utils/Tooltip/Tooltip";
 import type { TooltipProps } from "../../utils/Tooltip/Tooltip";
+import { renderPossiblyHtml } from '../../utils/html';
+import Label from './Label';
 
 interface FieldWrapperProps {
     label: React.ReactNode;
@@ -20,6 +22,7 @@ interface FieldWrapperProps {
     children: React.ReactNode;
     pro?: { url?: string };
     tooltip?: TooltipProps;
+    contextHtml?: string;
 }
 
 const isContextObject = (value: any): value is { text?: string; url?: string } => {
@@ -39,6 +42,7 @@ const FieldWrapper = memo(({
     children,
     pro,
     tooltip,
+    contextHtml,
 }: FieldWrapperProps) => {
 
 
@@ -58,9 +62,12 @@ const FieldWrapper = memo(({
 
     const labelBlock = (
         <div className={clsx("flex items-center gap-2", labelMargin)}>
-            <Label.Root className="cursor-pointer text-md font-medium text-black" htmlFor={inputId}>
-                {label}
-            </Label.Root>
+            <Label
+                htmlFor={inputId}
+                text={label}
+                {...(tooltip && { tooltip })}
+                className="cursor-pointer text-md font-medium text-black"
+            />
             {required && (
                 <span className="text-gray ml-1 text-xs font-normal">
                     ({__("Required", "ONBOARDING_WIZARD_TEXT_DOMAIN")})
@@ -76,13 +83,7 @@ const FieldWrapper = memo(({
 
     const fieldBlock = (
         <div className={clsx("w-full", fieldMargin)}>
-            {tooltip ? (
-                <Tooltip tooltip={tooltip}>
-                    {children}
-                </Tooltip>
-            ) : (
-                children
-            )}
+            {children}
         </div>
     );
 
@@ -113,6 +114,12 @@ const FieldWrapper = memo(({
                         </a>
                     )}
                 </p>
+            )}
+
+            {contextHtml && (
+                <div className="w-full text-right mt-2 text-sm font-normal text-gray">
+                    {renderPossiblyHtml(contextHtml)}
+                </div>
             )}
         </div>
     );

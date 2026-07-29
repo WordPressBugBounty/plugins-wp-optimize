@@ -14,14 +14,13 @@ class WPO_Polylang_Compatibility {
 	 * @var WPO_Polylang_Compatibility|null
 	 */
 	protected static $instance = null;
-	
+
 	/**
 	 * Constructor.
 	 */
 	private function __construct() {
-		// Add action hooks to delete cache for all languages
-		add_action('wpo_single_post_cache_deleted', array($this, 'polylang_delete_post_cache_for_all_languages'));
-		add_action('wpo_single_post_feed_cache_deleted', array($this, 'polylang_delete_post_feed_cache_for_all_languages'));
+		add_action('wpo_single_post_cache_deleted', array($this, 'delete_post_cache_for_all_languages'));
+		add_action('wpo_single_post_feed_cache_deleted', array($this, 'delete_post_feed_cache_for_all_languages'));
 	}
 
 	/**
@@ -38,50 +37,56 @@ class WPO_Polylang_Compatibility {
 	}
 
 	/**
+	 * Gets translated post IDs excluding the original post.
+	 *
+	 * @param int $post_id The original post ID.
+	 * @return array<string, int> List of translated post IDs, excluding the original.
+	 */
+	private function get_related_translations($post_id) {
+		if (!function_exists('pll_get_post_translations')) {
+			return array();
+		}
+
+		$translations = pll_get_post_translations($post_id);
+
+		return array_filter($translations, function ($id) use ($post_id) {
+			return $id !== $post_id;
+		});
+	}
+
+	/**
 	 * Deletes cache files for all connected languages for a post.
 	 *
 	 * @param int $deleted_post_id Post id whose cache file is already deleted.
+	 * @return void
 	 */
-	public function polylang_delete_post_cache_for_all_languages($deleted_post_id) {
+	public function delete_post_cache_for_all_languages($deleted_post_id) {
+		$related_ids = $this->get_related_translations($deleted_post_id);
 
-		// Check if polylang translation function is available
-		if (!function_exists('pll_get_post_translations')) {
-			return;
+		foreach ($related_ids as $post_id) {
+			WPO_Page_Cache::really_delete_single_post_cache($post_id);
 		}
 
-		$translated_post_ids = pll_get_post_translations($deleted_post_id);
-
-		// Delete cache for each translated post
-		foreach ($translated_post_ids as $post_id) {
-			if ($deleted_post_id !== $post_id) {
-				WPO_Page_Cache::really_delete_single_post_cache($post_id);
-			}
+		if (!empty($related_ids)) {
+			WPO_Page_Cache::instance()->file_log("Cache for associated Polylang translation posts for Title: {{title}} have been purged", $deleted_post_id);
 		}
-		if (!empty($translated_post_ids)) WPO_Page_Cache::instance()->file_log("Cache for associated Polylang translation posts for Title: {{title}} have been purged", $deleted_post_id);
 	}
 
 	/**
 	 * Deletes cache files for all connected languages for a post feed.
 	 *
 	 * @param int $deleted_post_id Post id whose cache file for feed is already deleted.
+	 * @return void
 	 */
-	public function polylang_delete_post_feed_cache_for_all_languages($deleted_post_id) {
-		
-		// Check if polylang translation function is available
-		if (!function_exists('pll_get_post_translations')) {
-			return;
+	public function delete_post_feed_cache_for_all_languages($deleted_post_id) {
+		$related_ids = $this->get_related_translations($deleted_post_id);
+
+		foreach ($related_ids as $post_id) {
+			WPO_Page_Cache::really_delete_post_feed_cache($post_id);
 		}
 
-		$translated_post_ids = pll_get_post_translations($deleted_post_id);
-		$is_cache_purged = false;
-
-		// Delete cache for each translated post
-		foreach ($translated_post_ids as $post_id) {
-			if ($deleted_post_id !== $post_id) {
-				WPO_Page_Cache::really_delete_post_feed_cache($post_id);
-				$is_cache_purged = true;
-			}
+		if (!empty($related_ids)) {
+			WPO_Page_Cache::instance()->file_log("Cache for associated Polylang translation posts' feeds for Title: {{title}} have been purged", $deleted_post_id);
 		}
-		if ($is_cache_purged) WPO_Page_Cache::instance()->file_log("Cache for associated Polylang translation posts' feeds for Title: {{title}} have been purged", $deleted_post_id);
 	}
 }

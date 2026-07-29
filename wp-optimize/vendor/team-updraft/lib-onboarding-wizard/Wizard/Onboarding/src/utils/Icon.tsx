@@ -1,6 +1,4 @@
 import { memo, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
-import Tooltip from './Tooltip/Tooltip';
-import type { TooltipProps } from './Tooltip/Tooltip';
 import customIcons from './customIcons';
 import materialIcons from './materialIcons';
 
@@ -24,7 +22,6 @@ export interface IconProps {
   color?: ColorName;
   size?: number;
   strokeWidth?: number;
-  tooltip?: TooltipProps;
   onClick?: () => void;
   className?: string;
   stroke?: string;
@@ -34,16 +31,15 @@ export interface IconProps {
 
 const Icon = memo((
     {
-    name = 'bullet',
+    name,
     color = 'var(--teamupdraft-orange-dark)',
     fill = 'var(--teamupdraft-orange-dark)',
     size = 18,
     stroke = 'none',
     strokeWidth = 1.5,
-    tooltip,
     onClick,
     className,
-    type = "material"
+    type
     }: IconProps) => {
   // resolved color (CSS var or raw color)
   const colorVal = (iconColors[color as keyof typeof iconColors] || color) as string;
@@ -68,38 +64,47 @@ const Icon = memo((
   // choose which icon to render based on `type` prop or availability
   let inner: ReactNode = null;
 
-  const customElement = CustomIcon ? (
-      // custom SVG/React component: pass common props (your custom icons should accept these)
-      <CustomIcon width={size} height={size} stroke={stroke} strokeWidth={strokeWidth} color={colorVal} fill={fill} />
-  ) : null;
+  // Check if 'name' is a URL
+  const isExternalUrl = typeof name === 'string' && (name.startsWith('http://') || name.startsWith('https://'));
 
-  const materialElement = MaterialIcon ? (
-      // MUI icons accept `sx` for size/color
-      <MaterialIcon sx={{ fontSize: size, color: colorVal,"& path": {
-          stroke: stroke,
-          strokeWidth: strokeWidth,
-          fill: fill,
-        }, }} />
-  ) : null;
-
-  if (type === 'custom') {
-    inner = customElement ?? materialElement;
-  } else if (type === 'material') {
-    inner = materialElement ?? customElement;
-  } else {
-    // no explicit type: prefer material if present, otherwise custom
-    inner = materialElement ?? customElement;
+  if (isExternalUrl) {
+    inner = <img src={name as string} alt="icon" style={{ width: size, height: size }} className="object-contain" />;
+  } else if (name) { // Only try to render if a name is provided and it's not a URL
+    if (type === 'custom') {
+      inner = CustomIcon ? (
+          <CustomIcon width={size} height={size} stroke={stroke} strokeWidth={strokeWidth} color={colorVal} fill={fill} />
+      ) : MaterialIcon ? (
+          <MaterialIcon sx={{ fontSize: size, color: colorVal,"& path": {
+              stroke: stroke,
+              strokeWidth: strokeWidth,
+              fill: fill,
+            }, }} />
+      ) : null;
+    } else { // Default to 'material' or if type is 'material'
+      inner = MaterialIcon ? (
+          <MaterialIcon sx={{ fontSize: size, color: colorVal,"& path": {
+              stroke: stroke,
+              strokeWidth: strokeWidth,
+              fill: fill,
+            }, }} />
+      ) : CustomIcon ? (
+          <CustomIcon width={size} height={size} stroke={stroke} strokeWidth={strokeWidth} color={colorVal} fill={fill} />
+      ) : null;
+    }
   }
 
-  // fallback: small filled circle (keeps layout predictable)
-  if (!inner) {
+  // fallback: small filled circle (keeps layout predictable) if a name was provided but no icon found
+  if (!inner && name) {
     inner = <span style={{ display: 'inline-block', width: size, height: size, borderRadius: '50%', background: colorVal }} />;
+  } else if (!inner && !name) { // If no name is provided, render nothing
+      inner = null;
   }
+
 
   const animateCss = String(name) === 'loading-circle' ? ' animate-spin' : '';
   const finalClass = `${className ?? ''} icon-${String(name)} flex items-center justify-center${animateCss}`.trim();
 
-  const iconElement = (
+  const iconElement = inner ? ( // Only render div if there's an inner element
       <div
           role={onClick ? 'button' : undefined}
           tabIndex={onClick ? 0 : undefined}
@@ -110,15 +115,7 @@ const Icon = memo((
       >
         {inner}
       </div>
-  );
-
-    if (tooltip) {
-        return (
-            <Tooltip tooltip={tooltip}>
-                {iconElement}
-            </Tooltip>
-        );
-    }
+  ) : null; // If no inner, render nothing
 
   return iconElement;
 });

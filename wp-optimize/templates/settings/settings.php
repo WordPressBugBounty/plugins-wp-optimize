@@ -33,16 +33,18 @@
 				</small>
 				<br>
 				<br>
+			</p>
+
+			<div class="wpo-save-btn-container">
 				<input class="button wpo-wipe-settings" type="button" name="wp-optimize-wipe-settings" value="<?php esc_attr_e('Wipe settings', 'wp-optimize'); ?>" />
 
 				<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 
 				<span class="dashicons dashicons-yes display-none save-done"></span>
-
-			</p>
+			</div>
 		</div>
 
-		<div>
+		<div class="wpo-save-btn-container">
 			<input id="wp-optimize-save-main-settings" class="button button-primary wpo-save-settings" type="submit" name="wp-optimize-settings" value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>" />
 
 			<img class="wpo_spinner wpo-saving-settings" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">

@@ -142,7 +142,7 @@
 					<?php esc_html_e('List of files that can\'t or shouldn\'t be minified or merged.', 'wp-optimize'); ?>
 					<?php esc_html_e('Do not edit this if you are not sure what it is.', 'wp-optimize'); ?>
 					<br><?php esc_html_e('Tick the checkbox to merge / minify the corresponding file anyways.', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Files that have been consistently reported by other users to cause trouble when merged', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Files that have been consistently reported by other users to cause trouble when merged', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				</p>
 				<?php
 					$user_excluded_ignorelist_items = is_array($wpo_minify_options['ignore_list']) ? $wpo_minify_options['ignore_list'] : array();
@@ -184,6 +184,7 @@
 	<?php if (WP_OPTIMIZE_SHOW_MINIFY_ADVANCED) : ?>
 		<div class="wpo-fieldgroup">
 			<fieldset>
+				<div class="wpo-fieldgroup__subgroup">
 					<br>
 					<label for="enabled_css_preload">
 						<input
@@ -194,9 +195,10 @@
 							<?php echo checked($wpo_minify_options['enabled_css_preload']); ?>
 						>
 						<?php esc_html_e('Enable WP-O Minify CSS files preloading', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('Automatically create HTTP headers for WP-O Minify-generated CSS files (when not inlined)', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					</label>
-					<br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Automatically create HTTP headers for WP-O Minify-generated CSS files (when not inlined)', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>
+				<div class="wpo-fieldgroup__subgroup">
 					<label for="enabled_js_preload">
 						<input
 							name="enabled_js_preload"
@@ -206,10 +208,11 @@
 							<?php echo checked($wpo_minify_options['enabled_js_preload']); ?>
 						>
 						<?php esc_html_e('Enable WP-O Minify JavaScript files Preload', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('Automatically create HTTP headers for WP-O Minify-generated JS files', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					</label>
-				</fieldset>
-			</div>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Automatically create HTTP headers for WP-O Minify-generated JS files', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>
+			</fieldset>
+		</div>
 			<h3 class="title">
 				<?php esc_html_e('HTTP Headers', 'wp-optimize'); ?>
 			</h3>
@@ -260,18 +263,20 @@
 			<h3><?php esc_html_e('External URLs to merge', 'wp-optimize'); ?></h3>
 			<div class="wpo-fieldgroup">
 				<fieldset>
-					<label for="merge_allowed_urls">
-						<?php esc_html_e('List of external domains that can be fetched and merged:', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('Add any external "domain" for JavaScript or CSS files that can be fetched and merged by WP-Optimize, e.g.: cdnjs.cloudflare.com', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-					</label>
-					<textarea
-						name="merge_allowed_urls"
-						rows="7"
-						cols="50"
-						id="merge_allowed_urls"
-						class="large-text code"
-						placeholder="<?php esc_attr_e('e.g.: example.com', 'wp-optimize'); ?>"
-					><?php echo esc_textarea($wpo_minify_options['merge_allowed_urls']); ?></textarea>
+					<div class="wpo-fieldgroup__subgroup">
+						<label for="merge_allowed_urls">
+							<?php esc_html_e('List of external domains that can be fetched and merged:', 'wp-optimize'); ?>
+						</label>
+						<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Add any external "domain" for JavaScript or CSS files that can be fetched and merged by WP-Optimize, e.g.: cdnjs.cloudflare.com', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<textarea
+							name="merge_allowed_urls"
+							rows="7"
+							cols="50"
+							id="merge_allowed_urls"
+							class="large-text code"
+							placeholder="<?php esc_attr_e('e.g.: example.com', 'wp-optimize'); ?>"
+						><?php echo esc_textarea($wpo_minify_options['merge_allowed_urls']); ?></textarea>
+					</div>
 				</fieldset>
 			</div>
 	
@@ -315,30 +320,28 @@
 					<?php esc_html_e('If you force this, your JS files may not load for certain slow internet users on Google Chrome.', 'wp-optimize'); ?>
 				</p>
 				<fieldset>
-					<label for="cdn_force">
-						<input
-							name="cdn_force"
-							type="checkbox"
-							id="cdn_force"
-							value="1"
-							<?php echo checked($wpo_minify_options['cdn_force']); ?>
-						>
-						<?php esc_html_e('I know what I\'m doing...', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('Load my JS files from the CDN, even when "defer for Pagespeed Insights" is enabled', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-					</label>
+					<div class="wpo-fieldgroup__subgroup">
+						<label for="cdn_force">
+							<input
+								name="cdn_force"
+								type="checkbox"
+								id="cdn_force"
+								value="1"
+								<?php echo checked($wpo_minify_options['cdn_force']); ?>
+							>
+							<?php esc_html_e('I know what I\'m doing...', 'wp-optimize'); ?>
+						</label>
+						<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Load my JS files from the CDN, even when "defer for Pagespeed Insights" is enabled', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					</div>
 				</fieldset>
 			</div>
 	<?php endif; ?>
 
-		<p class="submit">
-			<input
-				class="wp-optimize-save-minify-settings button button-primary"
-				type="submit"
-				value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>"
-			>
+		<div class="wpo-save-btn-container">
+			<input class="wp-optimize-save-minify-settings button button-primary" type="submit" value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>">
 			<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 			<span class="save-done dashicons dashicons-yes display-none"></span>
-		</p>
+		</div>
 		<input type="hidden" name="minify_advanced_tab" value="1">
 	</form>
 </div>

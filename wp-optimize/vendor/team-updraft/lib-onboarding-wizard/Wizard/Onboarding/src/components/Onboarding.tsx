@@ -9,7 +9,8 @@ import { ModalFooter } from "./Modal/ModalFooter";
 import { __ } from '@wordpress/i18n';
 import {TooltipContainerProvider} from "../utils/Tooltip/TooltipContainerContext";
 import { isValidEmail } from '../utils/validators';
-import Icon from '../utils/Icon';
+import Alert from './Alert';
+import useAlertStore from "../store/useAlertStore";
 import {updateAction} from "../utils/api";
 
 /**
@@ -48,7 +49,10 @@ const Onboarding = () => {
         continueDisabled,
         setContinueDisabled,
         isUpdating,
+        wizardCompletionPromise,
     } = useOnboardingStore();
+
+    const { setAlertState } = useAlertStore(); // Get setAlertState from useAlertStore
 
     useEffect(() => {
         if ( !!isLastStep() ) {
@@ -77,14 +81,12 @@ const Onboarding = () => {
         if ( settings.length === 0 ) {
             getSettings();
         }
-    }, [settings]);
+    }, [settings, getSettings]);
 
-    // Clear any prior response message when the step changes (screen change)
     useEffect(() => {
         setResponseMessage('');
         setResponseSuccess(true);
-    }, [currentStepIndex]);
-
+    }, [currentStepIndex, setResponseMessage, setResponseSuccess]);
 
     const handleClose = () => {
         setOpen(false);
@@ -99,7 +101,32 @@ const Onboarding = () => {
     const validateAndContinue = async (e) => {
         // Always clear previous response state upon a new submission attempt
         setResponseMessage('');
-        //setResponseSuccess(true);
+
+        // Do a dynamic external action check at the start of validation. If it exists, use it — this lets specific plugin functions run without adding them to the library.
+        if (currentStep.onContinueExternalAction) {
+            const externalActionName = currentStep.onContinueExternalAction;
+            const externalAction = (window as any).pluginOnboardingActions?.[externalActionName];
+
+            if (typeof externalAction === 'function') {
+                const externalActionResult = await externalAction(
+                    currentStep,
+                    settings,
+                    setAlertState,
+                    setValue
+                );
+
+                if (!externalActionResult?.success) {
+                    setResponseMessage(externalActionResult?.message ?? __("External action for this step is not available.", "ONBOARDING_WIZARD_TEXT_DOMAIN"));
+                    setResponseSuccess(false);
+                    return; // Prevent continuing if the external action indicates failure
+                }
+            } else {
+                console.warn(`External action '${externalActionName}' not found in window.pluginOnboardingActions.`);
+                setResponseMessage(__("External action for this step is not available.", "ONBOARDING_WIZARD_TEXT_DOMAIN"));
+                setResponseSuccess(false);
+                return;
+            }
+        }
 
         let success = true;
         if ( currentStep.type === 'license' && licenseStatus !== 'activated') {
@@ -134,7 +161,7 @@ const Onboarding = () => {
         await handleContinue(e);
     }
 
-    const changeFieldValue = async (fieldId: string, value: string | boolean) => {
+    const changeFieldValue = async (fieldId: string, value: any) => {
         setValue(fieldId, value);
     };
 
@@ -158,11 +185,7 @@ const Onboarding = () => {
         if (currentStep?.type === 'email' || currentStep?.type === 'license') {
             const emailField = currentStep.fields?.find((f: any) => f?.type === 'email');
 
-            // If no email field is present, do not disable.
-            if (!emailField) {
-                // proceed with other checks below
-            } else {
-                // Support both object-map and array-shaped settings
+            if (emailField) {
                 const rawValue =
                     (settings && typeof settings === 'object' && !Array.isArray(settings) ? settings[emailField.id] : undefined) ??
                     (Array.isArray(settings) ? settings.find((s: any) => s?.id === emailField.id)?.value : undefined) ??
@@ -173,16 +196,21 @@ const Onboarding = () => {
                 }
             }
 
-            // Checkbox constraint (apply if a checkbox field exists)
-            const checkboxField = currentStep.fields?.find((f: any) => f?.type === 'checkbox');
-            if (checkboxField) {
-                const checkboxValue =
-                    (settings && typeof settings === 'object' && !Array.isArray(settings) ? settings[checkboxField.id] : undefined) ??
-                    (Array.isArray(settings) ? settings.find((s: any) => s?.id === checkboxField.id)?.value : undefined) ??
-                    false;
+            if (currentStep?.type === 'email') {
+                const checkboxField = currentStep.fields?.find((f: any) => f?.type === 'checkbox');
+                if (checkboxField) {
+                    const checkboxValue =
+                        (settings && typeof settings === 'object' && !Array.isArray(settings)
+                            ? (settings as any)[checkboxField.id]
+                            : undefined) ??
+                        (Array.isArray(settings)
+                            ? (settings as any[]).find((s: any) => s?.id === checkboxField.id)?.value
+                            : undefined) ??
+                        false;
 
-                if (checkboxValue !== true) {
-                    return true;
+                    if (checkboxValue !== true) {
+                        return true;
+                    }
                 }
             }
         }
@@ -208,14 +236,16 @@ const Onboarding = () => {
         setContinueDisabled(false);
         // If this is the last step, reload the page if this is so configured.
         if (currentStepIndex + 1 >= steps.length && onboardingData.reload_on_finish ) {
+            if (wizardCompletionPromise) {
+                await wizardCompletionPromise;
+            }
             window.location.reload();
         }
     };
 
-    //open the modal when the component mounts
     useEffect(() => {
         setOpen(true);
-    }, []);
+    }, [setOpen]);
 
     if (!currentStep) {
         return null;
@@ -226,10 +256,6 @@ const Onboarding = () => {
             <div id="onboarding-modal-root"></div>
 
             <Modal
-                logo={onboardingData.logo}
-                logo_class={`${onboardingData.prefix}-logo`}
-                title={__('Onboarding', 'ONBOARDING_WIZARD_TEXT_DOMAIN')}
-                currentStepIndex={currentStepIndex}
                 content={
                     <div className="flex flex-col gap-2 mb-3">
                         <TooltipContainerProvider container={tooltipContainerRef.current}>
@@ -242,14 +268,14 @@ const Onboarding = () => {
 
                                 <ModalHeader
                                     currentStep={currentStep}
+                                    logo={onboardingData.logo}
+                                    logo_class={`${onboardingData.prefix}-logo`}
+                                    currentStepIndex={currentStepIndex}
                                 />
 
                                 {
-                                    // Hide ModalContent
-                                    // 1. When a license is activated or showing license success result
-                                    // 2. When all plugins are already installed
-                                    !((currentStep.type === 'license' && (licenseStatus === 'activated' || isUpdating)) || (currentStep.type === 'plugins' && onboardingData.is_all_plugins_installed)
-                                    ) && (
+                                    // Hide ModalContent when all plugins are already installed
+                                    !(currentStep.type === 'plugins' && onboardingData.is_all_plugins_installed) && (
                                         <ModalContent
                                             step={currentStep}
                                             settings={settings}
@@ -257,31 +283,13 @@ const Onboarding = () => {
                                         />
                                     )
                                 }
+                                {/* Global response message is always shown for non-connection-test related responses */}
                                 {responseCode !== 'BADAUTHPWD' && responseMessage && (
-                                    <div
-                                        className={`flex items-start gap-2 rounded-md border px-4 py-3 text-sm ${
-                                            responseSuccess
-                                                ? "border-[#046C4E] bg-[#046c4e4f]"
-                                                : "border-[#FECACA] bg-[#FEF2F2] "
-                                        }`}
-                                    >
-                                        {/* Icon */}
-                                        <Icon
-                                            name={responseSuccess ? 'success' : 'info'}
-                                            color={responseSuccess ? '#046C4E' : '#B40000'}
-                                            fill={responseSuccess ? '#046C4E' : '#B40000'}
-                                            size={16}
-                                            className="mr-2 mt-[3px]"
-                                        />
-
-                                        {/* Message */}
-                                        <div>
-                                            <p className="font-semibold text-[#1C252C]">
-                                                {responseSuccess ? "Success" : "Error"}
-                                            </p>
-                                            <p className="text-[#4F565B]">{responseMessage}</p>
-                                        </div>
-                                    </div>
+                                    <Alert
+                                        variant={responseSuccess ? 'success' : 'danger'}
+                                        title={responseSuccess ? "Success" : "Server issues"}
+                                        message={responseMessage}
+                                    />
                                 )}
 
 

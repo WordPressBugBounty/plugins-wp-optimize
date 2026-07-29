@@ -5,7 +5,7 @@
 	<a href="<?php echo esc_url($settings_cleanup_data['data']['premium_version_link']); ?>&utm_content=take-control-of-cleanups" target="_blank"><?php esc_html_e('Take control of clean-ups: Upgrade to Premium for a more powerful and flexible scheduler', 'wp-optimize'); ?></a>
 </p>
 
-<div class="wpo-fieldgroup">
+<div class="wpo-fieldgroup wpo-fieldgroup--auto-cleanup">
 
 	<p>
 
@@ -19,7 +19,7 @@
 		<p>
 
 			<?php esc_html_e('Select schedule type (default is Weekly)', 'wp-optimize'); ?><br>
-			<select id="schedule_type" name="schedule_type">
+			<select id="schedule_type" name="schedule_type" class="wpo-select2">
 
 				<?php
 

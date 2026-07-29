@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 7.0
-Stable tag: 4.6.0
+Stable tag: 4.6.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,25 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.6.1 - 29/Jul/2026 =
+
+* FIX: CSS exclusions added via Minify -> Advanced -> Exclude are now saved on separate lines, preventing invalid exclusion entries
+* FIX: Fixed compatibility issue with the WooCommerce multi-currency plugin
+* FIX: Incorrect WebP browser detection for Firefox users
+* FIX: Misaligned UI issue in minify admin pages
+* FIX: Mobile UI issues
+* FIX: Prevent caching pages when a WooCommerce cart has content
+* FIX: UI freezes when restoring a compressed image
+* REFACTOR: Use WP_Optimize_Utils::get_url_without_cache_purge_params() for admin bar links
+* REFACTOR: WPO_KD_Submissions_Compatibility class
+* REFACTOR: WP_Optimize_Server_Compatibility class
+* REFACTOR: WPO_Polylang_Compatibility class
+* TWEAK: Clear cached local Google Fonts statistics when the CSS font file is downloaded
+* TWEAK: Create a new class named WP_Optimize_UpdraftCentral_Commands to group UpdraftCentral specific commands, currently including methods for retrieving and updating WP-Optimize settings
+* TWEAK: Removed deprecated UpdraftCentral commands from WP_Optimize_Commands class
+* TWEAK: Removed unused phpseclib dependency from composer
+* TWEAK: Smush post meta keys are prefixed with `_` and now is multisite compatible
 
 = 4.6.0 - 06/Jul/2026 =
 
@@ -795,20 +814,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 * TWEAK: Using clear text user agent strings instead of regular expressions to identify web browsers for improved clarity
 * TWEAK: Updater library in the Premium version updated to the current release series
 
-= 3.2.22 - 23/Nov/2023 =
-
-* TWEAK: Cache - Show a notice in the admin if the config file is missing and caching is enabled
-* TWEAK: Added support for new emoji styles related hooks introduced in WordPress 6.4
-* TWEAK: Database - Fix "Optimize database tables" stuck loading state
-* TWEAK: Premium - Cache - Style improvement for the select2 box from advanced cache settings
-* TWEAK: Premium - Images - Fix issues with avif images in the unused images feature
-* REFACTOR: Wrapping most of the external links in the WPO settings pages with the appropriate function
-* REFACTOR: Remove unused code
-
-= 3.2.21 - 18/Oct/2023 =
-* FIX: Prevent PHP fatal error when updating from older versions of WP-Optimize
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.6.0: Premium - Auto preload LCP elements feature, and lot of tweaks and fixes - a recommended update for all
+* 4.6.1: A lot of tweaks and fixes - a recommended update for all

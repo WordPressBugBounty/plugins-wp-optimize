@@ -1,5 +1,24 @@
 == Changelog ==
 
+= 4.6.1 - 29/Jul/2026 =
+
+* FIX: CSS exclusions added via Minify -> Advanced -> Exclude are now saved on separate lines, preventing invalid exclusion entries
+* FIX: Fixed compatibility issue with the WooCommerce multi-currency plugin
+* FIX: Incorrect WebP browser detection for Firefox users
+* FIX: Misaligned UI issue in minify admin pages
+* FIX: Mobile UI issues
+* FIX: Prevent caching pages when a WooCommerce cart has content
+* FIX: UI freezes when restoring a compressed image
+* REFACTOR: Use WP_Optimize_Utils::get_url_without_cache_purge_params() for admin bar links
+* REFACTOR: WPO_KD_Submissions_Compatibility class
+* REFACTOR: WP_Optimize_Server_Compatibility class
+* REFACTOR: WPO_Polylang_Compatibility class
+* TWEAK: Clear cached local Google Fonts statistics when the CSS font file is downloaded
+* TWEAK: Create a new class named WP_Optimize_UpdraftCentral_Commands to group UpdraftCentral specific commands, currently including methods for retrieving and updating WP-Optimize settings
+* TWEAK: Removed deprecated UpdraftCentral commands from WP_Optimize_Commands class
+* TWEAK: Removed unused phpseclib dependency from composer
+* TWEAK: Smush post meta keys are prefixed with `_` and now is multisite compatible
+
 = 4.6.0 - 06/Jul/2026 =
 
 * FEATURE: Premium - Automatically preloads the page’s Largest Contentful Paint (LCP) element to improve initial load speed and perceived performance

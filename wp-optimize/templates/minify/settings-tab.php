@@ -17,7 +17,7 @@
 						>
 						<?php esc_html_e('Merge inline extra css and javascript', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Inline JavaScript and CSS that should come before or after other enqueued files will be merged.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Inline JavaScript and CSS that should come before or after other enqueued files will be merged.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="disable_when_logged_in">
@@ -30,7 +30,7 @@
 						>
 						<?php esc_html_e('Disable Minify for logged-in users', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('HTML, JavaScript and CSS will be loaded normally by WordPress.', 'wp-optimize');?> <?php esc_attr_e('Useful for debugging or to improve compatibility with some visual editors.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('HTML, JavaScript and CSS will be loaded normally by WordPress.', 'wp-optimize');?> <?php esc_attr_e('Useful for debugging or to improve compatibility with some visual editors.', 'wp-optimize');?>" ><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="clean_header_one">
@@ -43,7 +43,7 @@
 						>
 						<?php esc_html_e('Remove meta information from page header', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Remove resource hints, generator tag, shortlinks, manifest link, etc.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Remove resource hints, generator tag, shortlinks, manifest link, etc.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="emoji_removal">
@@ -57,7 +57,7 @@
 						>
 						<?php esc_html_e('Remove default WordPress and TinyMCE icons', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('When selected, the site will use the device\'s built in Emoji', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('When selected, the site will use the device\'s built in Emoji', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 			</fieldset>
 		</div>
@@ -85,7 +85,7 @@
 						echo ')';
 					?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Uses your site\'s default protocol.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Uses your site\'s default protocol.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label>
@@ -97,7 +97,7 @@
 						>
 						<?php esc_html_e('Force HTTP', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('If you do not have SSL', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('If you do not have SSL', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label>
@@ -109,7 +109,7 @@
 						>
 						<?php esc_html_e('Force HTTPS', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('Recommended if you have SSL', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
+					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('Recommended if you have SSL', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span><br>
 				</div>
 			</fieldset>
 		</div>
@@ -121,14 +121,10 @@
 		do_action('wpo_minify_settings_tabs', $wpo_minify_options);
 		?>
 
-		<p class="submit">
-			<input
-				class="wp-optimize-save-minify-settings button button-primary"
-				type="submit"
-				value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>"
-			>
+		<div class="wpo-save-btn-container">
+			<input class="wp-optimize-save-minify-settings button button-primary" type="submit" value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>">
 			<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 			<span class="save-done dashicons dashicons-yes display-none"></span>
-		</p>
+		</div>
 	</form>
 </div>
