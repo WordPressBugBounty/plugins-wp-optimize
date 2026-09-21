@@ -13,6 +13,13 @@ class WPO_Page_Optimizer {
 	private static $instance = null;
 
 	/**
+	 * Whether the page should be cached
+	 *
+	 * @var bool|array
+	 */
+	private $should_cache_page;
+
+	/**
 	 * Constructor
 	 */
 	private function __construct() {
@@ -32,6 +39,8 @@ class WPO_Page_Optimizer {
 	 */
 	private function optimize($buffer, $flags): string {
 		$buffer = apply_filters('wp_optimize_buffer', $buffer, $flags);
+
+		$this->should_cache_page = WP_Optimize()->get_page_cache()->should_cache_page();
 		
 		if (WP_Optimize_Utils::is_valid_html($buffer)) {
 			$buffer = $this->maybe_host_google_fonts_locally($buffer);
@@ -55,8 +64,17 @@ class WPO_Page_Optimizer {
 	 */
 	private function maybe_cache_page($buffer, $flags) {
 
-		if (!$this->is_wp_cli() && WP_Optimize()->get_page_cache()->should_cache_page()) {
-			return wpo_cache($buffer, $flags);
+		if (!$this->is_wp_cli()) {
+			$wpo_page_cache = WP_Optimize()->get_page_cache();
+
+			// If an array with the reasons why the page isn't cached is returned
+			if (is_array($this->should_cache_page)) {
+				do_action('wpo_page_not_cached', $this->should_cache_page);
+
+				$wpo_page_cache->maybe_add_no_cache_because_info($this->should_cache_page);
+			}
+
+			if (true === $this->should_cache_page) return wpo_cache($buffer, $flags);
 		}
 
 		return $buffer;
@@ -100,8 +118,9 @@ class WPO_Page_Optimizer {
 	private function maybe_remove_unused_css($buffer) {
 		
 		if (is_user_logged_in()) return $buffer;
-		
-		if (WP_Optimize::is_premium() && wp_optimize_minify_config()->get('enable_unused_css')) {
+
+		// Remove unused CSS available in Premium and only when the page cache is enabled
+		if (WP_Optimize::is_premium() && wp_optimize_minify_config()->get('enable_unused_css') && true === $this->should_cache_page) {
 			$unused_css_class = WP_Optimize_Minify_Unused_Css::get_instance();
 			return $unused_css_class->remove_unused_css($buffer);
 		}

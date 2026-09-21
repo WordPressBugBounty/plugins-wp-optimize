@@ -221,13 +221,4 @@ class WP_Optimization_trash extends WP_Optimization {
 			return __('Clean all trashed posts', 'wp-optimize');
 		}
 	}
-
-	/**
-	 * Return description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove trashed posts', 'wp-optimize');
-	}
 }

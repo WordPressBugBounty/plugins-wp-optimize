@@ -81,13 +81,14 @@ class WP_Optimize_Database_Information {
 	}
 
 	/**
-	 * Return table type by $table_name.
+	 * Return the table type by $table_name.
 	 *
-	 * @param string $table_name Database table name.
+	 * @param string      $table_name Database table name.
+	 * @param object|null $table_info Optional pre-fetched table status object (e.g. from a bulk fetch), to avoid a redundant lookup.
 	 * @return string|boolean - returns false upon failure
 	 */
-	public function get_table_type($table_name) {
-		$table_info = $this->get_table_status($table_name);
+	public function get_table_type($table_name, $table_info = null) {
+		if (null === $table_info) $table_info = $this->get_table_status($table_name);
 
 		if ($table_info) {
 			if (!$table_info->Engine && $this->is_view($table_name)) return self::VIEW;
@@ -113,6 +114,67 @@ class WP_Optimize_Database_Information {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Count the tables in the database
+	 *
+	 * @param string $prefix The generic prefix of the tables in the database
+	 * @param bool   $update if true, then force request to database and don't use cached values.
+	 * @return int
+	 */
+	public function get_table_count($prefix = '', $update = false) {
+		global $wpdb;
+		static $table_counts = array();
+
+		if (!$update && isset($table_counts[$prefix])) return $table_counts[$prefix];
+
+		$table_counts[$prefix] = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(1)
+			 FROM INFORMATION_SCHEMA.TABLES
+			 WHERE TABLE_SCHEMA = %s
+			   AND TABLE_NAME LIKE %s",
+				DB_NAME,
+				$prefix . '%'
+			)
+		);
+
+		return $table_counts[$prefix];
+	}
+
+	/**
+	 * Get all tables names from information_schema
+	 *
+	 * @param string $prefix The global table prefix
+	 * @param int    $offset Paginate the result to avoid request timeout for large table counts
+	 * @param int    $limit  Pagination size
+	 * @return array
+	 */
+	public function get_tables_names($prefix = '', $offset = 0, $limit = null) {
+		global $wpdb;
+
+		$sql = "SELECT *
+			 FROM INFORMATION_SCHEMA.TABLES
+			 WHERE TABLE_SCHEMA = %s
+			   AND TABLE_NAME LIKE %s";
+
+		$params = array(DB_NAME, $prefix . '_%');
+
+		if (null !== $limit) {
+			$sql .= " LIMIT %d, %d";
+			$params[] = (int) $offset;
+			$params[] = (int) $limit;
+		}
+
+		$result = $wpdb->get_results($wpdb->prepare($sql, $params)); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql only contains static text and %s/%d placeholders, passed through $wpdb->prepare()
+
+		$names = array();
+		foreach ($result as $row) {
+			$names[] = $row->TABLE_NAME;
+		}
+
+		return $names;
 	}
 
 	/**
@@ -269,13 +331,14 @@ class WP_Optimize_Database_Information {
 	/**
 	 * Returns true if table $table_name is optimizable
 	 *
-	 * @param string $table_name Name of database table
+	 * @param string      $table_name Name of database table
+	 * @param string|bool $table_type Optional pre-resolved table engine/type, to avoid a redundant lookup.
 	 * @return bool
 	 */
-	public function is_table_optimizable($table_name) {
+	public function is_table_optimizable($table_name, $table_type = null) {
 		$server_type = $this->get_server_type();
 		$server_version = $this->get_version();
-		$table_type = $this->get_table_type($table_name);
+		$table_type = null !== $table_type ? $table_type : $this->get_table_type($table_name);
 
 		// return true if table is MyISAM.
 		if (self::MYISAM_ENGINE === $table_type) return true;
@@ -304,13 +367,14 @@ class WP_Optimize_Database_Information {
 	}
 
 	/**
-	 * Returns true if table type is supported for optimization.
+	 * Returns true if the table type is supported for optimization.
 	 *
-	 * @param string $table_name Name of database table
+	 * @param string      $table_name Name of database table
+	 * @param string|bool $table_type Optional pre-resolved table engine/type, to avoid a redundant lookup.
 	 * @return bool
 	 */
-	public function is_table_type_optimize_supported($table_name) {
-		$table_type = $this->get_table_type($table_name);
+	public function is_table_type_optimize_supported($table_name, $table_type = null) {
+		$table_type = null !== $table_type ? $table_type : $this->get_table_type($table_name);
 
 		$supported_table_types = array(
 			self::MYISAM_ENGINE,
@@ -325,11 +389,12 @@ class WP_Optimize_Database_Information {
 	/**
 	 * Returns true if table type is supported for repair.
 	 *
-	 * @param string $table_name
+	 * @param string      $table_name
+	 * @param string|bool $table_type Optional pre-resolved table engine/type, to avoid a redundant lookup.
 	 * @return bool
 	 */
-	public function is_table_type_repair_supported($table_name) {
-		$table_type = $this->get_table_type($table_name);
+	public function is_table_type_repair_supported($table_name, $table_type = null) {
+		$table_type = null !== $table_type ? $table_type : $this->get_table_type($table_name);
 
 		$supported_table_types = array(
 			self::MYISAM_ENGINE,
@@ -404,7 +469,7 @@ class WP_Optimize_Database_Information {
 		$supported_tables = array();
 
 		foreach ($tables as $table) {
-			if ('' === $table->Engine || $this->is_table_type_repair_supported($table->Name)) {
+			if ('' === $table->Engine || $this->is_table_type_repair_supported($table->Name, $table->Engine)) {
 				$supported_tables[] = $table->Name;
 			}
 		}
@@ -417,12 +482,13 @@ class WP_Optimize_Database_Information {
 	/**
 	 * Returns true if table needing repair.
 	 *
-	 * @param string $table_name Database table name.
+	 * @param string      $table_name Database table name.
+	 * @param string|bool $table_type Optional pre-resolved table engine/type, to avoid a redundant lookup.
 	 */
-	public function is_table_needing_repair($table_name) {
+	public function is_table_needing_repair($table_name, $table_type = null) {
 		$table_statuses = $this->check_all_tables();
 
-		if (!$this->is_table_type_repair_supported($table_name)) return false;
+		if (!$this->is_table_type_repair_supported($table_name, $table_type)) return false;
 
 		return (array_key_exists($table_name, $table_statuses) && $table_statuses[$table_name]['corrupted']);
 	}

@@ -8,6 +8,34 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 class WP_Optimizer {
 
 	/**
+	 * Table count limit to consider as too many tables to load in a single request
+	 *
+	 * @var int
+	 */
+	const HIGH_TABLE_COUNT_THRESHOLD = 150;
+
+	/**
+	 * Option name to store all the status information for the tables
+	 *
+	 * @var string
+	 */
+	const TABLES_LIST_OPTION_NAME = 'all-tables-status';
+
+	/**
+	 * Option name to save the state of the table scan
+	 *
+	 * @var string
+	 */
+	const TABLES_LIST_STATE_OPTION_NAME = 'all-tables-names-scan-status';
+
+	/**
+	 * Option name to save the total table count
+	 *
+	 * @var string
+	 */
+	const TABLES_LIST_COUNT_OPTION_NAME = 'all-tables-names-count';
+
+	/**
 	 * Returns singleton instance object
 	 *
 	 * @return WP_Optimizer Returns `WP_Optimizer` object
@@ -266,7 +294,6 @@ class WP_Optimizer {
 		}
 
 		$optimization->after_get_info();
-
 		return $optimization->get_results();
 	}
 	
@@ -282,7 +309,9 @@ class WP_Optimizer {
 		$results = array();
 		
 		if (empty($optimization_options)) return $results;
-	
+
+		$this->snapshot_cleaned_before_run();
+
 		$optimizations = $this->sort_optimizations($this->get_optimizations(), 'run_sort_order');
 
 		foreach ($optimizations as $optimization_id => $optimization) {
@@ -300,11 +329,32 @@ class WP_Optimizer {
 			}
 		}
 
+		$this->save_last_run_cleaned();
 		// Run action after all optimizations completed.
 		do_action('wp_optimize_after_optimizations');
 
 		return $results;
 		
+	}
+
+	/**
+	 * Saves a snapshot of total-cleaned before a run so the per-run diff can be computed afterwards.
+	 */
+	public function snapshot_cleaned_before_run() {
+		$options = WP_Optimize()->get_options();
+		$options->update_option('wpo_last_run_cleaned_snapshot', $options->get_option('total-cleaned', '0'));
+	}
+
+	/**
+	 * Computes bytes cleaned in the last run (current total minus pre-run snapshot)
+	 * and persists it as last-run-cleaned-bytes.
+	 */
+	public function save_last_run_cleaned() {
+		$options   = WP_Optimize()->get_options();
+		$snapshot  = floatval($options->get_option('wpo_last_run_cleaned_snapshot', '0'));
+		$now       = floatval($options->get_option('total-cleaned', '0'));
+		$last_run_bytes = strval(max(0, $now - $snapshot));
+		$options->update_option('last-run-cleaned-bytes', $last_run_bytes);
 	}
 	
 	public function get_table_prefix($allow_override = false) {
@@ -316,6 +366,58 @@ class WP_Optimizer {
 			$prefix = $wpdb->get_blog_prefix(0);
 		}
 		return ($allow_override) ? apply_filters('wp_optimize_get_table_prefix', $prefix) : $prefix;
+	}
+
+	/**
+	 * Verify if the number of tables in the database is too large
+	 *
+	 * @param int $total_table_count Passed by reference. Will carry the actual count value
+	 * @return bool
+	 */
+	public function is_table_count_too_high(&$total_table_count = null) {
+		$wpo_db_info = WP_Optimize()->get_db_info();
+		$table_prefix = $this->get_table_prefix();
+		
+		$total_table_count = $wpo_db_info->get_table_count($table_prefix);
+		return self::HIGH_TABLE_COUNT_THRESHOLD < $total_table_count;
+	}
+	
+	/**
+	 * Check the scan job state in options
+	 *
+	 * @return bool
+	 */
+	public function is_large_table_count_scan_complete() {
+		$options = WP_Optimize()->get_options();
+
+		$state = $options->get_option(self::TABLES_LIST_STATE_OPTION_NAME);
+
+		if (is_array($state) && isset($state['state'])) {
+			return 'done' == $state['state'];
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the status for all scanned tables
+	 *
+	 * @return array
+	 */
+	private function get_table_status_from_options() {
+		$options = WP_Optimize()->get_options();
+		$tables = $options->get_option(WP_Optimizer::TABLES_LIST_OPTION_NAME);
+		return is_array($tables) ? $tables : array();
+	}
+
+	/**
+	 * Get the count of the already scanned tables
+	 *
+	 * @return int
+	 */
+	public function get_table_status_count() {
+		$statuses = $this->get_table_status_from_options();
+		return is_array($statuses) ? count($statuses) : 0;
 	}
 
 	/**
@@ -332,7 +434,15 @@ class WP_Optimizer {
 
 		$wpo_db_info = WP_Optimize()->get_db_info();
 
-		$table_status = $wpo_db_info->get_show_table_status($update);
+		$too_many_tables = $this->is_table_count_too_high();
+		$scan_complete = $this->is_large_table_count_scan_complete();
+
+		$table_status = array();
+		if (!$too_many_tables) {
+			$table_status = $wpo_db_info->get_show_table_status($update);
+		} elseif ($scan_complete) {
+			$table_status = $this->get_table_status_from_options();
+		}
 
 		// Filter on the site's DB prefix (was not done in releases up to 1.9.1).
 		$table_prefix = $this->get_table_prefix();
@@ -355,12 +465,17 @@ class WP_Optimizer {
 					continue;
 				}
 
-				$table_status[$index]->Engine = $wpo_db_info->get_table_type($table_name);
+				// Pass the already-fetched $table object through so these lookups don't have to
+				// re-search for it by name again (that search is O(n), and doing it here for every
+				// table turns the whole loop into O(n^2) on sites with a large table count).
+				$table_type = $wpo_db_info->get_table_type($table_name, $table);
 
-				$table_status[$index]->is_optimizable = $wpo_db_info->is_table_optimizable($table_name);
-				$table_status[$index]->is_type_supported = $wpo_db_info->is_table_type_optimize_supported($table_name);
+				$table_status[$index]->Engine = $table_type;
+
+				$table_status[$index]->is_optimizable = $wpo_db_info->is_table_optimizable($table_name, $table_type);
+				$table_status[$index]->is_type_supported = $wpo_db_info->is_table_type_optimize_supported($table_name, $table_type);
 				// add information about corrupted tables.
-				$is_needing_repair = $wpo_db_info->is_table_needing_repair($table_name);
+				$is_needing_repair = $wpo_db_info->is_table_needing_repair($table_name, $table_type);
 				$table_status[$index]->is_needing_repair = $is_needing_repair;
 				if ($is_needing_repair) $corrupted_tables_count++;
 
@@ -480,6 +595,14 @@ class WP_Optimizer {
 		$table_information['non_inno_db_tables'] = 0;
 		$table_information['table_list'] = '';
 		$table_information['is_optimizable'] = true;
+
+		// When too many tables exist and the batch scan hasn't completed yet, get_tables() returns an empty array.
+		// Fall back to a lightweight COUNT query so the UI shows the real table count instead of zero.
+		if (empty($tablesstatus) && $this->is_table_count_too_high() && !$this->is_large_table_count_scan_complete()) {
+			$prefix = $this->get_table_prefix();
+			$table_information['non_inno_db_tables'] = (int) WP_Optimize()->get_db_info()->get_table_count($prefix);
+			return $table_information;
+		}
 
 		// Make a list of tables to optimize.
 		foreach ($tablesstatus as $each_table) {
@@ -617,6 +740,9 @@ class WP_Optimizer {
 
 		$options->update_option('total-cleaned-current-month', $total_now);
 
+		$previously_saved = floatval($options->get_option('db_bytes_saved', '0'));
+		$options->update_option('db_bytes_saved', strval($previously_saved + $converted_current));
+
 		return $total_now;
 	}
 	
@@ -671,5 +797,139 @@ class WP_Optimizer {
 	public function show_innodb_force_optimize() {
 		$tablesstatus = $this->get_table_information();
 		return false === $tablesstatus['is_optimizable'] && $tablesstatus['inno_db_tables'] > 0;
+	}
+
+	/**
+	 * Queue handler for this class
+	 *
+	 * @return WP_Optimize_Tasks_Queue
+	 */
+	private function _tasks_queue() {
+		return WP_Optimize_Tasks_Queue::this('optimizer');
+	}
+
+	/**
+	 * Add a batch scan job to the queue
+	 *
+	 * @param int $offset Batch offset
+	 * @return void
+	 */
+	public function add_load_tables_task($offset) {
+		$this->_tasks_queue()->add_task(new WP_Optimize_Queue_Task(array(get_class($this), 'load_tables_in_batches'), array('offset' => $offset), '', 1));
+	}
+
+	/**
+	 * Persist queue tasks in DB
+	 *
+	 * @return void
+	 */
+	public function flush_tasks() {
+		$this->_tasks_queue()->flush();
+	}
+
+	/**
+	 * Run next available task for this queue
+	 *
+	 * @return void
+	 */
+	public function do_next_load_table_task() {
+		$this->_tasks_queue()->do_next_task();
+	}
+
+	/**
+	 * Check if the queue ran all jobs
+	 *
+	 * @return bool
+	 */
+	public function is_task_queue_empty() {
+		return $this->_tasks_queue()->is_empty();
+	}
+
+	/**
+	 * Find tables names and load their status, in sequenced requests so it does not timeout
+	 *
+	 * @param int $offset The pagination offset
+	 * @return void
+	 */
+	public function load_tables_in_batches($offset) {
+		global $wpdb;
+
+		$prefix = $wpdb->base_prefix;
+		
+		$options = WP_Optimize()->get_options();
+
+		$db_info = WP_Optimize_Database_Information::instance();
+
+		$tables = $options->get_option(WP_Optimizer::TABLES_LIST_OPTION_NAME);
+		$tables = is_array($tables) ? $tables : array();
+		$tables_count = $options->get_option(WP_Optimizer::TABLES_LIST_COUNT_OPTION_NAME);
+		$tables_count = false !== $tables_count ? $tables_count : 0;
+		
+		$tables_batch = $db_info->get_tables_names($prefix, $offset, WP_Optimizer::HIGH_TABLE_COUNT_THRESHOLD);
+
+		
+		foreach ($tables_batch as $table_name) {
+			$tables[$table_name] = $db_info->get_table_status($table_name);
+		}
+
+		$options->update_option(WP_Optimizer::TABLES_LIST_OPTION_NAME, $tables, false);
+
+		$done = 0 < count($tables_batch) && count($tables) >= (int) $tables_count;
+		if (true === $done) {
+			$options->update_option(WP_Optimizer::TABLES_LIST_STATE_OPTION_NAME, array('state' => 'done'));
+		}
+	}
+
+	/**
+	 * Initialize the table scan job
+	 *
+	 * @return int
+	 */
+	public function scan_job_init() {
+		global $wpdb;
+
+		$options = WP_Optimize()->get_options();
+		$db_info = WP_Optimize_Database_Information::instance();
+		
+		$this->_tasks_queue()->unlock();
+		$this->_tasks_queue()->delete_queue();
+
+		$prefix = $wpdb->base_prefix;
+		$tables_count = $db_info->get_table_count($prefix);
+		$options->update_option(self::TABLES_LIST_COUNT_OPTION_NAME, $tables_count);
+		$options->update_option(self::TABLES_LIST_OPTION_NAME, array(), false);
+		$options->update_option(self::TABLES_LIST_STATE_OPTION_NAME, array(
+			'state' => 'working',
+			'start' => time()
+		));
+		
+		return $tables_count;
+	}
+
+	/**
+	 * Check if all scan is done, or it has been idle for too long
+	 *
+	 * @return bool
+	 */
+	public function maybe_restart_scan_job() {
+		if ($this->is_large_table_count_scan_complete()) {
+			return false;
+		}
+
+		if ($this->_tasks_queue()->is_empty()) {
+			return true;
+		}
+
+		$options = WP_Optimize()->get_options();
+
+		$idle_max_time = HOUR_IN_SECONDS;
+
+		$scan = $options->get_option(self::TABLES_LIST_STATE_OPTION_NAME);
+
+		if (is_array($scan) && isset($scan['start'])) {
+			return (time() - $scan['start']) > $idle_max_time;
+		}
+
+		return false;
 	}
 }

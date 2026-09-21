@@ -50,7 +50,31 @@ var WP_Optimize = function () {
 	var optimization_logged_warnings = false;
 	var force_single_table_optimization = false;
 	var heartbeat = WP_Optimize_Heartbeat();
-
+	
+	// Dashboard refresh button
+	$(document).on('click', '#wpo-dashboard-refresh', function(e) {
+		e.preventDefault();
+		var $btn  = $(this);
+		var $icon = $btn.find('.dashicons');
+		$btn.prop('disabled', true);
+		$icon.addClass('wpo-spinning');
+		send_command('refresh_dashboard', {}, function(resp) {
+			if (resp && resp.success) {
+				if (resp.top_row) {
+					$('.wpo-top-row').html(resp.top_row);
+				}
+				if (resp.mod_grid) {
+					$('.wpo-mod-grid').html(resp.mod_grid);
+				}
+			}
+		}).fail(function() {
+			block_ui(wpoptimize.something_wrong_try_again, {}, 3000);
+		}).always(function() {
+			$btn.prop('disabled', false);
+			$icon.removeClass('wpo-spinning');
+		});
+	});
+	
 	/*
 	 * Enable select all checkbox for optimizations list.
 	 */
@@ -114,7 +138,7 @@ var WP_Optimize = function () {
 				}
 			}
 
-			tfoot.style.display = hidden > 0 ? "none" : "";
+			if (tfoot) tfoot.style.display = hidden > 0 ? "none" : "";
 
 			var tables_not_found = document.getElementById('wpoptimize_table_list_tables_not_found');
 			
@@ -256,6 +280,8 @@ var WP_Optimize = function () {
 		var active_tab = $('.wpo-page[data-whichpage='+params.page+']').find('.nav-tab-wrapper .nav-tab-active');
 		$('#wp-optimize-wrap').trigger('tab-change', { page: params.page, tab: active_tab.data('tab') });
 		$('#wp-optimize-wrap').trigger('tab-change/'+params.page+'/'+active_tab.data('tab'), { content: $('#' + active_tab.attr('id') + '-contents')});
+		
+		maybe_show_too_many_tables_popup(active_tab.attr('data-tab'));
 	});
 
 	// set a time out, as needs to be done once the rest is loaded
@@ -336,12 +362,12 @@ var WP_Optimize = function () {
 	var database_tabs_loading = false;
 	var database_tabs_loaded = false;
 	// When showing the tables tab
-	$('#wp-optimize-wrap').on('tab-change/WP-Optimize/tables', function(e) {
+	$('#wp-optimize-wrap').on('tab-change/wpo_database/tables', function(e) {
 		get_database_tabs();
 	});
 
 	// When showing the optimizations tab
-	$('#wp-optimize-wrap').on('tab-change/WP-Optimize/optimize', function(event, data) {
+	$('#wp-optimize-wrap').on('tab-change/wpo_database/optimize', function(event, data) {
 		get_database_tabs();
 	});
 
@@ -359,7 +385,7 @@ var WP_Optimize = function () {
 	 */
 	function get_database_tabs() {
 		if (database_tabs_loading || database_tabs_loaded) return;
-		var container = $('.wpo-page[data-whichpage=WP-Optimize]');
+		var container = $('.wpo-page[data-whichpage=wpo_database]');
 		var shade = container.find('.wpo_shade');
 		shade.removeClass('hidden');
 		database_tabs_loading = true;
@@ -372,8 +398,63 @@ var WP_Optimize = function () {
 				container.find('.wp-optimize-optimizations-table-placeholder').replaceWith(response.optimizations);
 			}
 
-			// Update the optimizations tables list
-			update_tables_list(response);
+			// If the batch table scan hasn't finished yet, trigger the loading popup so it
+			// runs automatically. The popup will reload the page once the scan completes.
+			if (true === response.scan_pending) {
+				// Add a scan-first notice beneath the disabled "Optimize database tables" info.
+				var $optimizeDbInfo = $('#optimization_info_optimizetables');
+				if ($optimizeDbInfo.length) {
+					$optimizeDbInfo.append(
+						'<br><span class="wpo-scan-pending-notice">' +
+						wpoptimize.db_tables_scan_pending_optimize + ' ' +
+						'<a href="#" id="wpo-optimizations-tab-scan-link">' + wpoptimize.db_tables_scan_button + '</a>' +
+						'</span>'
+					);
+					$('#wpo-optimizations-tab-scan-link').on('click', function(e) {
+						e.preventDefault();
+						var scanBtn = document.getElementById('wpo-load-tables-in-batches');
+						if (scanBtn) scanBtn.click();
+					});
+				}
+
+				// Replace the spinner placeholder in the tables tab with a scan-first notice.
+				$('#wpoptimize_table_list tbody').html(
+					'<tr>' +
+					'<td></td>' +
+					'<td colspan="6" style="text-align:center;padding:1em;">' +
+					wpoptimize.db_tables_scan_pending_list + ' ' +
+					'<a href="#" id="wpo-tables-tab-scan-link">' + wpoptimize.db_tables_scan_button + '</a>' +
+					'</td>' +
+					'<td></td>' +
+					'</tr>'
+				);
+				$('#wpo-tables-tab-scan-link').on('click', function(e) {
+					e.preventDefault();
+					var scanBtn = document.getElementById('wpo-load-tables-in-batches');
+					if (scanBtn) scanBtn.click();
+				});
+
+				var scanBtn = document.getElementById('wpo-load-tables-in-batches');
+				if (scanBtn) {
+					// If the onboarding wizard modal is currently open in the DOM, wait for it
+					// to close before auto-clicking — otherwise the thickbox would stack on top.
+					var onboardingRoot = document.getElementById('onboarding-modal-root');
+					if (onboardingRoot && onboardingRoot.querySelector('[data-state="open"]')) {
+						var scanObserver = new MutationObserver(function(mutations, obs) {
+							if (!onboardingRoot.querySelector('[data-state="open"]')) {
+								obs.disconnect();
+								scanBtn.click();
+							}
+						});
+						scanObserver.observe(onboardingRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-state'] });
+					} else {
+						scanBtn.click();
+					}
+				}
+			} else {
+				// Update the optimizations tables list
+				update_tables_list(response);
+			}
 
 			$(document).trigger('wpo_database_tabs_loaded');
 
@@ -749,7 +830,7 @@ var WP_Optimize = function () {
 	/*
 	 * Run single optimization click.
 	 */
-	$('#wp-optimize-nav-tab-WP-Optimize-optimize-contents').on('click', 'button.wp-optimize-settings-optimization-run-button', function () {
+	$('#wp-optimize-nav-tab-wpo_database-optimize-contents').on('click', 'button.wp-optimize-settings-optimization-run-button', function () {
 		var optimization_id = $(this).closest('.wp-optimize-settings').data('optimization_id');
 		if (!optimization_id) {
 			console.log("Optimization ID corresponding to pressed button not found");
@@ -769,7 +850,7 @@ var WP_Optimize = function () {
 	/*
 	 * Run all optimizations click.
 	 */
-	$('#wp-optimize-nav-tab-WP-Optimize-optimize-contents #wp-optimize').on('click', function (e) {
+	$('#wp-optimize-nav-tab-wpo_database-optimize-contents #wp-optimize').on('click', function (e) {
 		e.preventDefault();
 		
 		if (null == tmpl_wpo_grouped_warnings_tpl) {
@@ -842,6 +923,169 @@ var WP_Optimize = function () {
 			// No confirmations needed
 			callback();
 		}
+	}
+
+	/**
+	 * Pad a string to the left
+	 *
+	 * @param {string} string The string we want to pad
+	 * @param {string} pad Padding character
+	 * @param {int} length Padding length
+	 * @returns string
+	 */
+	function str_pad_left(string, pad, length) {
+		return (new Array(length + 1).join(pad) + string).slice(-length);
+	}
+
+	/**
+	 * Shared state for the "load database tables in batches" feature
+	 *
+	 * @var {object}
+	 */
+	var wpoDBTableInfo = {
+		progressText: [],
+		startTime: null,
+		updateTimeout: null,
+		inProgress: false
+	};
+
+	/**
+	 * Call AJAX command to load table statuses in batches
+	 *
+	 * @param {int} offset Query offset
+	 * @param {bool} start_clean True when this is the first time the function is called
+	 * @param {function} callback Self referenced callback, recursively calls itself until the work is done
+	 * @returns void
+	 */
+	function load_tables_in_batches(offset, start_clean, callback) {
+		var e = $("#wpo-load-tables-in-batches-progress");
+		var limit = parseInt(wpoptimize.high_table_count_threshold);
+		var start = offset + 1;
+		var end = offset + limit;
+
+		var progress_text = wpoptimize.loading_tables_in_batches.replace('%1$s', start).replace('%2$s', end);
+
+		if (start_clean || (-1 == wpoDBTableInfo.progressText.indexOf(progress_text))) {
+			wpoDBTableInfo.progressText.push(progress_text);
+			e.append($("<div>" + progress_text + "...</div>"));
+		}
+
+		if (5 < e.children().length) {
+			e.children()[0].remove();
+		}
+
+		var spinner = '<img class="wpo-v-middle" height=16 src="'+wpoptimize.spinner_src+'">';
+		var time_left_container = $('#wpo-load-tables-eta');
+		if (true == start_clean) {
+			time_left_container.html(spinner);
+		}
+
+		send_command('load_tables_in_batches', {offset: offset}, function(result) {
+			var now = new Date();
+			
+			var time_left = 1 <= result.done ? parseInt(((now - wpoDBTableInfo.startTime) / 1000) / result.done * (result.total - result.done)) : 600;
+			var minutesNum = Math.floor(time_left / 60);
+			var minutes = str_pad_left(minutesNum, '0', 2);
+			var seconds = str_pad_left(time_left - minutesNum * 60, '0', 2);
+
+			time_left_container.html(wpoptimize.time_left.replace('%s', '<span id="wpo-load-tables-time-left" rel="' + time_left + '">' + minutes + ':' + seconds + '</span>') + ' ' + spinner);
+
+			if (null != wpoDBTableInfo.updateTimeout) {
+				clearTimeout(wpoDBTableInfo.updateTimeout);
+			}
+
+			if (true == result.continue) {
+				wpoDBTableInfo.updateTimeout = setTimeout(load_tables_update_time_left, 1000);
+
+				callback(result.done, false, callback);
+			} else {
+				e.html(wpoptimize.done_reloading + '...');
+				time_left_container.html('');
+				clearTimeout(wpoDBTableInfo.updateTimeout);
+				location.reload();
+			}
+		}).fail(function() {
+			if (null != wpoDBTableInfo.updateTimeout) {
+				clearTimeout(wpoDBTableInfo.updateTimeout);
+			}
+			time_left_container.html('');
+			e.append($("<div>" + wpoptimize.something_wrong_try_again + "</div>"));
+
+			wpoDBTableInfo.inProgress = false;
+			$('#wpo-load-tables-in-batches-button').prop('disabled', false);
+		});
+	}
+
+	/**
+	 * While AJAX operation runs in background, update time left every second in front-end
+	 *
+	 * @returns void
+	 */
+	function load_tables_update_time_left() {
+		var time_left_container = $('#wpo-load-tables-time-left');
+		var current_time_left = Math.max(0, parseInt(time_left_container.attr('rel')) - 1);
+
+		var minutesNum = Math.floor(current_time_left / 60);
+		var minutes = str_pad_left(minutesNum, '0', 2);
+		var seconds = str_pad_left(current_time_left - minutesNum * 60, '0', 2);
+
+		time_left_container.html(minutes + ':' + seconds);
+		time_left_container.attr('rel', current_time_left);
+
+		wpoDBTableInfo.updateTimeout = setTimeout(load_tables_update_time_left, 1000);
+	}
+
+	/**
+	 * Check if we need to show the table load popup and show it
+	 * Skips auto-opening while the onboarding wizard is active.
+	 *
+	 * @param {string} active_tab Only show popup when active_tab='optimize'
+	 * @returns void
+	 */
+	function maybe_show_too_many_tables_popup(active_tab) {
+		
+		var $modal = $('#wpo-too-many-tables-popup');
+
+		function openTooManyTablesModal(autoShown) {
+			// Move the modal to <body> so it isn't hidden by a display:none tab wrapper.
+			if (!$modal.parent().is('body')) {
+				$('body').append($modal);
+			}
+			$modal.show();
+			$('body').addClass('wpo-modal-is-opened');
+			var $closeBtn = $modal.find('.wpo-too-many-tables-close');
+			var $bg = $modal.find('.wpo-modal--bg');
+			$closeBtn.off('click.wpoModal');
+			$bg.off('click.wpoModal');
+			if (autoShown) {
+				$closeBtn.on('click.wpoModal', function() { location.href = 'plugins.php'; });
+			} else {
+				$closeBtn.add($bg).on('click.wpoModal', function() {
+					$modal.hide();
+					$('body').removeClass('wpo-modal-is-opened');
+				});
+			}
+		}
+
+		if ('optimize' === active_tab && 'undefined' !== typeof wpo_too_many_tables && true === wpo_too_many_tables && 'undefined' !== typeof wpo_onboarding_active && true !== wpo_onboarding_active) {
+			$(document).ready(function() { openTooManyTablesModal(true); });
+		}
+
+		$('#wpo-load-tables-in-batches').off('click.wpoLoadTablesModal').on('click.wpoLoadTablesModal', function() {
+			openTooManyTablesModal(false);
+		});
+
+		$('#wpo-load-tables-in-batches-button').off('click.wpoLoadTablesInBatches').on('click.wpoLoadTablesInBatches', function() {
+			if (wpoDBTableInfo.inProgress) return;
+			
+			wpoDBTableInfo.inProgress = true;
+			$(this).prop('disabled', true);
+			wpoDBTableInfo.startTime = new Date();
+			
+			load_tables_in_batches(wpo_table_scan_offset, true, function() {
+				load_tables_in_batches.apply({}, arguments);
+			});
+		});
 	}
 
 	/**
@@ -1100,6 +1344,12 @@ var WP_Optimize = function () {
 
 	$('#wp_optimize_table_list_refresh').on('click', function (e) {
 		e.preventDefault();
+		// Tables are not available until the batch scan completes — open the scan popup instead.
+		if (true === wpo_too_many_tables) {
+			var scanBtn = document.getElementById('wpo-load-tables-in-batches');
+			if (scanBtn) scanBtn.click();
+			return;
+		}
 		var shade = $(this).closest('.wpo-tab-postbox').find('.wpo_shade');
 		shade.removeClass('hidden');
 		$('#wpoptimize_table_list tbody').css('opacity', '0.5');

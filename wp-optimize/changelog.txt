@@ -1,5 +1,33 @@
 == Changelog ==
 
+= 4.7.0 - 16/Sep/2026 =
+
+* FEATURE: Dashboard overview showing a summary of all WP-Optimize modules (cache, images, minification, and database), including active status, savings, and quick links to manage each area
+* FEATURE: Load tables in batches when there are too many tables to load in a single request
+* FIX: Added missing optimizations for auto optimizations cron
+* FIX: Fix removal of cache settings and related cron events on plugin deactivation and reactivation
+* FIX: Fixed inconsistent UI in the Minify status tab, and removed duplicate tooltips
+* FIX: Fixed the association of the wp_e_submissions_actions_log table with its plugin
+* FIX: LCP - Preserve original cached HTML when removing the LCP observer script fails instead of returning an empty string
+* FIX: PHPStan issues WPO_WP_Kses_Compatibility class
+* FIX: Permissions issues for adminbar menu items
+* FIX: Registered image sizes not showing on multisite
+* FIX: Removed extra spacing in the Wipe settings section
+* FIX: WP_CACHE constant warning in debug.log
+* FIX: WP_Optimize_Utils::get_file_path() does not handle URLs with query parameters
+* REFACTOR: WPO_Page_Builder_Compatibility class
+* REFACTOR: WPO_Webp_Convert_Image_Task class
+* TWEAK: Added data- attributes support for older wordpress versions
+* TWEAK: Cache - Browser cache settings updated for better compatibility
+* TWEAK: Cache - Improved browser cache detection
+* TWEAK: Disabling Show avatars no longer leaves gravatars hosted locally in the background
+* TWEAK: Improved GZIP detection
+* TWEAK: Improved the Purge Page Cache and Purge Minify Cache admin bar functionality
+* TWEAK: Premium - Improved UX for Unused CSS Removal
+* TWEAK: Premium - Index Post Meta Table power tweak now correctly indexes all subsites postmeta tables in a Multisite network and tracks last-run status per site
+* TWEAK: Premium Auto LCP writes the gzip cache variant atomically via a temporary file and rename, matching how the HTML cache file is patched
+* TWEAK: Rename `as_type` to `asset_type` in the LCP beacon request for clarity
+
 = 4.6.1 - 29/Jul/2026 =
 
 * FIX: CSS exclusions added via Minify -> Advanced -> Exclude are now saved on separate lines, preventing invalid exclusion entries

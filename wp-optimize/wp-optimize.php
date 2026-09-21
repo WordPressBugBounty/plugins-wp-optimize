@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.6.1
+Version: 4.7.0
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.6.1');
+define('WPO_VERSION', '4.7.0');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -247,7 +247,7 @@ class WP_Optimize {
 				return;
 			}
 		}
-		
+
 		if ('Minify_HTML' === $class_name) {
 			require_once WPO_PLUGIN_MAIN_PATH.'vendor/mrclay/minify/lib/Minify/HTML.php';
 		}
@@ -265,6 +265,7 @@ class WP_Optimize {
 			'includes',
 			'includes/tables',
 			'includes/list-tables',
+			'includes/dashboard',
 			'includes/gravatars',
 			'includes/lcp',
 			'minify',
@@ -387,9 +388,14 @@ class WP_Optimize {
 	 * Adds 3rd party plugin compatibilities.
 	 */
 	public function load_compatibilities() {
+		global $wp_version;
 
 		if (class_exists('Polylang')) {
 			WPO_Polylang_Compatibility::instance();
+		}
+
+		if (version_compare($wp_version, '5.2', '<')) {
+			WPO_WP_Kses_Compatibility::instance();
 		}
 
 		WPO_Page_Builder_Compatibility::instance();
@@ -579,7 +585,7 @@ class WP_Optimize {
 		$js_variables = $this->wpo_js_translations();
 		$js_variables['loggers_classes_info'] = $this->get_loggers_classes_info();
 		wp_localize_script('wp-optimize-admin-js', 'wpoptimize', $js_variables);
-		
+
 		do_action('wpo_premium_scripts_styles', $min_or_not_internal, $min_or_not, $enqueue_version);
 
 		$status_report_dependencies = array('wp-optimize-admin-js');
@@ -1095,10 +1101,19 @@ class WP_Optimize {
 			'please_wait' => __('Please wait a moment...', 'wp-optimize'),
 			'clipboard_failed' => __('Copy to clipboard failed, please do it manually', 'wp-optimize'),
 			'clipboard_success' => __('System status has been copied to the clipboard', 'wp-optimize'),
+			'high_table_count_threshold' => WP_Optimizer::HIGH_TABLE_COUNT_THRESHOLD,
+			// translators: 1: starting table count, 2: ending table count
+			'loading_tables_in_batches' => esc_html__('Loading tables %1$s to %2$s', 'wp-optimize'),
+			// translators: %s time to finish
+			'time_left' => esc_html__('Aproximate time to finish: %s', 'wp-optimize'),
+			'done_reloading' => esc_html__('Done, reloading', 'wp-optimize'),
 			'show_information' => __('Show information', 'wp-optimize'),
 			'hide_information' => __('Hide information', 'wp-optimize'),
 			'data_not_available' => __('Not available', 'wp-optimize'),
-			'something_wrong_try_again' => __('Something went wrong; please try again.', 'wp-optimize')
+			'something_wrong_try_again' => __('Something went wrong; please try again.', 'wp-optimize'),
+			'db_tables_scan_pending_list' => __('Your database tables need to be scanned before they can be listed.', 'wp-optimize'),
+			'db_tables_scan_pending_optimize' => __('Your database tables need to be scanned before they can be optimized.', 'wp-optimize'),
+			'db_tables_scan_button' => __('Scan tables', 'wp-optimize')
 		);
 		$filtered_translations = apply_filters('wpo_js_translations', $translations);
 		return is_array($filtered_translations) ? $filtered_translations : $translations;
@@ -1114,17 +1129,22 @@ class WP_Optimize {
 
 		$admin_page_url = $this->get_options()->admin_page_url();
 		$settings_page_url = $this->get_options()->admin_page_url('wpo_settings');
+		$database_page_url = $this->get_options()->admin_page_url('wpo_database');
 
 		if (!self::is_premium()) {
-			$premium_link = '<a href="' . esc_url($this->premium_version_link) . '&utm_content=plugin-page' . '" target="_blank">' . __('Premium', 'wp-optimize') . '</a>';
+			$premium_link = '<a href="' . esc_url($this->premium_version_link) . '&utm_content=plugin-page' . '" target="_blank">' . esc_html__('Premium', 'wp-optimize') . '</a>';
 			array_unshift($links, $premium_link);
 		}
 
-		$settings_link = '<a href="' . esc_url($settings_page_url) . '">' . __('Settings', 'wp-optimize') . '</a>';
+		$settings_link = '<a href="' . esc_url($settings_page_url) . '">' . esc_html__('Settings', 'wp-optimize') . '</a>';
 		array_unshift($links, $settings_link);
 
-		$optimize_link = '<a href="' . esc_url($admin_page_url) . '">' . __('Optimize', 'wp-optimize') . '</a>';
+		$optimize_link = '<a href="' . esc_url($database_page_url) . '">' . esc_html__('Optimize', 'wp-optimize') . '</a>';
 		array_unshift($links, $optimize_link);
+
+		$dashboard_link = '<a href="' . esc_url($admin_page_url) . '">' . esc_html__('Overview', 'wp-optimize') . '</a>';
+		array_unshift($links, $dashboard_link);
+
 		return $links;
 	}
 
@@ -1313,6 +1333,10 @@ class WP_Optimize {
 	 * Run updates on plugin activation.
 	 */
 	public function run_updates() {
+
+		if (!defined('WPO_CACHE_FILES_DIR')) define('WPO_CACHE_FILES_DIR', untrailingslashit(WP_CONTENT_DIR).'/cache/wpo-cache');
+
+		require_once(WPO_PLUGIN_MAIN_PATH . 'cache/file-based-page-cache-functions.php');
 		include_once(WPO_PLUGIN_MAIN_PATH.'includes/class-wp-optimize-updates.php');
 		WP_Optimize_Updates::check_updates();
 	}

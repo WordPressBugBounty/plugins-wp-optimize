@@ -69,25 +69,18 @@ var WP_Optimize_Cache = function () {
 	/**
 	 * Handle Enable Gzip compression button click.
 	 */
-	$('#wp_optimize_gzip_compression_enable').on('click', function() {
+	$('#wp-optimize-nav-tab-wpo_cache-gzip-contents').on('click', '#wp_optimize_gzip_compression_enable', function() {
 		var button = $(this),
 			loader = button.next();
 
 		loader.show();
 
 		send_command('enable_gzip_compression', {enable: button.data('enable')}, function(response) {
-			var gzip_status_message = $('#wpo_gzip_compression_status');
 			if (response) {
-				if (response.enabled) {
-					button.text(wpoptimize.disable);
-					button.data('enable', '0');
-					gzip_status_message.removeClass('wpo-disabled').addClass('wpo-enabled');
-				} else {
-					button.text(wpoptimize.enable);
-					button.data('enable', '1');
-					gzip_status_message.addClass('wpo-disabled').removeClass('wpo-enabled');
-				}
 
+				$('#wpo_gzip_compression_test_btn').trigger('click');
+				
+				// Handle error message
 				if (response.message) {
 					$('#wpo_gzip_compression_error_message').text(response.message).show();
 				} else {
@@ -112,9 +105,50 @@ var WP_Optimize_Cache = function () {
 	});
 
 	/**
+	 * Handle Test again compressions button click
+	 */
+	$('#wp-optimize-nav-tab-wpo_cache-gzip-contents').on('click', '#wpo_gzip_compression_test_btn', function() {
+		var btn = $(this);
+
+		if (btn.prop('disabled')) return;
+
+		btn.prop('disabled', true);
+		$('#wpo_gzip_compression_details').hide();
+		$('#wpo_gzip_control_panel .wpo_shade').removeClass('hidden');
+
+		send_command('get_compression_test_results_html', {}, function(response) {
+			if (response.results_html) {
+				$('#wpo_gzip_compression_details').html(response.results_html);
+			} else {
+				$('#wpo_gzip_compression_details').text(wpoptimize.error_unexpected_response);
+			}
+
+			if (response.gzip_compression_control_panel) {
+				$('#wpo_gzip_control_panel').html(response.gzip_compression_control_panel);
+			}
+		}).fail(function() {
+			alert(wpoptimize.error_unexpected_response);
+		}).always(function() {
+			$('#wpo_gzip_control_panel .wpo_shade').addClass('hidden');
+			$('#wpo_gzip_compression_details').show();
+			btn.prop('disabled', false);
+		});
+	});
+
+	/**
+	 * Update gzip test results when tab is activated
+	 */
+	$('#wp-optimize-wrap').on('tab-change/wpo_cache/gzip', function() {
+		if (!$('#wp-optimize-nav-tab-wpo_cache-gzip').data('activated')) {
+			$('#wp-optimize-nav-tab-wpo_cache-gzip').data('activated', true);
+			$('#wpo_gzip_compression_test_btn').trigger('click');
+		}
+	});
+
+	/**
 	 * Manually check gzip status
 	 */
-	$('.wpo-refresh-gzip-status').on('click', function(e) {
+	$('#wp-optimize-nav-tab-wpo_cache-gzip-contents').on('click', '.wpo-refresh-gzip-status', function(e) {
 		e.preventDefault();
 		$link = $(this);
 		$link.addClass('loading');

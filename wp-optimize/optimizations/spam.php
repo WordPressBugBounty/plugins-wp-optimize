@@ -265,13 +265,4 @@ class WP_Optimization_spam extends WP_Optimization {
 			return __('Remove spam and trashed comments', 'wp-optimize');
 		}
 	}
-	
-	/**
-	 * Returns description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove spam and trashed comments', 'wp-optimize');
-	}
 }

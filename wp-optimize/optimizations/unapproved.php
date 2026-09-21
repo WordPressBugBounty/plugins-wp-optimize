@@ -191,13 +191,4 @@ class WP_Optimization_unapproved extends WP_Optimization {
 			return __('Remove unapproved comments', 'wp-optimize');
 		}
 	}
-
-	/**
-	 * Returns description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove unapproved comments', 'wp-optimize');
-	}
 }

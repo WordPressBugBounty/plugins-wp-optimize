@@ -51,17 +51,39 @@ class WP_Optimize_Gzip_Compression {
 	}
 
 	/**
-	 * Make http request to theme style.css, get 'server' line and check headers for gzip/brotli encoding option.
+	 * Make http request to $url, get 'server' line and check headers for gzip/brotli encoding option.
+	 *
+	 * @param string $url
 	 *
 	 * @return array|WP_Error
 	 */
-	public function get_headers_information() {
-		static $headers_information;
-		if (isset($headers_information)) return $headers_information;
+	public function get_headers_information($url) {
+		static $cached_headers_information = array();
+		if (isset($cached_headers_information[$url])) return $cached_headers_information[$url];
 
-		$headers = $this->get_stylesheet_headers();
+		$response = wp_remote_get($url, array('timeout' => 10));
 
-		if (is_wp_error($headers)) return $headers;
+		if (is_wp_error($response)) {
+			return $response;
+		}
+
+		$response_code = wp_remote_retrieve_response_code($response);
+
+		if (200 !== $response_code) {
+			// translators: %1$s is a requested URL, %2$s is the HTTP response code
+			return new WP_Error($response_code, sprintf(__('Unexpected response code when trying to get response for %1$s: %2$s (expected 200)', 'wp-optimize'), $url, $response_code));
+		}
+	
+		$headers = wp_remote_retrieve_headers($response);
+
+		if (empty($headers)) {
+			// translators: %s is a requested URL
+			return new WP_Error($response_code, sprintf(__('Unable to retrieve HTTP headers information for %s', 'wp-optimize'), $url));
+		}
+
+		if (is_object($headers) && method_exists($headers, 'getAll')) {
+			$headers = $headers->getAll();
+		}
 
 		$headers_information = array(
 			'server' => array_key_exists('server', $headers) ? $headers['server'] : '',
@@ -74,10 +96,14 @@ class WP_Optimize_Gzip_Compression {
 		} elseif (array_key_exists('content-encoding', $headers) && preg_match('/gzip/i', $headers['content-encoding'])) {
 			// check if there exists Content-encoding header with gzip value.
 			$headers_information['compression'] = 'gzip';
-			
+		} elseif (array_key_exists('content-encoding', $headers) && preg_match('/zstd/i', $headers['content-encoding'])) {
+			// check if there exists Content-encoding header with zstd value.
+			$headers_information['compression'] = 'zstd';
 		} else {
 			$headers_information['compression'] = false;
 		}
+
+		$cached_headers_information[$url] = $headers_information;
 
 		return $headers_information;
 	}
@@ -112,23 +138,19 @@ class WP_Optimize_Gzip_Compression {
 	/**
 	 * Check if Gzip compression is enabled.
 	 *
-	 * @param boolean $force_check - force the check
+	 * @param boolean $use_cache - use cached data
 	 * @return bool|WP_Error
 	 */
-	public function is_gzip_compression_enabled($force_check = false) {
+	public function is_gzip_compression_enabled($use_cache = true) {
 
-		if (!$force_check) return WP_Optimize()->get_options()->get_option('is_gzip_compression_enabled');
+		$compression_types = $this->get_compression_types($use_cache);
 
-		// trying to get info about gzip in headers.
-		$headers_info = $this->get_headers_information();
+		$is_gzip_compression_enabled = true;
 
-		// we can't determine then return WP_Error.
-		if (is_wp_error($headers_info)) return $headers_info;
-
-		$is_gzip_compression_enabled = $headers_info['compression'];
-
-		// if we got error then trying to get info from api otherwise get result from check_headers_for_gzip().
-		// $is_gzip_compression_enabled = is_wp_error($is_gzip_compression_enabled) ? $this->check_api_for_gzip() : $is_gzip_compression_enabled;
+		foreach ($compression_types as $compression) {
+			if (is_wp_error($compression)) return $compression;
+			if (!in_array($compression, array('gzip', 'brotli', 'zstd'))) $is_gzip_compression_enabled = false;
+		}
 
 		// if Gzip is not enabled, but we have added settings and Apache modules nt loaded then return error.
 		if (!$is_gzip_compression_enabled && $this->is_gzip_compression_section_exists()) {
@@ -141,9 +163,30 @@ class WP_Optimize_Gzip_Compression {
 			}
 		}
 
-		WP_Optimize()->get_options()->update_option('is_gzip_compression_enabled', $is_gzip_compression_enabled);
+		// Stored value used to restore gzip compression settings used when plugin being activated,
+		// i.e. we need to update it only when we have added settings to .htaccess or gzip is disabled
+		if (!$is_gzip_compression_enabled || $this->is_gzip_compression_section_exists()) {
+			WP_Optimize()->get_options()->update_option('is_gzip_compression_enabled', $is_gzip_compression_enabled);
+		}
 
 		return $is_gzip_compression_enabled;
+	}
+
+	/**
+	 * Returns the compression type of the given URL.
+	 *
+	 * @param string $url
+	 * @return string|WP_Error
+	 */
+	private function get_compression_type($url) {
+
+		$headers_info = $this->get_headers_information($url);
+
+		if (is_wp_error($headers_info)) return $headers_info;
+
+		if (!isset($headers_info['compression'])) return '';
+
+		return $headers_info['compression'];
 	}
 
 	/**
@@ -208,7 +251,7 @@ class WP_Optimize_Gzip_Compression {
 			$section_updated = $enable === $section_exists;
 		}
 
-		$is_gzip_compression_enabled = $this->is_gzip_compression_enabled(true);
+		$is_gzip_compression_enabled = $this->is_gzip_compression_enabled(false);
 
 		if ($section_updated) {
 			return array(
@@ -238,6 +281,129 @@ class WP_Optimize_Gzip_Compression {
 					PHP_EOL.$this->_htaccess->get_section_end_comment($this->_htaccess_section_comment)),
 			);
 		}
+	}
+
+	/**
+	 * Retrieve the compression statuses for HTML, CSS, and JS resources in HTML format.
+	 *
+	 * @param bool $use_cache if true, the cached value will be returned if possible
+	 * @return string
+	 */
+	public function get_compression_test_results_html($use_cache = false) {
+
+		$compression_types = $this->get_compression_types($use_cache);
+
+		$result_html = '';
+
+		foreach ($compression_types as $title => $compression) {
+			if (is_wp_error($compression)) {
+				$value = $compression->get_error_message();
+			} elseif (!empty($compression)) {
+				$value = '<b>'.$compression.'</b>';
+			} else {
+				$value = __('No compression', 'wp-optimize');
+			}
+
+			$result_html .= $title.': '. $value . '<br>';
+		}
+
+		return wp_kses_post($result_html);
+	}
+
+	/**
+	 * Get list of content types for which enabled/disabled gzip compression (html, css, js).
+	 *
+	 * @param bool $use_cache if true, the cached value will be returned if possible
+	 *
+	 * @return array
+	 */
+	public function get_enabled_disabled_compression_content_types($use_cache = false) {
+		$result = array(
+			'enabled' => array(),
+			'disabled' => array(),
+		);
+
+		$compression_types = $this->get_compression_types($use_cache);
+
+		foreach ($compression_types as $type => $status) {
+			if (false !== $status && '' !== $status && !is_wp_error($status)) {
+				$result['enabled'][] = $type;
+			} else {
+				$result['disabled'][] = $type;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get compression types for html, css, js files.
+	 *
+	 * @param bool $use_cache if true, the cached value will be returned if possible
+	 *
+	 * @return array
+	 */
+	private function get_compression_types($use_cache = false) {
+		$transient_key = 'wpo_compression_test_results';
+		$compression_types = array('HTML' => '', 'CSS' => '', 'JS' => '');
+		$cached_compression_types = array();
+
+		if ($use_cache) {
+			$cached_compression_types = get_transient($transient_key);
+		}
+
+		$should_update_cache = false;
+
+		foreach ($compression_types as $content_type => $compression) {
+			// if we have cached value and it is not WP_Error then use it, otherwise get compression type and update cache later.
+			if ($use_cache && isset($cached_compression_types[$content_type]) && 'WP_Error' !== $cached_compression_types[$content_type]) {
+				$compression_types[$content_type] = $cached_compression_types[$content_type];
+			} else {
+				$compression_types[$content_type] = $this->get_compression_type_by_content_type($content_type);
+				$should_update_cache = true;
+			}
+		}
+
+		if ($should_update_cache) {
+			$compression_types_for_cache = $compression_types;
+			foreach ($compression_types_for_cache as $content_type => $compression) {
+				if (is_wp_error($compression)) {
+					$compression_types_for_cache[$content_type] = 'WP_Error';
+				}
+			}
+			set_transient($transient_key, $compression_types_for_cache, HOUR_IN_SECONDS);
+		}
+
+		return $compression_types;
+	}
+
+	/**
+	 * Get compression type for the given content type (html, css, js).
+	 *
+	 * @param string $content_type - content type (html, css, js)
+	 * @return string|false|WP_Error
+	 */
+	private function get_compression_type_by_content_type($content_type) {
+		$content_type = strtoupper($content_type);
+		switch ($content_type) {
+			case 'HTML':
+				return $this->get_compression_type(get_home_url(null, '?cache=false'));
+			case 'CSS':
+				return $this->get_compression_type($this->css_resource_url());
+			case 'JS':
+				return $this->get_compression_type(site_url('wp-includes/js/admin-bar.min.js'));
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * Get URL to the CSS resource for checking Gzip compression status of CSS files.
+	 *
+	 * @return string
+	 */
+	public function css_resource_url() {
+		return WPO_PLUGIN_URL . 'css/wp-optimize-admin.css';
 	}
 
 	/**

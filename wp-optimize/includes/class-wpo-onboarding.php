@@ -62,8 +62,40 @@ class WPO_Onboarding {
 
 		add_action( $this->prefix.'_onboarding_update_options', array($this, 'update_step_settings'), 10, 2 );
 		add_filter( $this->prefix.'_onboarding_steps', array($this, 'load_steps'));
+		add_action( 'admin_post_wpo_reopen_onboarding', array($this, 'handle_reopen_onboarding') );
 
 		$this->setup_onboarding();
+	}
+
+	/**
+	 * Handles the "Quick Setup" button: re-activates the onboarding wizard and redirects to the dashboard.
+	 *
+	 * @return void
+	 */
+	public function handle_reopen_onboarding(): void {
+		check_admin_referer('wpo_reopen_onboarding');
+
+		$capability = $this->is_multisite ? 'manage_network_options' : 'manage_options';
+		if (!current_user_can($capability)) {
+			wp_die(esc_html__('Sorry, you are not allowed to do this.', 'wp-optimize'));
+		}
+
+		$this->activate_onboarding_wizard();
+
+		wp_safe_redirect(WP_Optimize()->get_options()->admin_page_url('WP-Optimize'));
+		exit;
+	}
+
+	/**
+	 * Returns the URL that reopens the onboarding wizard, including a nonce.
+	 *
+	 * @return string
+	 */
+	public function get_reopen_onboarding_url(): string {
+		return wp_nonce_url(
+			admin_url('admin-post.php?action=wpo_reopen_onboarding'),
+			'wpo_reopen_onboarding'
+		);
 	}
 
 	/**
@@ -693,7 +725,7 @@ class WPO_Onboarding {
 	 *
 	 * @return void
 	 */
-	public function setup_onboarding(): void {
+	private function setup_onboarding(): void {
 		$onboarding = new Onboarding();
 		if ($onboarding::is_onboarding_active($this->prefix, $this->caller_slug)) {
 
@@ -725,6 +757,15 @@ class WPO_Onboarding {
 			$onboarding->init();
 
 		}
+	}
+
+	/**
+	 * Check if the onboarding wizard is currently active (i.e. its modal is/will be shown)
+	 *
+	 * @return bool
+	 */
+	public function is_active(): bool {
+		return Onboarding::is_onboarding_active($this->prefix, $this->caller_slug);
 	}
 
 	/**

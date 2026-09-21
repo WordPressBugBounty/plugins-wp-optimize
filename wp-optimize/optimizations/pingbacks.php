@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 class WP_Optimization_pingbacks extends WP_Optimization {
 
+	public $available_for_auto = true;
+
 	public $ui_sort_order = 6000;
 
 	public $available_for_saving = true;
@@ -142,6 +144,9 @@ class WP_Optimization_pingbacks extends WP_Optimization {
 		$this->found_count += $comments;
 	}
 	
+	/**
+	 * Get settings label.
+	 */
 	public function settings_label() {
 		return __('Remove pingbacks', 'wp-optimize');
 	}

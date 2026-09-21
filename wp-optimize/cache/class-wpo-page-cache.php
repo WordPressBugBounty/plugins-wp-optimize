@@ -129,6 +129,7 @@ class WPO_Page_Cache {
 		 */
 		add_action('wpo_cache_flush', array($this, 'update_cache_config'));
 		add_action('wpo_cache_flush', array($this, 'delete_cache_size_information'));
+		add_action('wpo_cache_flush', array($this, 'update_cache_cleared_time'));
 		add_action('update_option_permalink_structure', array($this, 'update_option_permalink_structure'), 10, 3);
 
 		// Add purge cache link to admin bar.
@@ -194,42 +195,35 @@ class WPO_Page_Cache {
 	 * This method checks cache rules to identify if caching is possible.
 	 * If caching is not allowed, it adds appropriate HTTP headers and debug messages.
 	 *
-	 * @return bool True if the page should be cached, false otherwise.
+	 * @return bool|array True if the page should be cached, false otherwise or not empty array with the reasons why the page isn't cached
 	 */
 	public function should_cache_page() {
 
 		if (!$this->is_enabled()) return false;
 
-		$no_cache_because = array();
+		return wpo_can_serve_from_cache();
+	}
 
-		// Check serve cache rules, to identify if we need to cache the page.
-		$can_serve_from_cache = wpo_can_serve_from_cache();
-		
-		if (false === $can_serve_from_cache) return false;
+	/**
+	 * Maybe add information about why the page is not cached to the headers and footer output
+	 *
+	 * @param array $no_cache_because
+	 * @return void
+	 */
+	public function maybe_add_no_cache_because_info($no_cache_because) {
+		// Add http header
+		if (!wp_doing_cron() && !empty($no_cache_because)) {
+			$no_cache_because_message = join(", ", $no_cache_because);
+			wpo_cache_add_nocache_http_header_with_send_headers_action($no_cache_because_message);
 
-		if (is_array($can_serve_from_cache)) $no_cache_because = $can_serve_from_cache;
-
-		if (!empty($no_cache_because)) {
-			do_action('wpo_page_not_cached', $no_cache_because);
-
-			// Add http header
-			if (!wp_doing_cron()) {
-				$no_cache_because_message = join(", ", $no_cache_because);
-				wpo_cache_add_nocache_http_header_with_send_headers_action($no_cache_because_message);
-
-				$not_cached_details = "";
-				
-				// Output the reason only when the user has turned on debugging
-				if ((defined('WP_DEBUG') && WP_DEBUG) || !empty(TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_cache_debug'))) {
-					$not_cached_details = "because: ".$no_cache_because_message;
-				}
-				wpo_cache_add_footer_output(sprintf("Page not served from cache %s", $not_cached_details));
+			$not_cached_details = "";
+			
+			// Output the reason only when the user has turned on debugging
+			if ((defined('WP_DEBUG') && WP_DEBUG) || !empty(TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_cache_debug'))) {
+				$not_cached_details = "because: ".$no_cache_because_message;
 			}
-
-			return false;
+			wpo_cache_add_footer_output(sprintf("Page not served from cache %s", $not_cached_details));
 		}
-
-		return true;
 	}
 
 	/**
@@ -305,7 +299,7 @@ class WPO_Page_Cache {
 	 */
 	public function can_purge_cache() {
 		if (!$this->is_enabled()) return false;
-		
+
 		return WP_Optimize_Utils::current_user_can_purge_cache();
 	}
 
@@ -381,12 +375,18 @@ class WPO_Page_Cache {
 			// phpcs:enable
 
 			if (is_admin()) {
-				add_action('admin_notices', function() use ($message, $type) {
+				$admin_notices_hook = is_network_admin() ? 'network_admin_notices' : 'admin_notices';
+
+				add_action($admin_notices_hook, function() use ($message, $type) {
 					$this->show_notice($message, $type);
 				});
+				
+				add_action('admin_head', array('WP_Optimize_Utils', 'script_to_remove_cache_purge_params_from_url'));
 			} else {
 				printf('<script>window.onload = function() {alert("%s");}</script>', esc_js($message));
+				WP_Optimize_Utils::script_to_remove_cache_purge_params_from_url();
 			}
+
 			return;
 		}
 
@@ -555,9 +555,10 @@ class WPO_Page_Cache {
 	/**
 	 * Disables page cache
 	 *
+	 * @param bool $keep_option_enabled - Whether to keep the option `enable_page_caching` enabled or not. This is useful when we want to disable the cache temporarily, e.g. when deactivating the plugin, but we want to keep the option enabled so that it can be re-enabled when the plugin is reactivated.
 	 * @return bool|WP_Error - true on success or WP_Error on failure.
 	 */
-	public function disable() {
+	public function disable($keep_option_enabled = false) {
 		global $is_apache;
 
 		$ret = true;
@@ -601,7 +602,10 @@ class WPO_Page_Cache {
 
 		if (!is_wp_error($ret)) {
 			wp_clear_scheduled_hook('wpo_prune_cache_logs');
-			$ret = $this->update_page_cache_enabled_state(false);
+
+			if (!$keep_option_enabled) {
+				$ret = $this->update_page_cache_enabled_state(false);
+			}
 		}
 
 		if (!is_wp_error($ret)) {
@@ -628,6 +632,7 @@ class WPO_Page_Cache {
 		}
 
 		$cache_config['enable_page_caching'] = $enabled;
+
 		return $config->update($cache_config, true);
 	}
 
@@ -734,34 +739,38 @@ class WPO_Page_Cache {
 	}
 
 	/**
-	 * Check if cache is enabled and working
+	 * Checks whether page caching is turned on in settings.
 	 *
-	 * @return bool - true on success, false otherwise
+	 * @return bool true if the `enable_page_caching` option is set & environment is ready to cache, false otherwise.
 	 */
 	public function is_enabled() {
+		return $this->config->get_option('enable_page_caching') && $this->is_environment_functional();
+	}
 
-		if (!$this->config->get_option('enable_page_caching')) return false;
+	/**
+	 * Checks whether the cache delivery chain is actually intact and able to serve cached pages.
+	 *
+	 * Verifies the WP_CACHE and WPO_ADVANCED_CACHE constants are defined and true, and that the cache config file exists on disk.
+	 *
+	 * @return bool True if the delivery chain is functional, false otherwise.
+	 */
+	private function is_environment_functional() {
+		$is_cli_or_ajax = (defined('WP_CLI') && WP_CLI) || (defined('DOING_AJAX') && DOING_AJAX);
 
-		if (!defined('WP_CACHE') || !WP_CACHE) {
-			if ((!(defined('WP_CLI') && WP_CLI)) && (!defined('DOING_AJAX') || !DOING_AJAX)) {
-				$this->log("WP_CACHE constant is not present in wp-config.php");
-				return false;
-			}
+		if (!$is_cli_or_ajax && (!defined('WP_CACHE') || !WP_CACHE)) {
+			$this->file_log("WP_CACHE constant is not present in wp-config.php");
+			return false;
 		}
 
-		if (!defined('WPO_ADVANCED_CACHE') || !WPO_ADVANCED_CACHE) {
-			if ((!(defined('WP_CLI') && WP_CLI)) && (!defined('DOING_AJAX') || !DOING_AJAX)) {
-				$this->log("WPO_ADVANCED_CACHE constant is not present in advanced-cache.php");
-				return false;
-			}
+		if (!$is_cli_or_ajax && (!defined('WPO_ADVANCED_CACHE') || !WPO_ADVANCED_CACHE)) {
+			$this->file_log("WPO_ADVANCED_CACHE constant is not present in advanced-cache.php");
+			return false;
 		}
 
 		$config_file = WPO_CACHE_CONFIG_DIR . '/'.$this->config->get_cache_config_filename();
-		if (!file_exists($config_file)) {
-			if ((!(defined('WP_CLI') && WP_CLI)) && (!defined('DOING_AJAX') || !DOING_AJAX)) {
-				$this->log("Cache config file $config_file is not present");
-				return false;
-			}
+		if (!$is_cli_or_ajax && !file_exists($config_file)) {
+			$this->file_log("Cache config file $config_file is not present");
+			return false;
 		}
 
 		return true;
@@ -1031,6 +1040,11 @@ EOF;
 			return false;
 		}
 
+		// Bail early if wp-config.php is not writable, to avoid a PHP warning.
+		if (!wp_is_writable($config_path)) {
+			return false;
+		}
+
 		$config_file_string = file_get_contents($config_path);
 
 		// Config file is empty. Maybe couldn't read it?
@@ -1158,6 +1172,15 @@ EOF;
 		//not removing delete_transient so it clear this key from option table
 		delete_transient('wpo_get_cache_size');
 		delete_site_transient('wpo_get_cache_size');
+	}
+
+	/**
+	 * Update cache cleared time
+	 */
+	public function update_cache_cleared_time(): void {
+		$config = $this->config->get();
+		$config['last_cleared'] = time();
+		$this->config->update($config);
 	}
 
 	/**

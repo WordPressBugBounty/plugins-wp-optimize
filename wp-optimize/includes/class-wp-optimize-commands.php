@@ -373,11 +373,16 @@ class WP_Optimize_Commands {
 		$wpo = WP_Optimize();
 		$wpo_admin = $wpo->get_admin_instance();
 
+		// dashboard
+		if ('dashboard' === $section_id) {
+			add_action('wp_optimize_admin_page_WP-Optimize_dashboard', array($wpo_admin, 'output_dashboard'), 20);
+		}
+
 		// Database
 		if ('database' === $section_id) {
-			add_action('wp_optimize_admin_page_WP-Optimize_optimize', array($wpo_admin, 'output_database_optimize_tab'), 20);
-			add_action('wp_optimize_admin_page_WP-Optimize_tables', array($wpo_admin, 'output_database_tables_tab'), 20);
-			add_action('wp_optimize_admin_page_WP-Optimize_settings', array($wpo_admin, 'output_database_settings_tab'), 20);
+			add_action('wp_optimize_admin_page_wpo_database_optimize', array($wpo_admin, 'output_database_optimize_tab'), 20);
+			add_action('wp_optimize_admin_page_wpo_database_tables', array($wpo_admin, 'output_database_tables_tab'), 20);
+			add_action('wp_optimize_admin_page_wpo_database_settings', array($wpo_admin, 'output_database_settings_tab'), 20);
 		}
 
 		// Images
@@ -454,7 +459,7 @@ class WP_Optimize_Commands {
 	private function get_section_to_tab_name($section_id) {
 		$tab = '';
 		switch ($section_id) {
-			case 'database':
+			case 'dashboard':
 				$tab = 'WP-Optimize';
 				break;
 			default:
@@ -727,6 +732,10 @@ class WP_Optimize_Commands {
 	
 			$result = is_a($optimization, 'WP_Optimization') ? $optimization->do_optimization() : null;
 
+			if (null !== $result) {
+				WP_Optimize()->get_options()->update_option('last-optimized', time());
+			}
+
 			$results = array(
 				'result' => $result,
 				'messages' => array(),
@@ -863,7 +872,20 @@ class WP_Optimize_Commands {
 	 * @return array
 	 */
 	public function get_database_tabs() {
-		return array_merge(array('optimizations' => $this->get_optimizations_table(), 'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization()), $this->get_table_list());
+		$optimizer = $this->optimizer;
+		$scan_pending = $optimizer->is_table_count_too_high() && !$optimizer->is_large_table_count_scan_complete();
+
+		$result = array(
+			'optimizations' => $this->get_optimizations_table(),
+			'does_server_allow_table_optimization' => WP_Optimize()->get_server_compatibility_instance()->does_server_allow_table_optimization(),
+			'scan_pending' => $scan_pending,
+		);
+
+		if (!$scan_pending) {
+			$result = array_merge($result, $this->get_table_list());
+		}
+
+		return $result;
 	}
 
 	/**
@@ -956,8 +978,23 @@ class WP_Optimize_Commands {
 	 * @return array
 	 */
 	public function get_gzip_compression_status() {
-		$status = WP_Optimize()->get_gzip_compression()->is_gzip_compression_enabled(true);
+		$status = WP_Optimize()->get_gzip_compression()->is_gzip_compression_enabled(false);
 		return is_wp_error($status) ? array('error' => __('We could not determine if Gzip compression is enabled.', 'wp-optimize'), 'code' => $status->get_error_code(), 'message' => $status->get_error_message()) : array('status' => $status);
+	}
+
+	/**
+	 * Get compression test results html formatted
+	 *
+	 * @return array
+	 */
+	public function get_compression_test_results_html() {
+		$results_html = WP_Optimize()->get_gzip_compression()->get_compression_test_results_html();
+		$gzip_compression_control_panel = WP_Optimize_Admin::instance()->get_gzip_compression_control_panel();
+		
+		return array(
+			'results_html' => $results_html,
+			'gzip_compression_control_panel' => $gzip_compression_control_panel,
+		);
 	}
 
 	/**
@@ -1176,6 +1213,62 @@ class WP_Optimize_Commands {
 	}
 
 	/**
+	 * Create background tasks and execute it in sequenced AJAX calls
+	 *
+	 * @return array
+	 */
+	public function load_tables_in_batches() {
+		$optimizer = WP_Optimizer::instance();
+		$options = WP_Optimize()->get_options();
+
+		$start_clean = $optimizer->maybe_restart_scan_job();
+
+		if (true == (bool) $start_clean) {
+
+			$tables = array();
+
+			$tables_count = $optimizer->scan_job_init();
+
+			$offset = 0;
+			while ($offset < $tables_count) {
+				$optimizer->add_load_tables_task($offset);
+
+				$offset += WP_Optimizer::HIGH_TABLE_COUNT_THRESHOLD;
+			}
+			$optimizer->flush_tasks();
+		} else {
+			$tables = $options->get_option(WP_Optimizer::TABLES_LIST_OPTION_NAME);
+			$tables = is_array($tables) ? $tables : array();
+			$tables_count = $options->get_option(WP_Optimizer::TABLES_LIST_COUNT_OPTION_NAME);
+			$tables_count = false !== $tables_count ? $tables_count : 0;
+		}
+
+		$optimizer->do_next_load_table_task();
+
+		if (!$optimizer->is_task_queue_empty() || $start_clean) {
+			$continue = true;
+		} else {
+			$continue = false;
+		}
+
+		$done = 0;
+		if (false !== $tables) {
+			$done = count($tables);
+		}
+
+		if (false === $tables_count) {
+			$tables_count = 0;
+		}
+
+		return array(
+			'success' => true,
+			'continue' => $continue,
+			'total' => $tables_count,
+			'done' => $done
+		);
+	}
+
+	/**
 	 * Build the HTML for the status report tab
 	 *
 	 * @return array
@@ -1360,7 +1453,7 @@ class WP_Optimize_Commands {
 			$table_info['Data_should_be_cleared'] = intval($tablestatus->Data_free) > $small_overhead_size ? 1 : 0;
 			$table_info['wp_core_table'] = $tablestatus->wp_core_table;
 
-			$table_list[] = $table_info;
+			$table_list[$tablestatus->Name] = $table_info;
 
 			$row_usage += $tablestatus->Rows;
 			$data_usage += $tablestatus->Data_length;
@@ -1413,6 +1506,158 @@ class WP_Optimize_Commands {
 	}
 
 	/**
+	 * [For UpdraftCentral] Returns selected WP-Optimize toggleable settings optimized for quick access
+	 *
+	 * @return WP_Error|array
+	 */
+	private function get_quick_settings_data() {
+		if (!WP_Optimize()->current_user_can()) {
+			return $this->request_error('insufficient_privilege');
+		}
+
+		$options = WP_Optimize()->get_options();
+		$default_lazyload_settings = array(
+			'images' => false,
+			'backgrounds' => false,
+			'iframes' => false,
+			'youtube_preview' => false,
+			'skip_classes' => '',
+		);
+
+		$lazyload = wp_parse_args($options->get_option('lazyload', array()), $default_lazyload_settings);
+		foreach ($lazyload as $key => $value) {
+			if ('skip_classes' !== $key) {
+				$lazyload[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+			}
+		}
+
+		$trackbacks = $options->get_option('trackbacks_action', array());
+		$comments = $options->get_option('comments_action', array());
+
+		$gzip_compression_enabled = WP_Optimize()->get_gzip_compression()->is_gzip_compression_enabled(false);
+
+		$settings = array(
+			'scheduled_cleanup' => 'true' === $options->get_option('schedule'),
+			'backup_enabled' => 'true' === $options->get_option('enable-auto-backup', 'false'),
+			'comments' => (!empty($comments) && $comments['action']) ? true : false,
+			'trackbacks' => (!empty($trackbacks) && $trackbacks['action']) ? true : false,
+			'autosmush' => $options->get_option('autosmush'),
+			'page_caching' => WP_Optimize()->get_page_cache()->is_enabled(),
+			'minify' => wp_optimize_minify_config()->get('enabled'),
+			'image_dimensions' => $options->get_option('image_dimensions'),
+			'404_detector' => $options->get_option('404_detector'),
+			'webp_conversion' => $options->get_option('webp_conversion'),
+			'gzip_compression' => (!is_wp_error($gzip_compression_enabled) && $gzip_compression_enabled) ? true : false,
+		);
+
+		$settings = array_map(function($value) {
+			return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+		}, $settings);
+
+		return array_merge($settings, array('lazyload' => $lazyload));
+	}
+
+	/**
+	 * [For UpdraftCentral] Saves the selected WP-Optimize toggleable settings
+	 *
+	 * @param array $settings Parameters required for the requested action
+	 *
+	 * @return WP_Error|array
+	 */
+	public function save_quick_settings($settings) {
+		if (!WP_Optimize()->current_user_can()) {
+			return $this->request_error('insufficient_privilege');
+		}
+
+		if (!empty($settings) && is_array($settings)) {
+			$settings = array_map(function($value) {
+				return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+			}, $settings);
+		}
+
+		try {
+
+			if (isset($settings['enable-404-detector'])) {
+				WP_Optimize()->get_options()->update_option('404_detector', (int) $settings['enable-404-detector']);
+			}
+
+			if (isset($settings['enable-auto-backup'])) {
+				WP_Optimize()->get_options()->update_option('enable-auto-backup', $settings['enable-auto-backup'] ? 'true' : 'false');
+
+				WP_Optimize()->get_options()->update_option('enable-auto-backup-scheduled', $settings['enable-auto-backup'] ? 'true' : 'false');
+			}
+
+			if (isset($settings['enable-auto-compression'])) {
+				Updraft_Smush_Manager()->update_smush_options(array('autosmush' => (int) $settings['enable-auto-compression']));
+			}
+
+			if (isset($settings['enable-comments'])) {
+				$this->enable_or_disable_feature(array(
+					'type' => 'comments',
+					'enable' => $settings['enable-comments'],
+				));
+			}
+
+			if (isset($settings['enable-trackbacks'])) {
+				$this->enable_or_disable_feature(array(
+					'type' => 'trackbacks',
+					'enable' => $settings['enable-trackbacks'],
+				));
+			}
+
+			if (isset($settings['enable-minify'])) {
+				wp_optimize_minify_config()->update(array('enabled' => $settings['enable-minify']));
+			}
+
+			if (isset($settings['enable-page-caching'])) {
+				$wpo_page_cache = WP_Optimize()->get_page_cache();
+
+				if ($settings['enable-page-caching']) {
+					$wpo_page_cache->enable(true);
+				} else {
+					$wpo_page_cache->disable();
+				}
+			}
+
+			if (isset($settings['enable-scheduled-cleanup'])) {
+				WP_Optimize()->get_options()->update_option('schedule', $settings['enable-scheduled-cleanup'] ? 'true' : 'false');
+			}
+
+			if (isset($settings['enable-webp-conversion'])) {
+				WP_Optimize()->get_webp_instance()->save_webp_settings(array('webp_conversion' => $settings['enable-webp-conversion']));
+			}
+
+			if (isset($settings['enable-images-dimensions'])) {
+				WP_Optimize()->get_options()->update_option('image_dimensions', (int) $settings['enable-images-dimensions']);
+			}
+
+			if (isset($settings['enable-lazy-loading'])) {
+				$value = (int) $settings['enable-lazy-loading'];
+				$options = WP_Optimize()->get_options();
+
+				$lazyload = $options->get_option('lazyload');
+				$lazy_settings = array(
+					'images'          =>  $value,
+					'iframes'         =>  $value,
+					'backgrounds'     =>  $value,
+					'youtube_preview' =>  $value,
+					'skip_classes'    => !empty($lazyload['skip_classes']) ? $lazyload['skip_classes'] : '',
+				);
+				$options->save_lazy_load_settings(array('lazyload' => $lazy_settings));
+			}
+
+			if (isset($settings['enable-gzip-compression'])) {
+				$this->enable_gzip_compression(array('enable' => $settings['enable-gzip-compression']));
+			}
+
+		} catch (Throwable $e) {
+			return $this->request_error('quick_settings_save_error', null, array('message' => $e->getMessage(), 'settings' => $this->get_quick_settings_data()));
+		}
+
+		return array('settings' => $this->get_quick_settings_data());
+	}
+
+	/**
 	 * Get the data of wp-optimize widget.
 	 *
 	 * @return array
@@ -1441,12 +1686,19 @@ class WP_Optimize_Commands {
 
 			// Check if the DOM is optimize-db to generate a list of tables.
 			if ('optimize-db' == $optimization_data['dom_id']) {
-				$table_list = $this->optimizer->get_table_information();
-
-				// Make sure that optimization_table_inno_db is set.
-				if ($table_list['inno_db_tables'] > 0 && 0 === $table_list['is_optimizable'] && 0 === $table_list['non_inno_db_tables']) {
+				// Disable optimization when too many tables exist but the batch scan hasn't run yet.
+				// Running it now would silently optimize 0 tables because get_tables() returns empty.
+				if ($this->optimizer->is_table_count_too_high() && !$this->optimizer->is_large_table_count_scan_complete()) {
 					$optimization_data['disable_optimization_button'] = true;
 					$optimization_data['activated'] = '';
+				} else {
+					$table_list = $this->optimizer->get_table_information();
+
+					// Make sure that optimization_table_inno_db is set.
+					if ($table_list['inno_db_tables'] > 0 && 0 === $table_list['is_optimizable'] && 0 === $table_list['non_inno_db_tables']) {
+						$optimization_data['disable_optimization_button'] = true;
+						$optimization_data['activated'] = '';
+					}
 				}
 			}
 
@@ -1527,7 +1779,7 @@ class WP_Optimize_Commands {
 	 *
 	 * @return array
 	 */
-	private function get_all_status_data() {
+	public function get_all_status_data() {
 		$wp_optimize = WP_Optimize();
 
 		$retention_enabled = $this->options->get_option('retention-enabled', 'false') === 'true';
@@ -1538,12 +1790,14 @@ class WP_Optimize_Commands {
 		$revisions_retention_count = $this->options->get_option('revisions-retention-count', '2');
 
 		$last_optimized = $this->options->get_option('last-optimized', 'Never');
+		$last_optimized_ts = $last_optimized;
 
 		if (!empty($last_optimized) && is_numeric($last_optimized)) {
 			$last_optimized = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_optimized + (get_option('gmt_offset') * HOUR_IN_SECONDS));
 		}
 
 		$scheduled_optimizations_enabled = false;
+		$scheduled_optimizations = array();
 
 		if (WP_Optimize::is_premium()) {
 			$wp_optimize_premium = WP_Optimize_Premium();
@@ -1591,6 +1845,7 @@ class WP_Optimize_Commands {
 
 		return array(
 			'last_optimized' => $last_optimized,
+			'last_optimized_ts' => $last_optimized_ts,
 			'total_cleaned' => $total_cleaned,
 			'total_cleanup_size' => $total_cleanup_size,
 			'corrupted_tables_count' => $corrupted_tables_count,
@@ -1601,6 +1856,7 @@ class WP_Optimize_Commands {
 			'revisions_retention_count' => $revisions_retention_count,
 			'scheduled_optimizations_enabled' => $scheduled_optimizations_enabled,
 			'next_optimization_timestamp' => $next_optimization_timestamp,
+			'scheduled_optimizations' => $scheduled_optimizations
 		);
 	}
 
@@ -1977,7 +2233,7 @@ class WP_Optimize_Commands {
 				if (empty($optimization->available_for_auto)) continue;
 
 				if ('optimizetables' == $id && false === $does_server_allow_table_optimization) continue;
-	
+
 				$auto_id = $optimization->get_auto_id();
 	
 				$auto_dom_id = 'wp-optimize-auto-'.$auto_id;
@@ -1988,7 +2244,7 @@ class WP_Optimize_Commands {
 					'id' => $auto_id,
 					'dom_id' => $auto_dom_id,
 					'activated' => $setting_activated,
-					'label' => $optimization->get_auto_option_description(),
+					'label' => $optimization->settings_label(),
 				);
 			}
 
@@ -2090,7 +2346,20 @@ class WP_Optimize_Commands {
 							break;
 					}
 				}
-				$optimizations[] = $optimization;
+
+				// Add the optimization only if it has at least one selected optimization.
+				$has_selected_optimization = false;
+
+				if (!empty($optimization['optimization'])) {
+					foreach ($optimization['optimization'] as $optimization_data) {
+						if (true === $optimization_data['selected']) {
+							$has_selected_optimization = true;
+							break;
+						}
+					}
+				}
+				
+				if ($has_selected_optimization) $optimizations[] = $optimization;
 			}
 
 			$return_data['data'] = array(
@@ -2217,6 +2486,24 @@ class WP_Optimize_Commands {
 				/* translators: %s is the cleaned up memory size. */
 				'performance_highlights' => sprintf(__('%s saved', 'wp-optimize'), $total_cleanup_size),
 			),
+		);
+	}
+
+	/**
+	 * Returns freshly rendered HTML for the dashboard data sections (top row + module grid).
+	 *
+	 * @return array{success: bool, top_row: string, mod_grid: string}
+	 */
+	public function refresh_dashboard() {
+		$data = WP_Optimize_Dashboard::instance()->get_dashboard_data();
+
+		$top_row  = WP_Optimize()->include_template('dashboard/partials/top-row.php', true, $data);
+		$mod_grid = WP_Optimize()->include_template('dashboard/partials/mod-grid.php', true, $data);
+
+		return array(
+			'success'  => true,
+			'top_row'  => $top_row,
+			'mod_grid' => $mod_grid,
 		);
 	}
 }

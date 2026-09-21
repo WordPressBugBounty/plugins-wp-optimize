@@ -106,11 +106,11 @@ class WP_Optimize_UpdraftCentral_Commands {
 			$schedule_cleanup = $result;
 		}
 
-		$gzip_compression_enabled = $gzip_compression->is_gzip_compression_enabled(true);
+		$gzip_compression_enabled = $gzip_compression->is_gzip_compression_enabled(false);
 		$gzip_compression_enabled = (!is_wp_error($gzip_compression_enabled) && $gzip_compression_enabled);
-		$wpo_gzip_headers_information = $gzip_compression->get_headers_information();
+		$wpo_gzip_headers_information = $gzip_compression->get_headers_information($gzip_compression->css_resource_url());
 		$wpo_gzip_headers_information = (!is_wp_error($wpo_gzip_headers_information)) ? $wpo_gzip_headers_information : array();
-		$is_cloudflare_site = $admin->is_cloudflare_site();
+		$is_cloudflare_site = $admin->is_cloudflare_site(false);
 		$is_gzip_compression_section_exists = $gzip_compression->is_gzip_compression_section_exists();
 		$gzip_compression_enabled_by_wpo = $is_gzip_compression_section_exists && $gzip_compression_enabled && !$is_cloudflare_site && !(is_array($wpo_gzip_headers_information) && isset($wpo_gzip_headers_information['compression']) && 'brotli' === $wpo_gzip_headers_information['compression']);
 		$is_premium = $schedule_cleanup['is_premium'] ?? false;

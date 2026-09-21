@@ -97,9 +97,7 @@ class WP_Optimize_Minify {
 	 * @return array
 	 */
 	public function admin_bar_menu($menu_items) {
-		$wpo_minify_options = wp_optimize_minify_config()->get();
-
-		if (!$wpo_minify_options['enabled'] || !WP_Optimize()->current_user_can('manage_options') || !($wpo_minify_options['enable_css'] || $wpo_minify_options['enable_js'])) return $menu_items;
+		if (!$this->enabled || !$this->can_purge_cache()) return $menu_items;
 		
 		$act_url = WP_Optimize_Utils::get_url_without_cache_purge_params();
 		$cache_path = WP_Optimize_Minify_Cache_Functions::cache_path();
@@ -127,18 +125,20 @@ class WP_Optimize_Minify {
 	 * Check if purge single page action sent and purge cache.
 	 */
 	public function handle_purge_minify_cache() {
-		$wpo_minify_options = wp_optimize_minify_config()->get();
-		if (!$wpo_minify_options['enabled'] || !WP_Optimize()->current_user_can('manage_options')) return;
+		if (!$this->enabled || !$this->can_purge_cache()) return;
 
 		$is_cache_purged = TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_minify_cache_purged');
 		if (null !== $is_cache_purged) {
 			if (is_admin()) {
+				$admin_notices_hook = is_network_admin() ? 'network_admin_notices' : 'admin_notices';
 				$notice_function = 'notice_purge_minify_cache_' . ('false' === $is_cache_purged ? 'failure' : 'success');
-				add_action('admin_notices', array($this, $notice_function));
+				add_action($admin_notices_hook, array($this, $notice_function));
+				add_action('admin_head', array('WP_Optimize_Utils', 'script_to_remove_cache_purge_params_from_url'));
 				return;
 			} else {
 				$message =  'false' === $is_cache_purged ? __('Failed to purge the minify cache.', 'wp-optimize') : __('Minify cache purged', 'wp-optimize');
 				printf('<script>window.onload = function() {alert("%s");}</script>', esc_js($message));
+				WP_Optimize_Utils::script_to_remove_cache_purge_params_from_url();
 				return;
 			}
 		}

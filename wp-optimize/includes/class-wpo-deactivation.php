@@ -7,10 +7,12 @@ class WPO_Deactivation {
 
 	/**
 	 * Actions to be performed upon plugin deactivation
+	 *
+	 * @return void
 	 */
-	public static function actions() {
+	public static function actions(): void {
 		WP_Optimize()->wpo_cron_deactivate();
-		WP_Optimize()->get_page_cache()->disable();
+		WP_Optimize()->get_page_cache()->disable(true);
 		WP_Optimize()->get_minify()->plugin_deactivate();
 		WP_Optimize()->get_gzip_compression()->disable();
 		WP_Optimize()->get_browser_cache()->disable();

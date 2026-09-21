@@ -3,13 +3,15 @@
 <tbody id="the-list">
 <?php
 	
-	foreach ($table_list_object_format as $index => $tablestatus) {
+	$row_number = 0;
+	foreach ($table_list_object_format as $tablestatus) {
+		$row_number++;
 		printf('<tr data-tablename="%1$s" data-type="%2$s" data-optimizable="%3$s" data-blog_id="%4$s">',
 			esc_attr($tablestatus->Name),
 			esc_attr($tablestatus->Engine),
 			$tablestatus->is_optimizable ? 1 : 0,
 			$is_multisite_mode ? esc_attr($tablestatus->blog_id) : '');
-		printf('<td data-colname="%1$s">%2$s</td>', esc_attr__('No.', 'wp-optimize'), esc_html(number_format_i18n($table_list[$index]['index'])));
+		printf('<td data-colname="%1$s">%2$s</td>', esc_attr__('No.', 'wp-optimize'), esc_html(number_format_i18n($row_number)));
 		printf('<td data-tablename="%1$s" data-colname="%2$s">%3$s', esc_attr($tablestatus->Name), esc_attr__('Table', 'wp-optimize'), esc_html($tablestatus->Name));
 
 		if (!empty($tablestatus->plugin_status)) {
@@ -50,7 +52,8 @@
 
 		echo "</td>\n";
 
-		printf('<td data-colname="%1$s" data-sort="%2$s">%3$s</td>', esc_attr__('Records', 'wp-optimize'), esc_attr(intval($tablestatus->Rows)), esc_html(number_format_i18n($tablestatus->Rows)));
+		$table_rows = intval($tablestatus->Rows);
+		printf('<td data-colname="%1$s" data-sort="%2$s">%3$s</td>', esc_attr__('Records', 'wp-optimize'), esc_attr($table_rows), esc_html(number_format_i18n($table_rows)));
 		printf('<td data-colname="%1$s" data-sort="%2$s">%3$s</td>', esc_attr__('Data Size', 'wp-optimize'), esc_attr(intval($tablestatus->Data_length)), esc_html($wp_optimize->format_size($tablestatus->Data_length)));
 		printf('<td data-colname="%1$s" data-sort="%2$s">%3$s</td>', esc_attr__('Index Size', 'wp-optimize'), esc_attr(intval($tablestatus->Index_length)), esc_html($wp_optimize->format_size($tablestatus->Index_length)));
 

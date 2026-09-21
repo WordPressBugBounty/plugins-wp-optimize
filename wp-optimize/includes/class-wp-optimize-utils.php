@@ -98,6 +98,9 @@ class WP_Optimize_Utils {
 	 * @return string
 	 */
 	public static function get_file_path($url) {
+		$url_without_query = strtok($url, '?');
+		$url = false === $url_without_query ? $url : $url_without_query;
+
 		if (is_multisite()) {
 			if (function_exists('get_main_site_id')) {
 				$site_id = get_main_site_id();
@@ -464,7 +467,42 @@ class WP_Optimize_Utils {
 	 * @return string
 	 */
 	public static function get_url_without_cache_purge_params() {
-		return remove_query_arg(array('_wpo_purge', 'wpo_minify_cache_purged', '_wpo_purge_minify_cache', 'wpo_all_pages_cache_purged', 'wpo_single_page_cache_purged'));
+		return remove_query_arg(self::get_cache_purge_params());
+	}
+
+	/**
+	 * Outputs JavaScript to remove cache purge parameters from the URL.
+	 *
+	 * @return void
+	 */
+	public static function script_to_remove_cache_purge_params_from_url() {
+		printf('<script>document.addEventListener("DOMContentLoaded", function() { var params = %s; var url = new URL(window.location.href); for (var param of params) { url.searchParams.delete(param); } history.replaceState({}, "", url); });</script>', json_encode(self::get_cache_purge_params()));
+	}
+
+	/**
+	 * Returns the list of parameter names used for cache purge actions
+	 *
+	 * @return array
+	 */
+	private static function get_cache_purge_params() {
+		$original_purge_params = array('_wpo_purge', 'wpo_minify_cache_purged', '_wpo_purge_minify_cache', 'wpo_all_pages_cache_purged', 'wpo_single_page_cache_purged');
+		$purge_params = apply_filters('wpo_get_cache_purge_params', $original_purge_params);
+
+		if (!is_array($purge_params)) $purge_params = $original_purge_params;
+
+		return $purge_params;
+	}
+
+	/**
+	 * Returns a human-readable time difference or "Never" if no timestamp exists.
+	 *
+	 * @param int|null $timestamp Unix timestamp, or null/0 for "Never".
+	 * @return string Human-readable time string.
+	 */
+	public static function human_time_diff_or_never(?int $timestamp = null): string {
+		if (!$timestamp) return __('Never', 'wp-optimize');
+		/* translators: %s = human-readable time difference */
+		return sprintf(__('%s ago', 'wp-optimize'), human_time_diff($timestamp, time()));
 	}
 }
 

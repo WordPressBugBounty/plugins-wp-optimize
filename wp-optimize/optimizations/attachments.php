@@ -100,14 +100,4 @@ class WP_Optimization_attachments extends WP_Optimization {
 	public function settings_label() {
 		return __('Remove orphaned attachments', 'wp-optimize');
 	}
-	
-	/**
-	 * Return description
-	 * N.B. This is not currently used; it was commented out in 1.9.1
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove orphaned attachments', 'wp-optimize');
-	}
 }

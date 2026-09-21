@@ -416,15 +416,6 @@ abstract class WP_Optimization {
 	}
 	
 	/**
-	 * Only used if $available_for_auto is true, in which case this function should be over-ridden
-	 *
-	 * @return string Error message.
-	 */
-	public function get_auto_option_description() {
-		return 'Error: missing scheduled option description ('.$this->id.')';
-	}
-	
-	/**
 	 * What is returned must be at least convertible to an array
 	 *
 	 * @return object Results object.

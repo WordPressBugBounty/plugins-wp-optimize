@@ -31,8 +31,6 @@
 					echo esc_html($message);
 					?>
 				</small>
-				<br>
-				<br>
 			</p>
 
 			<div class="wpo-save-btn-container">

@@ -25,13 +25,4 @@ class WP_Optimization_tags extends WP_Optimization {
 	public function settings_label() {
 		return __('Remove unused tags', 'wp-optimize');
 	}
-
-	/**
-	 * Return description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Removes unused tags', 'wp-optimize');
-	}
 }

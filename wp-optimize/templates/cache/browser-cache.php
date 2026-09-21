@@ -87,8 +87,18 @@
 			<?php
 				}
 			?></div>
-			<div id="wpo_browser_cache_error_message" class="notice notice-error" style="display: none;"></div>
-			<pre id="wpo_browser_cache_output" style="display: none;"></pre>
+
+			<?php if ('' !== $wpo_browser_cache_error_message) { ?>
+				<div id="wpo_browser_cache_error_message" class="notice notice-error"><?php echo esc_html($wpo_browser_cache_error_message); ?></div>
+			<?php } else { ?>
+				<div id="wpo_browser_cache_error_message" class="notice notice-error" style="display: none;"></div>
+			<?php } ?> 
+
+			<?php if ('' !== $wpo_browser_cache_output) { ?>
+				<pre id="wpo_browser_cache_output"><?php echo esc_html($wpo_browser_cache_output); ?></pre>
+			<?php } else { ?>
+				<pre id="wpo_browser_cache_output" style="display: none;"></pre>
+			<?php } ?>
 			<?php
 			}
 		}

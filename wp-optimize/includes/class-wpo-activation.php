@@ -6,11 +6,19 @@ if (!class_exists('WPO_Activation')) :
 class WPO_Activation {
 
 	/**
+	 * Flag to prevent multiple silence activation actions from running when the plugin is reactivated.
+	 *
+	 * @var bool
+	 */
+	private static $silence_activation_actions_done = false;
+
+	/**
 	 * Actions to be performed upon plugin activation
 	 *
 	 * @return void
 	 */
 	public static function actions(): void {
+
 		self::check_minimum_requirements();
 		self::check_user_capability();
 		self::handle_activation_type();
@@ -22,8 +30,27 @@ class WPO_Activation {
 		WP_Optimize()->get_table_management()->create_plugin_tables();
 		WP_Optimize()->get_webp_instance()->plugin_activate();
 
+		WP_Optimize_Page_Cache_Preloader::instance()->maybe_reschedule_preload_on_activation();
+
 		self::init_batch_processing();
+		self::silence_activation_actions();
+	}
+
+	/**
+	 * When user uploads a plugin zip file on already activated plugin, WordPress doesn't run the activation hook.
+	 * This method is used to perform the necessary activation actions in such cases.
+	 *
+	 * @return void
+	 */
+	public static function silence_activation_actions(): void {
+		if (self::$silence_activation_actions_done) {
+			return;
+		}
+
+		WP_Optimize()->cron_activate();
 		self::maybe_init_premium();
+
+		self::$silence_activation_actions_done = true;
 	}
 
 	/**
@@ -56,8 +83,9 @@ class WPO_Activation {
 	 * @return void
 	 */
 	private static function handle_activation_type(): void {
+		// Always record first-activation timestamp (no-ops if already set).
+		self::set_as_newly_activated();
 		if (!self::is_reactivated()) {
-			self::set_as_newly_activated();
 			WP_Optimize()->get_onboarding()->activate_onboarding_wizard();
 		}
 	}
@@ -83,12 +111,15 @@ class WPO_Activation {
 	}
 
 	/**
-	 * Set plugin option `newly-activated` as `true`
+	 * Records the first-ever activation timestamp.
+	 * No-ops if already set, so the original install date is never overwritten on reactivation.
 	 *
 	 * @return void
 	 */
 	private static function set_as_newly_activated(): void {
-		WP_Optimize()->get_options()->update_option('newly-activated', true);
+		if (!WP_Optimize()->get_options()->get_option('newly-activated')) {
+			WP_Optimize()->get_options()->update_option('newly-activated', time());
+		}
 	}
 
 	/**

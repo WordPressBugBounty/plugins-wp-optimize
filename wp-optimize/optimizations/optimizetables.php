@@ -181,15 +181,6 @@ class WP_Optimization_optimizetables extends WP_Optimization {
 	}
 	
 	/**
-	 * Return description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Optimize database tables', 'wp-optimize');
-	}
-	
-	/**
 	 * Return settings label
 	 *
 	 * @return string

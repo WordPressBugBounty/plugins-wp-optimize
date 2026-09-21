@@ -157,10 +157,10 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 		if ($webp_tools_available && file_exists($destination)) {
 			if (is_multisite()) {
 				switch_to_blog($this->get_option('blog_id', 1));
-				update_post_meta($attachment_id, '_wpo-webp-conversion-complete', true);
+				update_post_meta($attachment_id, WPO_Webp_Convert_Image_Task::WEBP_CONVERSION_META_KEY, true);
 				restore_current_blog();
 			} else {
-				update_post_meta($attachment_id, '_wpo-webp-conversion-complete', true);
+				update_post_meta($attachment_id, WPO_Webp_Convert_Image_Task::WEBP_CONVERSION_META_KEY, true);
 			}
 		}
 

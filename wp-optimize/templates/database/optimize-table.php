@@ -37,8 +37,10 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 	
 		<h3><?php esc_html_e('Optimizations', 'wp-optimize'); ?></h3>
 
-
 		<div class="wpo-run-optimizations__container">
+			<?php if ($should_show_load_in_batches_button) : ?>
+			<button type="button" id="wpo-load-tables-in-batches" class="button button-primary button-large"><?php echo esc_html__('Reload database tables in batches', 'wp-optimize'); ?></button>
+			<?php endif; ?>
 			<?php $button_caption = apply_filters('wpo_run_button_caption', __('Run all selected optimizations', 'wp-optimize')); ?>
 			<input class="button button-primary button-large" type="submit" id="wp-optimize" name="wp-optimize" value="<?php echo esc_attr($button_caption); ?>"><?php WP_Optimize()->include_template('take-a-backup.php', false, array('checkbox_name' => 'enable-auto-backup')); ?>
 		</div>
@@ -70,3 +72,55 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 		</p>
 	</form>
 </div>
+<?php if ($should_show_load_in_batches_button) : ?>
+<?php
+// Determine scan offset
+$scan_job_offset = ($total_table_count === $done_table_count) ? 0 : $done_table_count;
+
+// Escape values once for reuse
+$total_table_count_esc = esc_html($total_table_count);
+$scan_job_offset_esc   = esc_js($scan_job_offset);
+?>
+<div id="wpo-too-many-tables-popup" class="wpo-modal--container wpo-too-many-tables" style="display:none;">
+	<div class="wpo-modal--bg"></div>
+	<div class="wpo-modal" style="text-align:center; max-width:600px;">
+		<button type="button" class="wpo-modal--close wpo-too-many-tables-close">
+			<span class="dashicons dashicons-no"></span>
+			<span class="screen-reader-text"><?php esc_html_e('Close', 'wp-optimize'); ?></span>
+		</button>
+		<div class="wpo-modal--content">
+			<p>
+				<?php
+				printf(
+				/* translators: %s = total number of tables */
+						esc_html__(
+								'You have a total of %s tables which will take some time to load.',
+								'wp-optimize'
+						) . ' ' . esc_html__(
+								'Click the button below and please wait while it loads all the tables.',
+								'wp-optimize'
+						),
+						$total_table_count_esc // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output already escaped
+				);
+				?>
+			</p>
+			<p>
+				<button id="wpo-load-tables-in-batches-button" class="button button-primary button-large">
+					<?php
+						echo (0 === $scan_job_offset) ? esc_html__('Load Tables', 'wp-optimize') : esc_html__('Continue Loading Tables', 'wp-optimize');
+					?>
+				</button>
+			</p>
+			<div id="wpo-load-tables-in-batches-progress"></div>
+			<div id="wpo-load-tables-eta"></div>
+		</div>
+	</div>
+</div>
+<script>
+	var wpo_table_scan_offset = <?php echo $scan_job_offset_esc; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output already escaped ?>;
+</script>
+<?php endif; ?>
+<script>
+	var wpo_too_many_tables = <?php echo $too_many_tables ? 'true' : 'false'; ?>;
+	var wpo_onboarding_active = <?php echo $onboarding_active ? 'true' : 'false'; ?>;
+</script>

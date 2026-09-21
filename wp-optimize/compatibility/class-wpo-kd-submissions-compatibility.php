@@ -32,6 +32,7 @@ class WPO_KD_Submissions_Compatibility {
 	 */
 	private function __construct() {
 		add_filter('wp_optimize_get_tables', array($this, 'check_kd_submissions_tables'));
+		add_filter('wp_optimize_get_table', array($this, 'check_kd_submissions_table'));
 	}
 
 	/**
@@ -41,23 +42,58 @@ class WPO_KD_Submissions_Compatibility {
 	 * @return array<int, stdClass> Updated list with corrected plugin associations.
 	 */
 	public function check_kd_submissions_tables($tables) {
+		$kd_submissions_status = $this->get_kd_submissions_status();
 		$elementor_pro_status = $this->get_elementor_pro_status();
 		$is_elementor_pro_available = $elementor_pro_status['installed'] || $elementor_pro_status['active'];
 
 		foreach ($tables as $key => $table) {
-			if (!$this->is_kd_submissions_table($table)) {
+			if (!$this->is_kd_submissions_table($table) && !$this->is_elementor_pro_table($table)) {
 				continue;
 			}
 
-			if ($is_elementor_pro_available && !$this->has_plugin_in_list(self::ELEMENTOR_PRO_PLUGIN, $table->plugin_status)) {
+			if (($is_elementor_pro_available || $this->is_elementor_pro_table($table)) && !$this->has_plugin_in_list(self::ELEMENTOR_PRO_PLUGIN, $table->plugin_status)) {
 				$tables[$key]->plugin_status[] = array(
 					'plugin' => self::ELEMENTOR_PRO_PLUGIN,
 					'status' => $elementor_pro_status,
 				);
+
+				// Allow to remove the table when Elementor Pro and KD Submissions are inactive.
+				$tables[$key]->can_be_removed = !$elementor_pro_status['active'] && !$kd_submissions_status['active'];
+			} else {
+				// If Elementor Pro is not available, ensure KD Submissions is associated
+				if (!$this->has_plugin_in_list(self::KD_SUBMISSIONS_PLUGIN, $table->plugin_status)) {
+					$tables[$key]->plugin_status[] = array(
+						'plugin' => self::KD_SUBMISSIONS_PLUGIN,
+						'status' => $kd_submissions_status,
+					);
+
+					// Allow to remove the table when KD Submissions is inactive.
+					$tables[$key]->can_be_removed = !$kd_submissions_status['active'];
+				}
 			}
+
 		}
 
 		return $tables;
+	}
+
+	/**
+	 * Associates a single KD Submissions table with Elementor Pro, if present.
+	 * If the provided table is not a KD Submissions table, it is returned unchanged.
+	 *
+	 * @param stdClass $table A database table object with a Name property and plugin_status array.
+	 * @return stdClass
+	 */
+	public function check_kd_submissions_table($table) {
+		if (!property_exists($table, 'Name')) return $table;
+
+		$tables = array(
+			$table->Name => $table,
+		);
+
+		$tables = $this->check_kd_submissions_tables($tables);
+
+		return $tables[$table->Name];
 	}
 
 	/**
@@ -71,12 +107,22 @@ class WPO_KD_Submissions_Compatibility {
 	 * @return bool
 	 */
 	private function is_kd_submissions_table($table) {
+		return false !== strpos($table->Name, '_e_')
+			&& $this->has_plugin_in_list(self::KD_SUBMISSIONS_PLUGIN, $table->plugin_status);
+	}
+
+	/**
+	 * Determines whether the given table belongs to Elementor Pro
+	 *
+	 * @param stdClass $table A database table object with a Name property and plugin_status array.
+	 * @return boolean
+	 */
+	private function is_elementor_pro_table($table) {
 		if (preg_match('/e_submissions_actions_log$/', $table->Name)) {
 			return true;
 		}
 
-		return false !== strpos($table->Name, '_e_')
-			&& $this->has_plugin_in_list(self::KD_SUBMISSIONS_PLUGIN, $table->plugin_status);
+		return false;
 	}
 
 	/**
@@ -102,6 +148,16 @@ class WPO_KD_Submissions_Compatibility {
 	private function get_elementor_pro_status() {
 		return WP_Optimize()->get_db_info()->get_plugin_status(self::ELEMENTOR_PRO_PLUGIN);
 	}
+
+	/**
+	 * Retrieves the installation and activation status of KD Submissions.
+	 *
+	 * @return array{installed: bool, active: bool}
+	 */
+	private function get_kd_submissions_status() {
+		return WP_Optimize()->get_db_info()->get_plugin_status(self::KD_SUBMISSIONS_PLUGIN);
+	}
+
 
 	/**
 	 * Returns the singleton instance of this class.

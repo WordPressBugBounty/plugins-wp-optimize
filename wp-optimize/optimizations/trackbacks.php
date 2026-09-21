@@ -4,6 +4,8 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 class WP_Optimization_trackbacks extends WP_Optimization {
 
+	public $available_for_auto = true;
+
 	public $ui_sort_order = 7000;
 
 	public $available_for_saving = true;

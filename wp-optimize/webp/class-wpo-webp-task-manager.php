@@ -140,7 +140,8 @@ class WPO_Webp_Task_Manager extends Updraft_Task_Manager_1_4 {
 
 				$destination = WPO_WebP_Utils::get_destination_path($source);
 				if (file_exists($destination)) {
-					$this->backfill_webp_conversion_meta($post->ID);
+					// A way of backfilling already webp converted images
+					update_post_meta($post->ID, WPO_Webp_Convert_Image_Task::WEBP_CONVERSION_META_KEY, true);
 					continue;
 				}
 
@@ -154,17 +155,6 @@ class WPO_Webp_Task_Manager extends Updraft_Task_Manager_1_4 {
 		}
 
 		return $filtered_post_ids;
-	}
-
-	/**
-	 * Backfill the webp conversion meta for attachments that already have
-	 * a WebP file present at the destination path.
-	 *
-	 * @param int $post_id The attachment post ID.
-	 * @return void
-	 */
-	private function backfill_webp_conversion_meta($post_id): void {
-		update_post_meta($post_id, '_wpo-webp-conversion-complete', true);
 	}
 
 	/**
@@ -183,12 +173,12 @@ class WPO_Webp_Task_Manager extends Updraft_Task_Manager_1_4 {
 			array(
 				'relation' => 'OR',
 				array(
-					'key'     => '_wpo-webp-conversion-complete',
+					'key'	 => WPO_Webp_Convert_Image_Task::WEBP_CONVERSION_META_KEY,
 					'compare' => 'NOT EXISTS',
 					'value'   => '',
 				),
 				array(
-					'key'     => '_wpo-webp-conversion-complete',
+					'key'	 => WPO_Webp_Convert_Image_Task::WEBP_CONVERSION_META_KEY,
 					'compare' => '!=',
 					'value'   => '1',
 				)

@@ -478,15 +478,6 @@ class WP_Optimization_transient extends WP_Optimization {
 	}
 
 	/**
-	 * Returns description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove expired transient options', 'wp-optimize');
-	}
-
-	/**
 	 * Check optimization param and return true if we should remove only expired transients.
 	 *
 	 * @return bool

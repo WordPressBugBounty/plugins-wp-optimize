@@ -90,15 +90,16 @@ class WP_Optimize_Options {
 	/**
 	 * Update WP-Optimize option value.
 	 *
-	 * @param string $option Option name.
-	 * @param mixed  $value  Option value.
+	 * @param string            $option   Option name.
+	 * @param mixed             $value    Option value.
+	 * @param bool|string|null  $autoload Whether to autoload the option. Ignored for multisite network options.
 	 * @return bool
 	 */
-	public function update_option($option, $value) {
+	public function update_option($option, $value, $autoload = null) {
 		if (is_multisite()) {
 			return update_site_option('wp-optimize-mu-'.$option, $value);
 		} else {
-			return update_option('wp-optimize-'.$option, $value);
+			return update_option('wp-optimize-'.$option, $value, $autoload);
 		}
 	}
 

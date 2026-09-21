@@ -130,6 +130,17 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 	}
 
 	/**
+	 * Reschedule preload action on plugin activation if page cache enabled.
+	 *
+	 * @return void
+	 */
+	public function maybe_reschedule_preload_on_activation() {
+		if ($this->get_cache_config('enable_page_caching')) {
+			$this->reschedule_preload();
+		}
+	}
+
+	/**
 	 * Check if scheduled preload enabled.
 	 *
 	 * @return bool

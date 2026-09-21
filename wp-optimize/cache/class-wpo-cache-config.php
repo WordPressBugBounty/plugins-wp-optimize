@@ -250,6 +250,7 @@ class WPO_Cache_Config {
 			'host_gravatars_locally'           => 0,
 			'auto_preload_purged_contents'     => true,
 			'enable_rest_caching'              => false,
+			'last_cleared'                     => time(),
 			'lcp_preload_enable'               => false,
 		);
 

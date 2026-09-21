@@ -132,10 +132,45 @@ class WP_Optimize_Htaccess {
 	 * Write current $_file_tree content into .htaccess file.
 	 */
 	public function write_file() {
-		$content = implode(PHP_EOL, $this->get_flat_array($this->_file_tree));
 		if ($this->is_writable()) {
-			@file_put_contents($this->_htaccess_file, $content); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Hosts like WP Engine restricts use of `.htaccess` file
+			@file_put_contents($this->_htaccess_file, $this->get_content()); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Hosts like WP Engine restricts use of `.htaccess` file
 		}
+	}
+
+	/**
+	 * Get .htaccess content as a string.
+	 *
+	 * @return string
+	 */
+	public function get_content() {
+		return implode(PHP_EOL, $this->get_flat_array($this->_file_tree));
+	}
+
+	/**
+	 * Returns section content as a string
+	 *
+	 * @param string $section
+	 * @return string
+	 */
+	public function get_section_content($section = 'WP-Optimize Browser Cache') {
+		$section_index = $this->search_commented_section($section);
+
+		if (false === $section_index) return '';
+
+		$section_length = (false === $section_index['end']) ? null : ($section_index['end'] - $section_index['begin'] + 1);
+		$section_array = array_slice($this->_file_tree, $section_index['begin'], $section_length);
+
+		return implode(PHP_EOL, $this->get_flat_array($section_array));
+	}
+
+	/**
+	 * Recursive function that builds a flat array from a tree-structured .htaccess file array.
+	 * Get .htaccess hash
+	 *
+	 * @return string
+	 */
+	public function get_hash() {
+		return hash('sha256', serialize($this->_file_tree));
 	}
 
 	/**

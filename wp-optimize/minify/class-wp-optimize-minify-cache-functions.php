@@ -354,8 +354,11 @@ class WP_Optimize_Minify_Cache_Functions {
 					}
 					$log[] = "cache expiration time - $expires";
 					$log[] = "checking if cache has expired - $d";
-					if ($d !== $cache_time && (is_numeric($d) && $d <= $expires)) {
-						$dir = WPO_CACHE_MIN_FILES_DIR.'/'.$d;
+					
+					$dir = WPO_CACHE_MIN_FILES_DIR.'/'.$d;
+					$is_empty_dir = self::is_empty_minify_subdir($dir);
+
+					if ($d !== (string) $cache_time && (is_numeric($d) && $d <= $expires || $is_empty_dir)) {
 						if (is_dir($dir)) {
 							$log[] = "deleting cache in $dir";
 							if (wpo_delete_files($dir)) {
@@ -383,6 +386,16 @@ class WP_Optimize_Minify_Cache_Functions {
 		}
 
 		return $log;
+	}
+
+	/**
+	 * Checks whether the minify cache subdirectory (/ddddddddd/) is empty, i.e. whether the 'assets' and 'header' subdirectories contain no files.
+	 *
+	 * @param string $dir
+	 * @return boolean
+	 */
+	private static function is_empty_minify_subdir($dir) {
+		return wpo_is_empty_dir($dir . '/assets') && wpo_is_empty_dir($dir . '/header');
 	}
 
 	/**

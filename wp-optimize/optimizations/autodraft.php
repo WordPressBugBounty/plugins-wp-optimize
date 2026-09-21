@@ -175,13 +175,4 @@ class WP_Optimization_autodraft extends WP_Optimization {
 		}
 
 	}
-
-	/**
-	 * Return description
-	 *
-	 * @return string
-	 */
-	public function get_auto_option_description() {
-		return __('Remove auto-draft posts', 'wp-optimize');
-	}
 }

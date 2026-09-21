@@ -32,9 +32,10 @@
 								id="enable_unused_css"
 								value="1"
 							<?php checked($wpo_minify_options['enable_unused_css']); ?>
-							<?php disabled($show_unused_css_advertise); ?>
+							<?php disabled($show_unused_css_advertise || !$is_page_cache_enabled); ?>
 						>
 						<?php esc_html_e('Enable removal of unused rules from CSS files (Experimental)', 'wp-optimize'); ?>
+						<em class="<?php if ($is_page_cache_enabled || $show_unused_css_advertise) echo esc_attr('wpo_hidden'); ?>"><?php esc_html_e('This option is available only when page cache is enabled.', 'wp-optimize'); ?></em>
 					</label>
 					<span tabindex="0" class="wpo-tooltip" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling removal of unused CSS rules might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					<?php if ($show_unused_css_advertise) : ?>
